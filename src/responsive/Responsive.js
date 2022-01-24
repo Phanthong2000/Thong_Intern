@@ -1,24 +1,5 @@
 import PropTypes from 'prop-types';
-// material
 import { useMediaQuery } from '@mui/material';
-
-// ----------------------------------------------------------------------
-
-Responsive.propTypes = {
-  children: PropTypes.node,
-  width: PropTypes.oneOf([
-    'xsDown',
-    'smDown',
-    'mdDown',
-    'lgDown',
-    'xlDown',
-    'xsUp',
-    'smUp',
-    'mdUp',
-    'lgUp',
-    'xlUp'
-  ]).isRequired
-};
 
 const Responsive = ({ width, children }) => {
   const breakpoint = width.substring(0, 2);
@@ -35,5 +16,20 @@ const Responsive = ({ width, children }) => {
   }
 
   return null;
+};
+Responsive.propTypes = {
+  children: PropTypes.node,
+  width: PropTypes.oneOf([
+    'xsDown',
+    'smDown',
+    'mdDown',
+    'lgDown',
+    'xlDown',
+    'xsUp',
+    'smUp',
+    'mdUp',
+    'lgUp',
+    'xlUp'
+  ]).isRequired
 };
 export default Responsive;

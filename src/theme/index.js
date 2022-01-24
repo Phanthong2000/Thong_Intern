@@ -1,13 +1,22 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { createTheme, CssBaseline, StyledEngineProvider, ThemeProvider } from '@mui/material';
+import palette from './palette';
+import typography from './typography';
 
-ThemeConfig.prototype = {
-  children: PropTypes.node
-};
-const ThemeConfig = ({ children }) => {
-  const theme = createTheme({});
-
+export default function ThemeConfig({ children }) {
+  const themeOptions = useMemo(
+    () => ({
+      typography,
+      palette: {
+        background: '#f5f7f6',
+        green: '#30ab78',
+        button: 'linear-gradient(to right, #06beb6 0%, #48b1bf  51%, #06beb6  100%)'
+      }
+    }),
+    []
+  );
+  const theme = createTheme(themeOptions);
   return (
     <StyledEngineProvider injectFirst>
       <ThemeProvider theme={theme}>
@@ -16,6 +25,7 @@ const ThemeConfig = ({ children }) => {
       </ThemeProvider>
     </StyledEngineProvider>
   );
+}
+ThemeConfig.prototype = {
+  children: PropTypes.node
 };
-
-export default ThemeConfig;
