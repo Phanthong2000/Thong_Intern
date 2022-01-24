@@ -10,25 +10,22 @@ import {
   Stack,
   Button,
   Modal,
-  Box,
-  Alert,
-  AlertTitle
+  Box
 } from '@mui/material';
 import { useFormik, Form, FormikProvider } from 'formik';
 import {
-  signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signInWithPhoneNumber,
   RecaptchaVerifier
 } from 'firebase/auth';
-import { collection, getDocs, addDoc, setDoc, doc, getDoc, query, where } from 'firebase/firestore';
+import { collection, getDocs, addDoc, query, where } from 'firebase/firestore';
 import { CheckCircle, Dangerous } from '@mui/icons-material';
 import OtpInput from 'react-otp-input';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebase-config';
 import HeaderAuth from '../layouts/HeaderAuth';
 
-const RootStyle = styled('div')(({ theme }) => ({
+const RootStyle = styled('div')(() => ({
   height: '100%',
   width: '100%',
   position: 'absolute',
@@ -53,7 +50,7 @@ const BoxSignUp = styled(Card)(({ theme }) => ({
 const Separate = styled(Divider)(({ theme }) => ({
   margin: theme.spacing(1, 10, 1)
 }));
-const TextSignUp = styled(Typography)(({ theme }) => ({
+const TextSignUp = styled(Typography)(() => ({
   color: '#fff'
 }));
 const BoxInfoSignUp = styled(Stack)(({ theme }) => ({
@@ -227,10 +224,6 @@ function SignUpForm() {
       setMessageResult('Phone number already exists');
     }
   };
-  const getUsers = async () => {
-    const data = await getDocs(collection(db, 'users'));
-    data.docs.map((item) => console.log(item.data(), item.id));
-  };
   const addUsers = async (user) => {
     await addDoc(collection(db, 'users'), user)
       .then(() => {
@@ -258,7 +251,7 @@ function SignUpForm() {
           .then(() => {
             addUsers(user);
           })
-          .catch((err) => {
+          .catch(() => {
             setOpenModal(true);
             setResult(false);
             setMessageResult('Email already exists');
@@ -285,7 +278,7 @@ function SignUpForm() {
       'sign-in-button',
       {
         size: 'invisible',
-        callback: (response) => {
+        callback: () => {
           // sendOTP();
           console.log('Recaptca varified');
         },
@@ -304,7 +297,7 @@ function SignUpForm() {
         window.confirmationResult = confirmationResult;
         setOpenModalOTP(true);
       })
-      .catch((error) => {
+      .catch(() => {
         setOpenModal(true);
         setResult(false);
         setMessageResult('Wrong phone number');
@@ -313,12 +306,12 @@ function SignUpForm() {
   const confirmOTP = (user) => {
     window.confirmationResult
       .confirm(otp)
-      .then((result) => {
+      .then(() => {
         setOpenModalOTP(false);
         addUsers(user);
         navigate.apply('/login');
       })
-      .catch((error) => {
+      .catch(() => {
         setOpenModal(true);
         setResult(false);
         setMessageResult('Wrong OTP');

@@ -2,7 +2,7 @@ import * as Yup from 'yup';
 import React from 'react';
 import { Box, Card, Divider, styled, Typography, TextField, Stack, Button } from '@mui/material';
 import { useFormik, Form, FormikProvider } from 'formik';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { getDocs, collection, query, where } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
 import { auth, db } from '../firebase-config';
@@ -102,7 +102,7 @@ function LoginForm() {
       if (wayLogin === 'email') {
         signInWithEmailAndPassword(auth, values.email, values.password)
           .then(() => {
-            console.log('Ok');
+            loginByEmail();
           })
           .catch(() => {
             setLoginFail('Wrong email or password');
@@ -112,6 +112,22 @@ function LoginForm() {
       }
     }
   });
+  const loginByEmail = async () => {
+    const data = await getDocs(
+      query(
+        collection(db, 'users'),
+        where('email', '==', values.email),
+        where('password', '==', values.password)
+      )
+    );
+    if (data.empty) {
+      setLoginFail('Wrong email or password');
+    } else {
+      setLoginFail('');
+      console.log(data.docs.at(0).data());
+      localStorage.setItem('user', data.docs.at(0).data());
+    }
+  };
   const loginByPhone = async () => {
     const data = await getDocs(
       query(
@@ -125,9 +141,32 @@ function LoginForm() {
     } else {
       setLoginFail('');
       console.log(data.docs.at(0).data());
+      localStorage.setItem('user', data.docs.at(0).data());
     }
   };
   const { errors, touched, values, handleSubmit, getFieldProps } = formik;
+  const loginByGoogle = () => {
+    const provider = new GoogleAuthProvider();
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        const { user } = result;
+        console.log('user', user);
+        const userLogin = {
+          username: user.displayName,
+          phone: user.phoneNumber,
+          email: user.email,
+          avatar: user.photoURL,
+          background:
+            'https://tophinhanhdep.com/wp-content/uploads/2021/10/1920X1080-HD-Nature-Wallpapers.jpg',
+          createdAt: user.metadata.creationTime
+        };
+        localStorage.setItem('user', userLogin);
+      })
+      .catch((err) => {
+        console.log(err);
+        alert('Fail');
+      });
+  };
   return (
     <RootStyle>
       <HeaderAuth />
@@ -217,7 +256,7 @@ function LoginForm() {
           <Typography style={{ color: '#30ab78' }}>OR</Typography>
         </Separate>
         <BoxWayLogin direction="row" spacing={1}>
-          <GoogleLogin>
+          <GoogleLogin onClick={() => loginByGoogle()}>
             <IconLogin src={google} alt="Login by Google" />
             Google
           </GoogleLogin>
