@@ -3,6 +3,7 @@ import { Navigate, useRoutes } from 'react-router-dom';
 import SignUp from './pages/SignUp';
 import Home from './pages/Home';
 import Login from './pages/Login';
+import HomeLayout from './layouts/HomeLayout';
 
 function Router() {
   return useRoutes([
@@ -17,7 +18,11 @@ function Router() {
     },
     {
       path: '/home',
-      element: <Home />
+      element: <HomeLayout />,
+      children: [
+        { element: <Navigate to="/home/app" replace /> },
+        { path: 'app', element: <Home /> }
+      ]
     }
   ]);
 }
