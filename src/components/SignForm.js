@@ -245,6 +245,7 @@ function SignUpForm() {
           avatar: 'https://huyhoanhotel.com/wp-content/uploads/2016/05/765-default-avatar.png',
           background:
             'https://tophinhanhdep.com/wp-content/uploads/2021/10/1920X1080-HD-Nature-Wallpapers.jpg',
+          isOnline: false,
           createAt: new Date().getTime()
         };
         createUserWithEmailAndPassword(auth, values.email, values.password)
@@ -266,6 +267,7 @@ function SignUpForm() {
           avatar: 'https://huyhoanhotel.com/wp-content/uploads/2016/05/765-default-avatar.png',
           background:
             'https://tophinhanhdep.com/wp-content/uploads/2021/10/1920X1080-HD-Nature-Wallpapers.jpg',
+          isOnline: false,
           createAt: new Date().getTime()
         };
         getUserByPhone(user);

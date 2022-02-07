@@ -1,0 +1,72 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { styled, Typography, Divider, List } from '@mui/material';
+import PropTypes from 'prop-types';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { Scrollbar } from 'smooth-scrollbar-react';
+import { db } from '../../firebase-config';
+import Notification from './Notification';
+
+const RootStyle = styled('div')(({ theme }) => ({
+  position: 'absolute',
+  right: '10px',
+  background: '#fff',
+  borderBottomLeftRadius: '20px',
+  borderBottomRightRadius: '20px',
+  width: '400px',
+  top: '60px',
+  color: '#000',
+  paddingBottom: '10px',
+  maxHeight: '500px'
+}));
+const Title = styled(Typography)(({ theme }) => ({
+  fontWeight: 'bold',
+  fontSize: '25px',
+  margin: theme.spacing(1, 1, 1)
+}));
+const Separate = styled(Divider)(({ theme }) => ({
+  margin: theme.spacing(1, 2, 1)
+}));
+BoxNotifications.prototype = {
+  user: PropTypes.object
+};
+function BoxNotifications({ user }) {
+  const [userLoggedIn, setUserLoggedIn] = useState({});
+  const [notifications, setNotifications] = useState([]);
+  const getNotifications = async (userId) => {
+    const data = await getDocs(
+      query(collection(db, 'notifications'), where('receiverId', '==', userId))
+    );
+    const temp = [];
+    if (!data.empty) {
+      data.docs.forEach((doc) => {
+        temp.push({
+          ...doc.data(),
+          id: doc.id
+        });
+      });
+    }
+    if (temp.length === data.docs.length) setNotifications(temp);
+  };
+  useEffect(() => {
+    setUserLoggedIn({
+      ...user
+    });
+    const userId = JSON.parse(localStorage.getItem('user')).id;
+    getNotifications(userId);
+  }, [user]);
+  return (
+    <RootStyle sx={{ boxShadow: 3 }}>
+      <Title>Notifications</Title>
+      <Separate />
+      <List style={{ display: 'flex', maxHeight: '400px' }}>
+        <Scrollbar>
+          {notifications.map((item, index) => (
+            <Notification user={user} notification={item} key={index} />
+          ))}
+        </Scrollbar>
+      </List>
+    </RootStyle>
+  );
+}
+
+export default BoxNotifications;

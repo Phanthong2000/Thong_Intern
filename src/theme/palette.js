@@ -1,6 +1,3 @@
-function createGradient(color1, color2) {
-  return `linear-gradient(to bottom, ${color1}, ${color2})`;
-}
 const palette = {
   primary: '#30ab78',
   background: '#f5f7f6',

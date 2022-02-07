@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AppBar, Stack, styled, Toolbar, Box } from '@mui/material';
 import { useSelector } from 'react-redux';
+import PropTypes from 'prop-types';
 import MenuBar from '../../components/home/MenuBar';
 import ProfileBar from '../../components/home/ProfileBar';
 import SearchBar from '../../components/home/SearchBar';
@@ -9,13 +10,15 @@ import Responsive from '../../responsive/Responsive';
 import ListSearch from '../../components/home/ListSearch';
 
 const RootStyle = styled(AppBar)(({ theme }) => ({
-  width: '100%',
-  display: 'flex',
+  width: `calc(100% - 80px)`,
   background: '#fff',
   height: '60px',
   boxShadow: 3,
   justifyContent: 'center',
-  position: 'fixed'
+  position: 'fixed',
+  [theme.breakpoints.down('md')]: {
+    width: '100%'
+  }
 }));
 const Logo = styled('img')(({ theme }) => ({
   width: '50px',
@@ -33,11 +36,11 @@ const BoxSearch = styled(Box)(({ theme }) => ({
   height: '200px',
   color: '#000'
 }));
-function HomeNavbar() {
+HomeNavbar.prototype = {
+  user: PropTypes.object
+};
+function HomeNavbar({ user }) {
   const isSearching = useSelector((state) => state.user.isSearching);
-  useEffect(() => {
-    console.log(isSearching);
-  }, []);
   return (
     <RootStyle>
       <Toolbar sx={{ justifyContent: 'space-between' }}>
@@ -46,9 +49,9 @@ function HomeNavbar() {
           <Responsive width="mdUp">
             <MenuBar />
           </Responsive>
-          {isSearching ? <></> : <SearchBar />}
+          <SearchBar />
         </Stack>
-        <ProfileBar />
+        <ProfileBar user={user} />
       </Toolbar>
       {isSearching ? (
         <BoxSearch>

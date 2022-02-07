@@ -1,16 +1,16 @@
 import * as Yup from 'yup';
 import React from 'react';
-import { Box, Card, Divider, styled, Typography, TextField, Stack, Button } from '@mui/material';
+import { Card, Divider, styled, Typography, TextField, Stack, Button } from '@mui/material';
 import { useFormik, Form, FormikProvider } from 'formik';
 import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
-import { getDocs, collection, query, where } from 'firebase/firestore';
+import { getDocs, collection, query, where, updateDoc, doc } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
 import { auth, db } from '../firebase-config';
 import HeaderAuth from '../layouts/HeaderAuth';
 import google from '../asset/images/google.png';
 import facebook from '../asset/images/facebook.png';
 
-const RootStyle = styled('div')(({ theme }) => ({
+const RootStyle = styled('div')(() => ({
   height: '100%',
   width: '100%',
   position: 'absolute',
@@ -35,7 +35,7 @@ const BoxLogin = styled(Card)(({ theme }) => ({
 const Separate = styled(Divider)(({ theme }) => ({
   margin: theme.spacing(1, 10, 1)
 }));
-const TextLogin = styled(Typography)(({ theme }) => ({
+const TextLogin = styled(Typography)(() => ({
   color: '#fff'
 }));
 const BoxWayLogin = styled(Stack)(({ theme }) => ({
@@ -60,11 +60,11 @@ const ForgotPassword = styled(Link)(({ theme }) => ({
   textDecoration: 'none',
   color: theme.palette.green
 }));
-const GoogleLogin = styled(Button)(({ theme }) => ({
+const GoogleLogin = styled(Button)(() => ({
   width: '50%',
   color: '#30ab78'
 }));
-const IconLogin = styled('img')(({ theme }) => ({
+const IconLogin = styled('img')(() => ({
   width: '30px',
   height: '30px',
   marginRight: '10px'
@@ -124,8 +124,14 @@ function LoginForm() {
       setLoginFail('Wrong email or password');
     } else {
       setLoginFail('');
-      console.log(data.docs.at(0).data());
-      localStorage.setItem('user', data.docs.at(0).data());
+      const user = {
+        id: data.docs.at(0).id,
+        ...data.docs.at(0).data()
+      };
+      // const userDoc = (await getDoc(doc(db, 'users', user.id))).data();
+      const userDoc = doc(db, 'users', user.id);
+      updateDoc(userDoc, { isOnline: true });
+      localStorage.setItem('user', JSON.stringify(user));
     }
   };
   const loginByPhone = async () => {
@@ -140,7 +146,11 @@ function LoginForm() {
       setLoginFail('Wrong phone number or password');
     } else {
       setLoginFail('');
-      console.log(data.docs.at(0).data());
+      const user = {
+        id: data.docs.at(0).id,
+        ...data.docs.at(0).data()
+      };
+      console.log(user);
       localStorage.setItem('user', data.docs.at(0).data());
     }
   };
@@ -150,17 +160,19 @@ function LoginForm() {
     signInWithPopup(auth, provider)
       .then((result) => {
         const { user } = result;
-        console.log('user', user);
+        // console.log('user', user);
         const userLogin = {
+          id: user.uid,
           username: user.displayName,
-          phone: user.phoneNumber,
+          phone: user.phoneNumber === null ? '' : user.phoneNumber,
           email: user.email,
           avatar: user.photoURL,
           background:
             'https://tophinhanhdep.com/wp-content/uploads/2021/10/1920X1080-HD-Nature-Wallpapers.jpg',
-          createdAt: user.metadata.creationTime
+          createdAt: Date.parse(user.metadata.creationTime)
         };
-        localStorage.setItem('user', userLogin);
+        console.log(userLogin);
+        // localStorage.setItem('user', userLogin);
       })
       .catch((err) => {
         console.log(err);

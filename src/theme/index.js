@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { createTheme, CssBaseline, StyledEngineProvider, ThemeProvider } from '@mui/material';
-import palette from './palette';
 import typography from './typography';
 
 export default function ThemeConfig({ children }) {

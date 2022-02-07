@@ -1,28 +1,46 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { styled, Box, List, ListItem, IconButton } from '@mui/material';
 import { Search } from '@mui/icons-material';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { doc, getDoc } from 'firebase/firestore';
 import HomeNavbar from './home/HomeNavbar';
 import HomeSidebar from './home/HomeSidebar';
 import { actionUserCloseSearch, actionUserCloseProfile } from '../redux/actions/userAction';
+import Responsive from '../responsive/Responsive';
+import { db } from '../firebase-config';
 
 const RootStyle = styled(Box)(({ theme }) => ({
   overflow: 'hidden',
-  display: 'block'
+  display: 'flex'
 }));
 const MainStyle = styled('div')(({ theme }) => ({
   flexGrow: 1,
   overflow: 'auto',
   minHeight: '100%',
-  display: 'flex',
-  background: theme.palette.button,
-  marginTop: '60px'
+  [theme.breakpoints.up('md')]: {
+    paddingLeft: '80px'
+  }
 }));
-// const BoxProfile = styled
 function HomeLayout() {
-  const isSearching = useSelector((state) => state.user.isSearching);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
+  const [user, setUser] = useState();
+  const getUser = async (userId) => {
+    const data = await getDoc(doc(db, 'users', userId));
+    setUser({
+      ...data.data(),
+      id: data.id
+    });
+  };
+  useEffect(() => {
+    if (!isLoggedIn) navigate('/login');
+    if (localStorage.getItem('user') !== null) {
+      const userId = JSON.parse(localStorage.getItem('user')).id;
+      getUser(userId);
+    }
+  }, []);
   const closeSearch = () => {
     dispatch(actionUserCloseSearch());
   };
@@ -31,14 +49,16 @@ function HomeLayout() {
   };
   return (
     <RootStyle>
-      <HomeNavbar />
+      <Responsive width="mdDown">
+        <HomeSidebar />
+      </Responsive>
+      <HomeNavbar user={user} />
       <MainStyle
         onClick={() => {
           closeSearch();
           closeProfileBox();
         }}
       >
-        <HomeSidebar />
         <Outlet />
       </MainStyle>
     </RootStyle>
