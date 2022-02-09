@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Avatar, Box, Card, IconButton, Stack, styled, Typography } from '@mui/material';
+import {
+  Avatar,
+  Box,
+  Card,
+  IconButton,
+  Stack,
+  styled,
+  Typography,
+  Button,
+  Grid
+} from '@mui/material';
 import { Icon } from '@iconify/react';
 import { useParams } from 'react-router-dom';
 import { collection, getDoc, getDocs, query, where, doc } from 'firebase/firestore';
@@ -40,11 +50,12 @@ const AvatarButton = styled(IconButton)(({ theme }) => ({
   background: theme.palette.background
 }));
 const InfoUser = styled(Stack)(({ theme }) => ({
-  width: '48%',
+  width: '78%',
   marginLeft: '2%',
   [theme.breakpoints.down('md')]: {
     width: '100%',
-    textAlign: 'center'
+    textAlign: 'center',
+    marginLeft: '0px'
   }
 }));
 const Username = styled(Typography)(() => ({
@@ -56,6 +67,35 @@ const TotalFriend = styled(Typography)(() => ({
   color: 'grey',
   fontSize: '18px',
   fontFamily: 'sans-serif'
+}));
+const WrapperEditProfile = styled(Box)(({ theme }) => ({
+  width: '100%',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  [theme.breakpoints.down('md')]: {
+    display: 'block'
+  }
+}));
+const BoxAvatarFriends = styled(Box)(({ theme }) => ({
+  width: '55%',
+  [theme.breakpoints.down('md')]: {
+    width: '100%'
+  }
+}));
+const BoxButtonEditProfile = styled(Box)(({ theme }) => ({
+  width: '45%',
+  [theme.breakpoints.down('md')]: {
+    width: '100%'
+  }
+}));
+const ButtonEditProfile = styled(Button)(({ theme }) => ({
+  color: theme.palette.green,
+  textDecoration: 'none',
+  background: theme.palette.background,
+  textTransform: 'none',
+  fontSize: '18px',
+  fontWeight: 'bold'
 }));
 Information.prototype = {
   user: PropTypes.object
@@ -125,6 +165,16 @@ function Information({ user }) {
         <InfoUser>
           <Username>{user.username}</Username>
           <TotalFriend>{getTotalFriends()}</TotalFriend>
+          <WrapperEditProfile>
+            <BoxAvatarFriends>
+              <Typography>BoxAvatarFriends</Typography>
+            </BoxAvatarFriends>
+            <BoxButtonEditProfile>
+              <ButtonEditProfile startIcon={<Icon icon="entypo:edit" />}>
+                Edit profile
+              </ButtonEditProfile>
+            </BoxButtonEditProfile>
+          </WrapperEditProfile>
         </InfoUser>
       </WrapperInfo>
     </RootStyle>

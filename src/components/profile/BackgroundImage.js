@@ -12,7 +12,7 @@ const RootStyle = styled(Card)(({ theme }) => ({
   height: '400px'
 }));
 const CoverImage = styled('img')(({ theme }) => ({
-  width: '900px',
+  width: '80%',
   height: '400px',
   borderRadius: theme.spacing(0, 0, 2, 2),
   cursor: 'pointer',

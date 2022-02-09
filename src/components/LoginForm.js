@@ -151,7 +151,7 @@ function LoginForm() {
         ...data.docs.at(0).data()
       };
       console.log(user);
-      localStorage.setItem('user', data.docs.at(0).data());
+      localStorage.setItem('user', JSON.stringify(user));
     }
   };
   const { errors, touched, values, handleSubmit, getFieldProps } = formik;

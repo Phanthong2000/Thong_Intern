@@ -30,7 +30,6 @@ BoxNotifications.prototype = {
   user: PropTypes.object
 };
 function BoxNotifications({ user }) {
-  const [userLoggedIn, setUserLoggedIn] = useState({});
   const [notifications, setNotifications] = useState([]);
   const getNotifications = async (userId) => {
     const data = await getDocs(
@@ -48,12 +47,9 @@ function BoxNotifications({ user }) {
     if (temp.length === data.docs.length) setNotifications(temp);
   };
   useEffect(() => {
-    setUserLoggedIn({
-      ...user
-    });
     const userId = JSON.parse(localStorage.getItem('user')).id;
     getNotifications(userId);
-  }, [user]);
+  }, []);
   return (
     <RootStyle sx={{ boxShadow: 3 }}>
       <Title>Notifications</Title>

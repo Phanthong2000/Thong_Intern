@@ -16,7 +16,6 @@ const RootStyle = styled(Box)(({ theme }) => ({
 }));
 const MainStyle = styled('div')(({ theme }) => ({
   flexGrow: 1,
-  overflow: 'auto',
   minHeight: '100%',
   [theme.breakpoints.up('md')]: {
     paddingLeft: '80px'
@@ -26,7 +25,7 @@ function HomeLayout() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
-  const [user, setUser] = useState();
+  const [user, setUser] = useState({});
   const getUser = async (userId) => {
     const data = await getDoc(doc(db, 'users', userId));
     setUser({

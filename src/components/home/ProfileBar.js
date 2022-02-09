@@ -19,7 +19,7 @@ import {
 import BoxProfile from './BoxProfile';
 import BoxNotifications from './BoxNotifications';
 
-const RootStyle = styled(Stack)(({ theme }) => ({
+const RootStyle = styled(Stack)(() => ({
   display: 'flex'
 }));
 const IsOnline = styled(Icon)(({ theme }) => ({
@@ -38,7 +38,6 @@ function ProfileBar({ user }) {
   const isOpeningProfile = useSelector((state) => state.user.isOpeningProfile);
   const isOpeningNotifications = useSelector((state) => state.user.isOpeningNotifications);
   const dispatch = useDispatch();
-  const [userLoggedIn, setUserLoggedIn] = useState({});
   const testBadge = 0;
   const openProfileBox = () => {
     dispatch(actionUserOpenProfile());
@@ -46,11 +45,6 @@ function ProfileBar({ user }) {
   const closeProfileBox = () => {
     dispatch(actionUserCloseProfile());
   };
-  useEffect(() => {
-    setUserLoggedIn({
-      ...user
-    });
-  }, [user]);
   const openNotifications = () => {
     if (isOpeningNotifications) dispatch(actionUserCloseNotifications());
     else dispatch(actionUserOpenNotifications());
@@ -87,7 +81,7 @@ function ProfileBar({ user }) {
       ) : (
         <IconButton onClick={() => openProfileBox()}>
           <IsOnline icon="akar-icons:circle-fill">s</IsOnline>
-          <Avatar src={userLoggedIn.avatar} />
+          <Avatar src={user.avatar} />
         </IconButton>
       )}
       {isOpeningProfile ? <BoxProfile user={user} /> : null}

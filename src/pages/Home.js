@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, styled } from '@mui/material';
+import { Box, styled, TextField } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { doc, getDoc } from 'firebase/firestore';
@@ -17,7 +17,18 @@ function Home({ user }) {
   useEffect(() => {
     window.document.title = 'Home';
   }, []);
-  return <RootStyle style={{ background: '#fff' }}>{user}</RootStyle>;
+  const [comment, setComment] = useState('');
+  return (
+    <RootStyle style={{ background: '#fff' }}>
+      <TextField
+        multiline
+        value={comment}
+        onChange={(e) => {
+          setComment(e.target.value);
+        }}
+      />
+    </RootStyle>
+  );
 }
 
 export default Home;
