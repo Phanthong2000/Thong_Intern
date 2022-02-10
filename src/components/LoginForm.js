@@ -4,7 +4,7 @@ import { Card, Divider, styled, Typography, TextField, Stack, Button } from '@mu
 import { useFormik, Form, FormikProvider } from 'formik';
 import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { getDocs, collection, query, where, updateDoc, doc } from 'firebase/firestore';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebase-config';
 import HeaderAuth from '../layouts/HeaderAuth';
 import google from '../asset/images/google.png';
@@ -70,6 +70,7 @@ const IconLogin = styled('img')(() => ({
   marginRight: '10px'
 }));
 function LoginForm() {
+  const navigate = useNavigate();
   const [wayLogin, setWayLogin] = React.useState('email');
   const [loginFail, setLoginFail] = React.useState('');
   const [initialValuesState, setInitialValuesState] = React.useState({
@@ -132,6 +133,7 @@ function LoginForm() {
       const userDoc = doc(db, 'users', user.id);
       updateDoc(userDoc, { isOnline: true });
       localStorage.setItem('user', JSON.stringify(user));
+      window.location.reload();
     }
   };
   const loginByPhone = async () => {

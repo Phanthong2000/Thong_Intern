@@ -1,6 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { useFormik, Form, FormikProvider } from 'formik';
-import * as Yup from 'yup';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Avatar,
   Box,
@@ -9,21 +7,29 @@ import {
   Divider,
   Grid,
   IconButton,
-  Input,
   InputBase,
   Stack,
   styled,
-  TextField,
   Typography
 } from '@mui/material';
 import { Icon } from '@iconify/react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
-import { useParams } from 'react-router-dom';
-import { doc, getDoc, getDocs, collection, query, where } from 'firebase/firestore';
-import ShowMoreText from 'react-show-more-text';
+import { useDispatch } from 'react-redux';
+import {
+  doc,
+  getDoc,
+  getDocs,
+  collection,
+  query,
+  where,
+  updateDoc,
+  addDoc
+} from 'firebase/firestore';
 import ShowMore from 'react-show-more';
 import { db } from '../../firebase-config';
+import Comment from './Comment';
+import { getAllPosts } from '../../redux/actions/postAction';
 
 const RootStyle = styled(Card)(({ theme }) => ({
   marginTop: '10px',
@@ -58,9 +64,11 @@ Post.prototype = {
   user: PropTypes.object
 };
 function Post({ user, post }) {
+  const inputCommentRef = useRef('');
+  const dispatch = useDispatch();
   const [userPost, setUserPost] = useState({});
   const [isCommenting, setIsCommenting] = useState(false);
-  const [comment, setComment] = useState('');
+  const [commentByPostId, setCommentByPostId] = useState([]);
   const getUserPost = () => {
     getDoc(doc(db, 'users', post.userId)).then((post) => {
       setUserPost({
@@ -69,8 +77,25 @@ function Post({ user, post }) {
       });
     });
   };
+  const getCommentsByPostId = async () => {
+    const comments = await getDocs(
+      query(collection(db, 'comments'), where('postId', '==', post.id))
+    );
+    if (!comments.empty) {
+      const data = [];
+      comments.docs.forEach((comment) => {
+        data.push({
+          ...comment.data(),
+          id: comment.id
+        });
+      });
+      const commentSort = data.sort((a, b) => a.createdAt - b.createdAt);
+      setCommentByPostId(commentSort);
+    }
+  };
   useEffect(() => {
     getUserPost();
+    getCommentsByPostId();
   }, []);
   const StatusPost = () => {
     const IconStatus = styled(Icon)(() => ({
@@ -103,7 +128,7 @@ function Post({ user, post }) {
       display: 'flex',
       justifyContent: 'space-between'
     }));
-    if (post.loves.length === 0 && post.comments.length === 0 && post.shares.length === 0)
+    if (post.loves.length === 0 && commentByPostId.length === 0 && post.shares.length === 0)
       return null;
     return (
       <>
@@ -153,9 +178,9 @@ function Post({ user, post }) {
       fontFamily: 'inherit'
     }));
     const checkQuantityComments = () => {
-      if (post.comments.length === 0) return ` `;
-      if (post.comments.length === 1) return `1 Comment`;
-      return `${post.comments.length} Comments`;
+      if (commentByPostId.length === 0) return ` `;
+      if (commentByPostId.length === 1) return `1 Comment`;
+      return `${commentByPostId.length} Comments`;
     };
     return <Comment>{checkQuantityComments()}</Comment>;
   };
@@ -168,13 +193,44 @@ function Post({ user, post }) {
     const checkQuantityShares = () => {
       if (post.shares.length === 0) return ` `;
       if (post.shares.length === 1) return `1 Share`;
-      return `${post.comments.length} Shares`;
+      return `${post.shares.length} Shares`;
     };
     return <Share>{checkQuantityShares()}</Share>;
   };
   const ButtonContact = () => {
     const love = () => {
-      console.log('love');
+      if (post.loves.find((love) => love.userId === user.id) === undefined) {
+        getDoc(doc(db, 'posts', post.id)).then((snapshot) => {
+          const postNew = {
+            ...snapshot.data(),
+            loves: [
+              ...snapshot.data().loves,
+              {
+                userId: user.id,
+                createdAt: new Date().getTime()
+              }
+            ]
+          };
+          updateDoc(doc(db, 'posts', post.id), postNew).then(() => dispatch(getAllPosts(user.id)));
+        });
+      } else {
+        getDoc(doc(db, 'posts', post.id)).then((snapshot) => {
+          const postNew = {
+            ...snapshot.data(),
+            loves: [snapshot.data().loves.find((love) => love.userId !== user.id)]
+          };
+          if (postNew.loves.indexOf(undefined) === 0) {
+            updateDoc(doc(db, 'posts', post.id), {
+              ...postNew,
+              loves: []
+            }).then(() => dispatch(getAllPosts(user.id)));
+          } else {
+            updateDoc(doc(db, 'posts', post.id), {
+              ...postNew
+            }).then(() => dispatch(getAllPosts(user.id)));
+          }
+        });
+      }
     };
     const comment = () => {
       setIsCommenting(true);
@@ -233,18 +289,8 @@ function Post({ user, post }) {
     );
   };
   const CommentPost = () => {
-    const formik = useFormik({
-      initialValues: {
-        comment: ''
-      },
-      onSubmit: () => {
-        console.log(values.comment);
-      }
-    });
-    const { values, handleSubmit, getFieldProps } = formik;
     const CommentBar = styled(Box)(() => ({
       width: '100%',
-      alignItems: 'center',
       display: 'flex',
       marginTop: '10px'
     }));
@@ -258,7 +304,22 @@ function Post({ user, post }) {
       borderRadius: '20px',
       borderWidth: '0px'
     }));
-    if (post.comments.length === 0)
+    const sendComment = () => {
+      const content = inputCommentRef.current;
+      if (content.length > 0) {
+        const comment = {
+          content,
+          createdAt: new Date().getTime(),
+          loves: [],
+          postId: post.id,
+          type: 'text',
+          userId: user.id
+        };
+        addDoc(collection(db, 'comments'), comment).then(() => getCommentsByPostId());
+      }
+      inputCommentRef.current = '';
+    };
+    if (commentByPostId.length === 0)
       return (
         <CommentBar container spacing={2}>
           <Grid sx={{ textAlign: 'center' }} item xs={2} sm={2} md={2} lg={2} xl={2}>
@@ -274,30 +335,71 @@ function Post({ user, post }) {
           </Grid>
           <Grid item xs={10} sm={10} md={10} lg={10} xl={10}>
             <WrapperComment>
-              <FormikProvider value={formik}>
-                <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
-                  <InputBase
-                    multiline
-                    type="text"
-                    {...getFieldProps('comment')}
-                    sx={{ width: '100%', fontFamily: 'inherit' }}
-                    placeholder="Write a comment"
-                  />
-                  <Box sx={{ display: 'flex' }}>
-                    <IconButton>
-                      <Icon icon="akar-icons:image" style={{ width: '20px', height: '20px' }} />
-                    </IconButton>
-                    <IconButton type="submit">
-                      <Icon icon="bi:send" style={{ width: '20px', height: '20px' }} />
-                    </IconButton>
-                  </Box>
-                </Form>
-              </FormikProvider>
+              <InputBase
+                multiline
+                type="text"
+                onChange={(e) => {
+                  inputCommentRef.current = e.target.value;
+                }}
+                sx={{ width: '100%', fontFamily: 'inherit' }}
+                placeholder="Write a comment"
+              />
+              <Box sx={{ display: 'flex', alignItems: 'end' }}>
+                <IconButton>
+                  <Icon icon="akar-icons:image" style={{ width: '20px', height: '20px' }} />
+                </IconButton>
+                <IconButton onClick={() => sendComment()}>
+                  <Icon icon="bi:send" style={{ width: '20px', height: '20px' }} />
+                </IconButton>
+              </Box>
             </WrapperComment>
           </Grid>
         </CommentBar>
       );
-    return <div>cl</div>;
+    return (
+      <Box>
+        <CommentBar container spacing={2}>
+          <Grid sx={{ textAlign: 'center' }} item xs={2} sm={2} md={2} lg={2} xl={2}>
+            <Button
+              sx={{
+                '&:hover': { backgroundColor: 'transparent' },
+                '&:focus': { backgroundColor: 'transparent' }
+              }}
+            >
+              <Avatar sx={{ width: '30px', height: '30px' }} src={userPost.avatar} />
+              <DotOnline icon="ci:dot-05-xl" style={userPost.isOnline ? null : { color: 'grey' }} />
+            </Button>
+          </Grid>
+          <Grid item xs={10} sm={10} md={10} lg={10} xl={10}>
+            <WrapperComment>
+              <InputBase
+                autoFocus
+                type="text"
+                onChange={(e) => {
+                  inputCommentRef.current = e.target.value;
+                }}
+                multiline
+                sx={{ width: '100%', fontFamily: 'inherit' }}
+                placeholder="Write a comment"
+              />
+              <Box sx={{ display: 'flex', alignItems: 'end' }}>
+                <IconButton>
+                  <Icon icon="akar-icons:image" style={{ width: '20px', height: '20px' }} />
+                </IconButton>
+                <IconButton onClick={() => sendComment()}>
+                  <Icon icon="bi:send" style={{ width: '20px', height: '20px' }} />
+                </IconButton>
+              </Box>
+            </WrapperComment>
+          </Grid>
+        </CommentBar>
+        <Box sx={{ marginTop: '10px' }}>
+          {commentByPostId.map((item, index) => (
+            <Comment user={user} comment={item} key={index} />
+          ))}
+        </Box>
+      </Box>
+    );
   };
   return (
     <RootStyle>
