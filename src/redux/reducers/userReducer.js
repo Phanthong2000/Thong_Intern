@@ -8,7 +8,9 @@ import {
   ACTION_USER_CLOSE_NOTIFICATIONS,
   ACTION_USER_CLOSE_REQUESTS,
   ACTION_USER_OPEN_NOTIFICATIONS,
-  ACTION_USER_OPEN_REQUESTS
+  ACTION_USER_OPEN_REQUESTS,
+  ACTION_USER_CLOSE_LOADING_UPDATE_PROFILE,
+  ACTION_USER_OPEN_LOADING_UPDATE_PROFILE
 } from '../actions/types';
 
 const defaultState = {
@@ -16,7 +18,8 @@ const defaultState = {
   isSearching: false,
   isOpeningProfile: false,
   isOpeningNotifications: false,
-  isOpeningRequests: false
+  isOpeningRequests: false,
+  isLoadingUpdateProfile: false
 };
 const userReducer = (state = defaultState, action) => {
   switch (action.type) {
@@ -93,6 +96,16 @@ const userReducer = (state = defaultState, action) => {
       return {
         ...state,
         isLoggedIn: false
+      };
+    case ACTION_USER_OPEN_LOADING_UPDATE_PROFILE:
+      return {
+        ...state,
+        isLoadingUpdateProfile: true
+      };
+    case ACTION_USER_CLOSE_LOADING_UPDATE_PROFILE:
+      return {
+        ...state,
+        isLoadingUpdateProfile: false
       };
     default:
       return state;

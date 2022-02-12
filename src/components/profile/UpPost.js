@@ -1,10 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Avatar, Box, Button, Card, Divider, styled, Typography } from '@mui/material';
+import {
+  Avatar,
+  Box,
+  Button,
+  Card,
+  Divider,
+  Menu,
+  MenuItem,
+  styled,
+  Typography
+} from '@mui/material';
 import { Icon } from '@iconify/react';
 import { useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { collection, getDoc, getDocs, query, where, doc } from 'firebase/firestore';
 import { db } from '../../firebase-config';
+import { getAllPosts } from '../../redux/actions/postAction';
+import CreatePost from '../post/CreatePost';
 
 const RootStyle = styled(Card)(({ theme }) => ({
   marginTop: '20px',
@@ -52,6 +65,26 @@ UpPost.prototype = {
   user: PropTypes.object
 };
 function UpPost({ user }) {
+  const dispatch = useDispatch();
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const open = Boolean(anchorEl);
+  const [sort, setSort] = useState('desc');
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+  const sortDescClick = () => {
+    dispatch(getAllPosts(user.id, 'desc'));
+    setSort('desc');
+    handleClose();
+  };
+  const sortAscClick = () => {
+    dispatch(getAllPosts(user.id, 'asc'));
+    setSort('asc');
+    handleClose();
+  };
   return (
     <RootStyle>
       <BoxUpPost>
@@ -61,8 +94,35 @@ function UpPost({ user }) {
       <Divider sx={{ marginTop: '20px' }} />
       <BoxFilter>
         <Title>Posts</Title>
-        <ButtonFilter startIcon={<Icon icon="bx:bx-sort" />}>Sorts</ButtonFilter>
+        <ButtonFilter
+          id="basic-button"
+          onClick={handleClick}
+          startIcon={<Icon icon="bx:bx-sort" />}
+        >
+          Sorts by date post
+        </ButtonFilter>
+        <Menu id="basic-menu" anchorEl={anchorEl} open={open} onClose={handleClose}>
+          <MenuItem onClick={sortDescClick}>
+            Descending
+            {sort === 'desc' ? (
+              <Icon
+                style={{ marginLeft: '10px', width: '30px', height: '30px' }}
+                icon="ic:baseline-done"
+              />
+            ) : null}
+          </MenuItem>
+          <MenuItem onClick={sortAscClick}>
+            Ascending{' '}
+            {sort !== 'desc' ? (
+              <Icon
+                style={{ marginLeft: '10px', width: '30px', height: '30px' }}
+                icon="ic:baseline-done"
+              />
+            ) : null}
+          </MenuItem>
+        </Menu>
       </BoxFilter>
+      {/* <CreatePost user={user} /> */}
     </RootStyle>
   );
 }

@@ -8,7 +8,9 @@ import {
   ACTION_USER_CLOSE_NOTIFICATIONS,
   ACTION_USER_CLOSE_REQUESTS,
   ACTION_USER_OPEN_NOTIFICATIONS,
-  ACTION_USER_OPEN_REQUESTS
+  ACTION_USER_OPEN_REQUESTS,
+  ACTION_USER_CLOSE_LOADING_UPDATE_PROFILE,
+  ACTION_USER_OPEN_LOADING_UPDATE_PROFILE
 } from './types';
 
 export const actionUserOpenSearch = () => ({ type: ACTION_USER_OPEN_SEARCH });
@@ -21,3 +23,9 @@ export const actionUserOpenNotifications = () => ({ type: ACTION_USER_OPEN_NOTIF
 export const actionUserCloseNotifications = () => ({ type: ACTION_USER_CLOSE_NOTIFICATIONS });
 export const actionUserOpenRequests = () => ({ type: ACTION_USER_OPEN_REQUESTS });
 export const actionUserCloseRequests = () => ({ type: ACTION_USER_CLOSE_REQUESTS });
+export const actionUserOpenLoadingUpdateProfile = () => ({
+  type: ACTION_USER_OPEN_LOADING_UPDATE_PROFILE
+});
+export const actionUserCloseLoadingUpdateProfile = () => ({
+  type: ACTION_USER_CLOSE_LOADING_UPDATE_PROFILE
+});

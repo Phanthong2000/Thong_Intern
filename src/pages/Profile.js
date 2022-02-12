@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Grid, Stack, styled, Typography } from '@mui/material';
+import { Box, Grid, IconButton, Stack, styled, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { Icon } from '@iconify/react';
@@ -13,6 +13,7 @@ import UpPost from '../components/profile/UpPost';
 import UserNotFound from '../components/profile/UserNotFound';
 import Post from '../components/post/Post';
 import { getAllPosts } from '../redux/actions/postAction';
+import Snack from '../components/Snack';
 
 const RootStyle = styled(Stack)(({ theme }) => ({
   marginTop: '60px',
@@ -33,14 +34,34 @@ function Profile({ user }) {
   const allPosts = useSelector((state) => state.post.posts);
   const { id } = useParams();
   const dispatch = useDispatch();
+  const isLoadingUpdateProfile = useSelector((state) => state.user.isLoadingUpdateProfile);
   useEffect(() => {
     if (user.id !== id) navigate(`/home/other/${id}`);
     document.title = `${user.username} | Thong Intern`;
-    dispatch(getAllPosts(id));
+    dispatch(getAllPosts(id, 'desc'));
     return null;
   }, [user]);
   return (
     <RootStyle sx={{ alignItems: 'center' }}>
+      {isLoadingUpdateProfile ? (
+        <IconButton
+          sx={{
+            position: 'absolute',
+            marginTop: '100px',
+            background: '#fff',
+            '&:hover': { background: '#fff' }
+          }}
+        >
+          <Icon
+            icon="eos-icons:loading"
+            style={{
+              width: '50px',
+              height: '50px',
+              color: '#30ab78'
+            }}
+          />
+        </IconButton>
+      ) : null}
       <InfoMain user={user} />
       <Information user={user} />
       <BoxContent>
@@ -65,6 +86,7 @@ function Profile({ user }) {
           </Grid>
         </Grid>
       </BoxContent>
+      <Snack />
     </RootStyle>
   );
 }

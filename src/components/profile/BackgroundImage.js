@@ -2,10 +2,15 @@ import React, { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Card, IconButton, Button, styled, Snackbar, Alert, Typography } from '@mui/material';
 import { getDownloadURL, ref, uploadBytes, uploadBytesResumable } from 'firebase/storage';
-import { getDoc, doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore';
 import { Icon } from '@iconify/react';
-import Information from './Information';
+import { useDispatch, useSelector } from 'react-redux';
 import { storage, db } from '../../firebase-config';
+import {
+  actionUserCloseLoadingUpdateProfile,
+  actionUserOpenLoadingUpdateProfile
+} from '../../redux/actions/userAction';
+import { actionOpenSnackbar } from '../../redux/actions/postAction';
 
 const RootStyle = styled(Card)(({ theme }) => ({
   background: '#fff',
@@ -33,13 +38,12 @@ InfoMain.prototype = {
 };
 function InfoMain({ user }) {
   const fileRef = useRef(null);
+  const isLoadingUpdateProfile = useSelector((state) => state.user.isLoadingUpdateProfile);
+  const dispatch = useDispatch();
   const [background, setBackground] = useState('');
   const [showEditCover, setShowEditCover] = useState('flex');
-  const [openSnackbar, setOpenSnackbar] = useState(false);
   const [image, setImage] = useState();
   const [choosing, setChoosing] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [openSnackbarChanged, setOpenSnackbarChanged] = useState(false);
   useEffect(() => {
     setBackground(user.background);
     return null;
@@ -55,14 +59,16 @@ function InfoMain({ user }) {
         setImage(files[0]);
         setChoosing(true);
       } else {
-        setOpenSnackbar(true);
+        dispatch(
+          actionOpenSnackbar({
+            status: true,
+            content: 'Cover photo must less than 2MB',
+            type: 'error'
+          })
+        );
         setChoosing(false);
       }
     }
-  };
-  const handleClose = () => {
-    setOpenSnackbar(false);
-    setOpenSnackbarChanged(false);
   };
   const ChangeBackgroundBar = () => {
     const RootStyle = styled(Box)(({ theme }) => ({
@@ -108,16 +114,14 @@ function InfoMain({ user }) {
       const metadata = {
         contentType: 'image/*'
       };
-      const storageRef = ref(storage, `images/${user.id}.${new Date().getTime()}`);
+      const storageRef = ref(storage, `background/${user.id}.${new Date().getTime()}`);
       const uploadTask = uploadBytesResumable(storageRef, image, metadata);
       uploadTask.on(
         'state_changed',
         (snapshot) => {
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log(`Upload is ${progress}% done`);
           switch (snapshot.state) {
             case 'running':
-              setLoading(true);
+              dispatch(actionUserOpenLoadingUpdateProfile());
               break;
             default:
               console.log('ok');
@@ -134,8 +138,14 @@ function InfoMain({ user }) {
               background: downloadURL
             }).then(() => {
               setChoosing(false);
-              setLoading(false);
-              setOpenSnackbarChanged(true);
+              dispatch(actionUserCloseLoadingUpdateProfile());
+              dispatch(
+                actionOpenSnackbar({
+                  status: true,
+                  content: 'Changed your cover photo',
+                  type: 'success'
+                })
+              );
             });
           });
         }
@@ -161,25 +171,6 @@ function InfoMain({ user }) {
   };
   return (
     <RootStyle>
-      {loading ? (
-        <IconButton
-          sx={{
-            position: 'absolute',
-            marginTop: '100px',
-            background: '#fff',
-            '&:hover': { background: '#fff' }
-          }}
-        >
-          <Icon
-            icon="eos-icons:loading"
-            style={{
-              width: '50px',
-              height: '50px',
-              color: '#30ab78'
-            }}
-          />
-        </IconButton>
-      ) : null}
       {!choosing ? null : <ChangeBackgroundBar />}
       <CoverImage
         onMouseLeave={() => setShowEditCover('none')}
@@ -207,16 +198,6 @@ function InfoMain({ user }) {
           <Icon icon="ic:baseline-photo-camera" style={{ color: '#000' }} />
         </CoverButton>
       ) : null}
-      <Snackbar open={openSnackbar} autoHideDuration={3000} onClose={handleClose}>
-        <Alert severity="error" sx={{ display: 'flex', alignItems: 'center' }}>
-          <Typography sx={{ fontWeight: 'bold' }}>Cover photo must less than 2MB</Typography>
-        </Alert>
-      </Snackbar>
-      <Snackbar open={openSnackbarChanged} autoHideDuration={3000} onClose={handleClose}>
-        <Alert severity="success" sx={{ display: 'flex', alignItems: 'center' }}>
-          <Typography sx={{ fontWeight: 'bold' }}>Changed your cover photo</Typography>
-        </Alert>
-      </Snackbar>
     </RootStyle>
   );
 }

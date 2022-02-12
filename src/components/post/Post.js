@@ -30,6 +30,7 @@ import ShowMore from 'react-show-more';
 import { db } from '../../firebase-config';
 import Comment from './Comment';
 import { getAllPosts } from '../../redux/actions/postAction';
+import Tag from './Tag';
 
 const RootStyle = styled(Card)(({ theme }) => ({
   marginTop: '10px',
@@ -96,6 +97,7 @@ function Post({ user, post }) {
   useEffect(() => {
     getUserPost();
     getCommentsByPostId();
+    return null;
   }, []);
   const StatusPost = () => {
     const IconStatus = styled(Icon)(() => ({
@@ -401,6 +403,38 @@ function Post({ user, post }) {
       </Box>
     );
   };
+  const Tags = () => {
+    if (post.tags.length === 0) return null;
+    if (post.tags.length === 1)
+      return (
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Typography sx={{ marginLeft: '3px' }}> is with </Typography>
+          <Tag userId={post.tags.at(0).userId} />
+        </Box>
+      );
+    if (post.tags.length === 2)
+      return (
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Typography sx={{ marginLeft: '3px' }}> is with </Typography>
+          <Tag userId={post.tags.at(0).userId} />
+          <Typography sx={{ marginLeft: '3px' }}> and 1 other</Typography>
+        </Box>
+      );
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Typography sx={{ marginLeft: '3px' }}> is with </Typography>
+        <Tag userId={post.tags.at(0).userId} />
+        <Typography
+          sx={{
+            marginLeft: '3px'
+          }}
+        >
+          and
+          <b style={{ cursor: 'pointer' }}>{` ${post.tags.length - 1} others`}</b>
+        </Typography>
+      </Box>
+    );
+  };
   return (
     <RootStyle>
       <StackPost>
@@ -416,7 +450,10 @@ function Post({ user, post }) {
               <DotOnline icon="ci:dot-05-xl" style={userPost.isOnline ? null : { color: 'grey' }} />
             </Button>
             <Stack>
-              <Username>{userPost.username}</Username>
+              <Stack sx={{ display: 'flex', alignItems: 'center' }} direction="row">
+                <Username>{userPost.username}</Username>
+                <Tags />
+              </Stack>
               <Stack sx={{ display: 'flex', alignItems: 'center' }} direction="row">
                 <DatePost />
                 <StatusPost />
