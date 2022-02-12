@@ -13,6 +13,7 @@ import Setting from './pages/Setting';
 import Profile from './pages/Profile';
 import Error from './pages/Error';
 import UserNotFound from './components/profile/UserNotFound';
+import Other from './pages/Other';
 
 function Router() {
   const navigate = useNavigate();
@@ -51,6 +52,7 @@ function Router() {
         { path: 'chat', element: <Chat /> },
         { path: 'request-friends', element: <RequestFriends /> },
         { path: 'setting', element: <Setting /> },
+        { path: 'other/:id', element: <Other user={user} /> },
         { path: 'profile/:id', element: <Profile user={user} /> },
         {
           path: 'user-not-found',

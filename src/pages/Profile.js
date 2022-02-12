@@ -29,12 +29,15 @@ Profile.prototype = {
   user: PropTypes.object
 };
 function Profile({ user }) {
+  const navigate = useNavigate();
   const allPosts = useSelector((state) => state.post.posts);
   const { id } = useParams();
   const dispatch = useDispatch();
   useEffect(() => {
+    if (user.id !== id) navigate(`/home/other/${id}`);
     document.title = `${user.username} | Thong Intern`;
     dispatch(getAllPosts(id));
+    return null;
   }, [user]);
   return (
     <RootStyle sx={{ alignItems: 'center' }}>
