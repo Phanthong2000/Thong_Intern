@@ -6,9 +6,6 @@ import { actionCloseSnackbar } from '../redux/actions/postAction';
 function Snack() {
   const snackbar = useSelector((state) => state.post.snackbar);
   const dispatch = useDispatch();
-  useEffect(() => {
-    console.log(snackbar);
-  }, []);
   return (
     <Snackbar
       open={snackbar.status}

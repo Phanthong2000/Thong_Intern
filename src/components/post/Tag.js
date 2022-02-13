@@ -23,7 +23,6 @@ function Tag({ userId }) {
         ...user.data(),
         id: user.id
       });
-      console.log(user.data());
     });
   };
   useEffect(() => {

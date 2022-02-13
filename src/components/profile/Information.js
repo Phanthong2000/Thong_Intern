@@ -16,15 +16,17 @@ import {
 } from '@mui/material';
 import { Icon } from '@iconify/react';
 import { useParams } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { collection, getDoc, getDocs, query, where, doc, updateDoc } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes, uploadBytesResumable } from 'firebase/storage';
 import { storage, db } from '../../firebase-config';
 import {
   actionUserCloseLoadingUpdateProfile,
-  actionUserOpenLoadingUpdateProfile
+  actionUserOpenLoadingUpdateProfile,
+  actionGetAllFriendUser
 } from '../../redux/actions/userAction';
 import { actionOpenSnackbar } from '../../redux/actions/postAction';
+import AvatarFriend from './AvatarFriend';
 
 const RootStyle = styled(Card)(({ theme }) => ({
   width: '60%',
@@ -89,8 +91,10 @@ const WrapperEditProfile = styled(Box)(({ theme }) => ({
 }));
 const BoxAvatarFriends = styled(Box)(({ theme }) => ({
   width: '55%',
+  display: 'flex',
   [theme.breakpoints.down('md')]: {
-    width: '100%'
+    width: '100%',
+    justifyContent: 'center'
   }
 }));
 const BoxButtonEditProfile = styled(Box)(({ theme }) => ({
@@ -113,60 +117,21 @@ Information.prototype = {
 function Information({ user }) {
   const fileRef = useRef(null);
   const { id } = useParams();
-  const [friends1, setFriends1] = useState([]);
-  const [friends2, setFriends2] = useState([]);
   const [openModalUpdate, setOpenModalUpdate] = useState(false);
   const [openModalDiscardChange, setOpenModalDiscardChange] = useState(false);
   const [avatarNew, setAvatarNew] = useState('');
   const [image, setImage] = useState();
   const [avatar, setAvatar] = useState('');
   const dispatch = useDispatch();
+  const friends = useSelector((state) => state.user.friends);
   useEffect(() => {
-    getFriendWhenUserIsReceiver();
-    getFriendWhenUserIsSender();
     setAvatar(user.avatar);
+    dispatch(actionGetAllFriendUser(user.id));
     return null;
   }, [user]);
-  const getFriendWhenUserIsReceiver = () => {
-    const data = [];
-    getDocs(
-      query(collection(db, 'contacts'), where('receiverId', '==', id), where('status', '==', true))
-    ).then((snapshots) => {
-      snapshots.docs.forEach((contact) => {
-        getDoc(doc(db, 'users', contact.data().senderId)).then((snapshot) => {
-          data.push({
-            ...snapshot.data(),
-            id: snapshot.id
-          });
-          if (snapshots.docs.length === data.length) {
-            setFriends1(data);
-          }
-        });
-      });
-    });
-  };
-  const getFriendWhenUserIsSender = () => {
-    const data = [];
-    getDocs(
-      query(collection(db, 'contacts'), where('senderId', '==', id), where('status', '==', true))
-    ).then((snapshots) => {
-      snapshots.docs.forEach((contact) => {
-        getDoc(doc(db, 'users', contact.data().receiverId)).then((snapshot) => {
-          data.push({
-            ...snapshot.data(),
-            id: snapshot.id
-          });
-          if (snapshots.docs.length === data.length) {
-            setFriends2(data);
-          }
-        });
-      });
-    });
-  };
   const getTotalFriends = () => {
-    const data = [...friends1, ...friends2];
-    if (data.length < 2) return `${data.length} Friend`;
-    return `${data.length} Friends`;
+    if (friends.length < 2) return `${friends.length} Friend`;
+    return `${friends.length} Friends`;
   };
   const onChangeFile = (files) => {
     console.log(files);
@@ -372,6 +337,36 @@ function Information({ user }) {
       </Modal>
     );
   };
+  const GetBoxAvatarFriend = () => {
+    if (friends.length <= 4) {
+      const temp = friends.slice(0, friends.length);
+      return (
+        <BoxAvatarFriends>
+          {temp.map((item, index) => (
+            <AvatarFriend key={index} friend={item} index={index} />
+          ))}
+        </BoxAvatarFriends>
+      );
+    }
+    const temp = friends.slice(0, 3);
+    return (
+      <BoxAvatarFriends>
+        {temp.map((item, index) => (
+          <AvatarFriend key={index} friend={item} index={index} />
+        ))}
+        <Icon
+          style={{
+            width: '30px',
+            height: '30px',
+            cursor: 'pointer',
+            marginLeft: '-10px',
+            color: 'grey'
+          }}
+          icon="mdi:dots-horizontal-circle"
+        />
+      </BoxAvatarFriends>
+    );
+  };
   return (
     <RootStyle>
       <WrapperInfo>
@@ -392,9 +387,7 @@ function Information({ user }) {
           <Username>{user.username}</Username>
           <TotalFriend>{getTotalFriends()}</TotalFriend>
           <WrapperEditProfile>
-            <BoxAvatarFriends>
-              <Typography>BoxAvatarFriends</Typography>
-            </BoxAvatarFriends>
+            <GetBoxAvatarFriend />
             <BoxButtonEditProfile>
               <ButtonEditProfile startIcon={<Icon icon="entypo:edit" />}>
                 Edit profile

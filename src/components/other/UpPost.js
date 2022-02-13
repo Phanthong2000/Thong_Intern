@@ -16,13 +16,8 @@ import { useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { collection, getDoc, getDocs, query, where, doc } from 'firebase/firestore';
 import { db } from '../../firebase-config';
-import {
-  actionPostOpenCreatePost,
-  getAllPosts,
-  actionPostOpenTagPeople
-} from '../../redux/actions/postAction';
+import { actionPostOpenCreatePost, getAllPosts } from '../../redux/actions/postAction';
 import CreatePost from '../post/CreatePost';
-import TagPeople from '../post/TagPeople';
 
 const RootStyle = styled(Card)(({ theme }) => ({
   marginTop: '20px',
@@ -74,31 +69,25 @@ function UpPost({ user }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
   const [sort, setSort] = useState('desc');
-  const isOpenCreatePost = useSelector((state) => state.post.isOpenCreatePost);
-  const isOpenTagPeople = useSelector((state) => state.post.isOpenTagPeople);
+  const { id } = useParams();
+  const [other, setOther] = useState({});
+  useEffect(() => {
+    getDoc(doc(db, 'users', id)).then((snapshot) => {
+      setOther({ ...snapshot.data(), id });
+    });
+    return null;
+  }, [user]);
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => {
     setAnchorEl(null);
   };
-  const sortDescClick = () => {
-    dispatch(getAllPosts(user.id, 'desc'));
-    setSort('desc');
-    handleClose();
-  };
-  const sortAscClick = () => {
-    dispatch(getAllPosts(user.id, 'asc'));
-    setSort('asc');
-    handleClose();
-  };
   return (
     <RootStyle>
       <BoxUpPost>
         <Avatar sx={{ cursor: 'pointer', width: '50px', height: '50px' }} src={user.avatar} />
-        <ButtonUpPost onClick={() => dispatch(actionPostOpenTagPeople())}>
-          What's on your mind
-        </ButtonUpPost>
+        <ButtonUpPost>{`Write something to ${other.username}`}</ButtonUpPost>
       </BoxUpPost>
       <Divider sx={{ marginTop: '20px' }} />
       <BoxFilter>
@@ -111,7 +100,7 @@ function UpPost({ user }) {
           Sorts by date post
         </ButtonFilter>
         <Menu id="basic-menu" anchorEl={anchorEl} open={open} onClose={handleClose}>
-          <MenuItem onClick={sortDescClick}>
+          <MenuItem>
             Descending
             {sort === 'desc' ? (
               <Icon
@@ -120,7 +109,7 @@ function UpPost({ user }) {
               />
             ) : null}
           </MenuItem>
-          <MenuItem onClick={sortAscClick}>
+          <MenuItem>
             Ascending
             {sort !== 'desc' ? (
               <Icon
@@ -131,8 +120,6 @@ function UpPost({ user }) {
           </MenuItem>
         </Menu>
       </BoxFilter>
-      {isOpenTagPeople ? <TagPeople user={user} /> : null}
-      {isOpenCreatePost ? <CreatePost user={user} /> : null}
     </RootStyle>
   );
 }

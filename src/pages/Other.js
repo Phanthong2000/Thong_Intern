@@ -1,17 +1,65 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Box, Grid, Stack, styled, Typography } from '@mui/material';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase-config';
+import BackgroundImage from '../components/other/BackgroundImage';
+import Information from '../components/other/Infomation';
+import Intro from '../components/other/Intro';
+import UpPost from '../components/other/UpPost';
+import Friends from '../components/other/Friends';
 
+const RootStyle = styled(Stack)(({ theme }) => ({
+  marginTop: '60px',
+  background: theme.palette.background,
+  height: '100%',
+  alignItems: 'center'
+}));
+const BoxContent = styled(Box)(({ theme }) => ({
+  width: '800px',
+  [theme.breakpoints.down('md')]: {
+    width: '95%'
+  }
+}));
 Other.prototype = {
   user: PropTypes.object
 };
 function Other({ user }) {
   const navigate = useNavigate();
   const { id } = useParams();
+  const [other, setOther] = useState({});
   useEffect(() => {
+    getDoc(doc(db, 'users', id)).then((snapshot) => {
+      setOther({
+        ...snapshot.data(),
+        id
+      });
+      document.title = `${snapshot.data().username} | Thong Intern`;
+    });
     if (id === user.id) navigate(`/home/profile/${user.id}`);
+    return null;
   }, [user]);
-  return <div style={{ marginTop: '200px' }}>{user.id}</div>;
+  return (
+    <RootStyle>
+      <BackgroundImage user={user} />
+      <Information user={user} />
+      <BoxContent>
+        <Grid container>
+          <Grid item xs={12} sm={12} lg={5} md={5}>
+            <Intro user={user} />
+            <Friends user={user} />
+          </Grid>
+          <Grid item lg={0.2} md={0.2}>
+            {' '}
+          </Grid>
+          <Grid item xs={12} sm={12} lg={6.8} md={6.8}>
+            <UpPost user={user} />
+          </Grid>
+        </Grid>
+      </BoxContent>
+    </RootStyle>
+  );
 }
 
 export default Other;

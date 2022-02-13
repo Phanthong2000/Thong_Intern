@@ -33,8 +33,8 @@ const BoxSearch = styled(Box)(({ theme }) => ({
   borderBottomRightRadius: '20px',
   width: '300px',
   top: '0px',
-  height: '200px',
-  color: '#000'
+  color: '#000',
+  zIndex: 999
 }));
 HomeNavbar.prototype = {
   user: PropTypes.object

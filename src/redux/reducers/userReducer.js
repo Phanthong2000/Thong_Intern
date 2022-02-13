@@ -10,7 +10,9 @@ import {
   ACTION_USER_OPEN_NOTIFICATIONS,
   ACTION_USER_OPEN_REQUESTS,
   ACTION_USER_CLOSE_LOADING_UPDATE_PROFILE,
-  ACTION_USER_OPEN_LOADING_UPDATE_PROFILE
+  ACTION_USER_OPEN_LOADING_UPDATE_PROFILE,
+  ACTION_USER_CONTACT_USER_AND_OTHER,
+  ACTION_USER_GET_ALL_FRIEND_USER
 } from '../actions/types';
 
 const defaultState = {
@@ -19,7 +21,12 @@ const defaultState = {
   isOpeningProfile: false,
   isOpeningNotifications: false,
   isOpeningRequests: false,
-  isLoadingUpdateProfile: false
+  isLoadingUpdateProfile: false,
+  contact: {
+    id: '',
+    status: ''
+  },
+  friends: []
 };
 const userReducer = (state = defaultState, action) => {
   switch (action.type) {
@@ -106,6 +113,19 @@ const userReducer = (state = defaultState, action) => {
       return {
         ...state,
         isLoadingUpdateProfile: false
+      };
+    case ACTION_USER_CONTACT_USER_AND_OTHER:
+      return {
+        ...state,
+        contact: {
+          id: action.payload.id,
+          status: action.payload.status
+        }
+      };
+    case ACTION_USER_GET_ALL_FRIEND_USER:
+      return {
+        ...state,
+        friends: action.payload
       };
     default:
       return state;

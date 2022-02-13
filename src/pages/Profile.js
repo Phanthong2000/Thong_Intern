@@ -14,6 +14,7 @@ import UserNotFound from '../components/profile/UserNotFound';
 import Post from '../components/post/Post';
 import { getAllPosts } from '../redux/actions/postAction';
 import Snack from '../components/Snack';
+import Friends from '../components/profile/Friends';
 
 const RootStyle = styled(Stack)(({ theme }) => ({
   marginTop: '60px',
@@ -37,7 +38,9 @@ function Profile({ user }) {
   const isLoadingUpdateProfile = useSelector((state) => state.user.isLoadingUpdateProfile);
   useEffect(() => {
     if (user.id !== id) navigate(`/home/other/${id}`);
-    document.title = `${user.username} | Thong Intern`;
+    getDoc(doc(db, 'users', id)).then((snapshot) => {
+      document.title = `${snapshot.data().username} | Thong Intern`;
+    });
     dispatch(getAllPosts(id, 'desc'));
     return null;
   }, [user]);
@@ -68,6 +71,7 @@ function Profile({ user }) {
         <Grid container>
           <Grid item xs={12} sm={12} lg={5} md={5}>
             <Intro user={user} />
+            <Friends user={user} />
           </Grid>
           <Grid item lg={0.2} md={0.2}>
             {' '}

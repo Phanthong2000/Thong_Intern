@@ -10,8 +10,11 @@ import {
   Grid,
   IconButton,
   InputBase,
+  Menu,
+  MenuItem,
   Modal,
   Paper,
+  Popover,
   Snackbar,
   Stack,
   styled,
@@ -19,10 +22,15 @@ import {
 } from '@mui/material';
 import { Icon } from '@iconify/react';
 import { Scrollbar } from 'smooth-scrollbar-react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { collection, getDocs } from 'firebase/firestore';
+import { trimEnd } from 'lodash';
 import { db } from '../../firebase-config';
-import { actionOpenSnackbar } from '../../redux/actions/postAction';
+import {
+  actionOpenSnackbar,
+  actionPostCloseCreatePost,
+  actionPostOpenTagPeople
+} from '../../redux/actions/postAction';
 
 const BoxModal = styled(Card)(({ theme }) => ({
   position: 'absolute',
@@ -35,10 +43,10 @@ const BoxModal = styled(Card)(({ theme }) => ({
   display: 'block'
 }));
 const Separate = styled(Divider)(({ theme }) => ({
-  margin: theme.spacing(2, 0, 2)
+  margin: theme.spacing(1, 0, 1)
 }));
 const Content = styled(Box)(() => ({
-  marginTop: '20px',
+  marginTop: '10px',
   minHeight: '300px'
 }));
 const InputContent = styled(InputBase)(() => ({
@@ -49,14 +57,27 @@ const InputContent = styled(InputBase)(() => ({
   minWidth: '50%'
 }));
 const BoxOptions = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(1, 1, 1),
+  padding: theme.spacing(0, 1, 0),
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between'
 }));
 const ImagePost = styled('img')(() => ({
-  height: '500px',
+  height: '400px',
   width: '100%'
+}));
+const ButtonPost = styled(Button)(({ theme }) => ({
+  width: '100%',
+  background: theme.palette.green,
+  fontFamily: 'inherit',
+  fontWeight: 'bold',
+  color: '#fff',
+  textTransform: 'none',
+  marginTop: '10px',
+  fontSize: '18px',
+  ':hover': {
+    backgroundColor: theme.palette.green
+  }
 }));
 CreatePost.prototype = {
   user: PropTypes.object
@@ -64,15 +85,19 @@ CreatePost.prototype = {
 function CreatePost({ user }) {
   const inputRef = React.useRef(null);
   const fileRef = React.useRef(null);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const open = Boolean(anchorEl);
   const dispatch = useDispatch();
   const [disabled, setDisabled] = useState('');
-  const [openModal, setOpenModal] = useState(true);
+  const isOpenCreatePost = useSelector((state) => state.post.isOpenCreatePost);
   const [status, setStatus] = useState('public');
   const [type, setType] = useState('text');
   const [background, setBackground] = useState('');
   const [textColorBackground, setTextColorBackground] = useState('');
   const [allBackground, setAllBackground] = useState([]);
+  const [contentText, setContentText] = useState('');
   const [image, setImage] = useState();
+  const tags = useSelector((state) => state.post.tags);
   useEffect(() => {
     const data = [];
     getDocs(collection(db, 'backgrounds'))
@@ -89,6 +114,12 @@ function CreatePost({ user }) {
       });
     return null;
   }, []);
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
   const chooseText = () => {
     setDisabled('');
     setType('text');
@@ -116,6 +147,57 @@ function CreatePost({ user }) {
           })
         );
       }
+    }
+  };
+  const checkDisablePost = () => {
+    if (type === 'image' && image.name.length > 0) return false;
+    if (type === 'background' && contentText.length > 0) return false;
+    if (type === 'text' && contentText.length > 0) return false;
+    return true;
+  };
+  const deleteImagePost = () => {
+    setDisabled('');
+    setType('text');
+    setBackground('');
+  };
+  const savePost = () => {
+    if (type === 'text') {
+      const post = {
+        contentText,
+        loves: [],
+        shares: [],
+        userId: user.id,
+        status,
+        tags: [],
+        type: 'text',
+        createdAt: new Date().getTime()
+      };
+      console.log(post);
+    }
+    if (type === 'background') {
+      const post = {
+        contentText,
+        background,
+        loves: [],
+        shares: [],
+        userId: user.id,
+        status,
+        tags: [],
+        type: 'text',
+        createdAt: new Date().getTime()
+      };
+      console.log(post);
+    } else {
+      const post = {
+        contentText,
+        loves: [],
+        shares: [],
+        userId: user.id,
+        status,
+        tags: [],
+        type: 'text',
+        createdAt: new Date().getTime()
+      };
     }
   };
   const BoxBackground = () => {
@@ -150,12 +232,12 @@ function CreatePost({ user }) {
     );
   };
   return (
-    <Modal open={openModal} onClose={() => setOpenModal(false)}>
+    <Modal open={isOpenCreatePost} onClose={() => dispatch(actionPostCloseCreatePost())}>
       <BoxModal>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Typography sx={{ fontSize: '20px', fontWeight: 'bold' }}>Create post</Typography>
           <IconButton
-            onClick={() => console.log(inputRef)}
+            onClick={() => dispatch(actionPostCloseCreatePost())}
             sx={{ background: 'lightgrey', '&:hover': { backgroundColor: '#f5f7f6' } }}
           >
             <Icon icon="eva:close-fill" />
@@ -172,6 +254,7 @@ function CreatePost({ user }) {
                 {user.username}
               </Typography>
               <Button
+                onClick={handleClick}
                 sx={{
                   width: '100px',
                   textTransform: 'none',
@@ -219,9 +302,14 @@ function CreatePost({ user }) {
                   fontSize: type === 'background' && background.length > 0 ? '20px' : null
                 }}
                 autoFocus
+                value={contentText}
                 onChange={(e) => {
                   inputRef.current = e.target;
-                  if (inputRef.current.offsetHeight > 172) setType('text');
+                  if (inputRef.current.offsetHeight > 172) {
+                    setDisabled('');
+                    setType('text');
+                  }
+                  setContentText(e.target.value);
                 }}
                 ref={inputRef}
                 multiline
@@ -233,6 +321,8 @@ function CreatePost({ user }) {
               <Box sx={{ display: 'block', maxHeight: '500px' }}>
                 <InputBase
                   multiline
+                  value={contentText}
+                  onChange={(e) => setContentText(e.target.value)}
                   placeholder={"What's on your mind"}
                   fullWidth
                   sx={{
@@ -240,8 +330,21 @@ function CreatePost({ user }) {
                     fontFamily: 'inherit'
                   }}
                 />
-                <ImagePost src={URL.createObjectURL(image)} />
-              </Box>{' '}
+                <Box>
+                  <IconButton
+                    onClick={deleteImagePost}
+                    sx={{
+                      position: 'absolute',
+                      background: 'lightgrey',
+                      right: '0px',
+                      '&:hover': { backgroundColor: '#f5f7f6' }
+                    }}
+                  >
+                    <Icon icon="eva:close-fill" />
+                  </IconButton>
+                  <ImagePost src={URL.createObjectURL(image)} />
+                </Box>
+              </Box>
             </Scrollbar>
           )}
         </Content>
@@ -268,7 +371,7 @@ function CreatePost({ user }) {
                 icon="bx:bxs-image-add"
               />
             </IconButton>
-            <IconButton>
+            <IconButton onClick={() => dispatch(actionPostOpenTagPeople())}>
               <Icon
                 style={{ color: '#07b8f2', width: '25px', height: '25px' }}
                 icon="fa-solid:user-tag"
@@ -276,6 +379,13 @@ function CreatePost({ user }) {
             </IconButton>
           </Box>
         </BoxOptions>
+        <ButtonPost
+          onClick={savePost}
+          sx={checkDisablePost() ? { background: 'lightgray', color: 'gray' } : null}
+          disabled={checkDisablePost()}
+        >
+          Post
+        </ButtonPost>
         <input
           onClick={(e) => {
             e.target.value = null;
@@ -286,6 +396,40 @@ function CreatePost({ user }) {
           style={{ display: 'none' }}
           type="file"
         />
+        <Popover
+          id="basic-menu"
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleClose}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'left'
+          }}
+          sx={{ display: 'block' }}
+        >
+          <Button
+            onClick={() => {
+              setStatus('public');
+              handleClose();
+            }}
+            sx={{ background: '#fff', textTransform: 'none', fontSize: '18px', color: '#000' }}
+            startIcon={<Icon icon="si-glyph:global" />}
+            endIcon={status === 'public' ? <Icon icon="ic:baseline-done" /> : null}
+          >
+            Public
+          </Button>
+          <Button
+            onClick={() => {
+              setStatus('private');
+              handleClose();
+            }}
+            sx={{ background: '#fff', textTransform: 'none', fontSize: '18px', color: '#000' }}
+            startIcon={<Icon icon="entypo:lock" />}
+            endIcon={status === 'private' ? <Icon icon="ic:baseline-done" /> : null}
+          >
+            Only me
+          </Button>
+        </Popover>
       </BoxModal>
     </Modal>
   );
