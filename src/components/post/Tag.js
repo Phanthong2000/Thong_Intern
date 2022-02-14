@@ -7,6 +7,7 @@ import { db } from '../../firebase-config';
 const Username = styled(Typography)(() => ({
   marginLeft: '3px',
   fontWeight: 'bold',
+  fontSize: '15px',
   ':hover': {
     textDecoration: 'underline',
     cursor: 'pointer'

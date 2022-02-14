@@ -9,7 +9,11 @@ import {
   ACTION_POST_OPEN_CREATE_POST,
   ACTION_POST_CLOSE_TAG_PEOPLE,
   ACTION_POST_OPEN_TAG_PEOPLE,
-  ACTION_POST_SET_TAGS
+  ACTION_POST_CLEAR_TAGS,
+  ACTION_POST_ADD_TAG,
+  ACTION_POST_REMOVE_TAG,
+  ACTION_POST_CLOSE_CONFIRM_DELETE_POST,
+  ACTION_POST_OPEN_CONFIRM_DELETE_POST
 } from './types';
 
 export const actionPostGetAll = (data) => ({
@@ -41,9 +45,23 @@ export const actionPostOpenTagPeople = () => ({
 export const actionPostCloseTagPeople = () => ({
   type: ACTION_POST_CLOSE_TAG_PEOPLE
 });
-export const actionPostSetTags = (data) => ({
-  type: ACTION_POST_SET_TAGS,
+export const actionPostClearTags = () => ({
+  type: ACTION_POST_CLEAR_TAGS
+});
+export const actionPostAddTag = (data) => ({
+  type: ACTION_POST_ADD_TAG,
   payload: data
+});
+export const actionPostRemoveTag = (data) => ({
+  type: ACTION_POST_REMOVE_TAG,
+  payload: data
+});
+export const actionPostOpenConfirmDeletePost = (data) => ({
+  type: ACTION_POST_OPEN_CONFIRM_DELETE_POST,
+  payload: data
+});
+export const actionPostCloseConfirmDeletePost = () => ({
+  type: ACTION_POST_CLOSE_CONFIRM_DELETE_POST
 });
 export const getAllPosts = (id, sort) => (dispatch) => {
   const posts = getDocs(query(collection(db, 'posts'), where('userId', '==', id)));

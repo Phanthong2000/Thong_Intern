@@ -1,15 +1,27 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Stack, styled, Typography } from '@mui/material';
+import PropTypes from 'prop-types';
+import BoxUserChat from '../components/chat/BoxUserChat';
+import BoxMessage from '../components/chat/BoxMessage';
 
-function Chat() {
-  const data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-
+const RootStyle = styled(Stack)(({ theme }) => ({
+  marginTop: '60px',
+  background: theme.palette.background,
+  height: '100%'
+}));
+Chat.prototype = {
+  user: PropTypes.object
+};
+function Chat({ user }) {
+  useEffect(() => {
+    document.title = 'Chat';
+    return () => null;
+  }, []);
   return (
-    <div id="chat">
-      {data.map((item, index) => (
-        <div key={index}>{item.author}</div>
-      ))}
-    </div>
+    <RootStyle direction="row">
+      <BoxUserChat user={user} />
+      <BoxMessage user={user} />
+    </RootStyle>
   );
 }
 

@@ -12,7 +12,7 @@ const sidebarConfig = [
   {
     title: 'chat',
     path: '/home/chat',
-    icon: 'mdi:message'
+    icon: 'uil:comment-message'
   }
 ];
 export default sidebarConfig;

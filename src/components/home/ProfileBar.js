@@ -54,9 +54,9 @@ function ProfileBar({ user }) {
       <IconButton size="large" aria-label="show 4 new mails" color="inherit">
         <Badge badgeContent={testBadge >= 1 ? 1 : null} color="error">
           {testBadge >= 1 ? (
-            <ChatBubble sx={{ color: '#30ab78' }} />
+            <Icon icon="uim:comment-message" style={{ color: '#30ab78' }} />
           ) : (
-            <ChatBubbleOutline sx={{ color: '#30ab78' }} />
+            <Icon icon="uil:comment-message" style={{ color: '#30ab78' }} />
           )}
         </Badge>
       </IconButton>

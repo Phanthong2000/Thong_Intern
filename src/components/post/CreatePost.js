@@ -23,13 +23,20 @@ import {
 import { Icon } from '@iconify/react';
 import { Scrollbar } from 'smooth-scrollbar-react';
 import { useDispatch, useSelector } from 'react-redux';
-import { collection, getDocs } from 'firebase/firestore';
+import { addDoc, collection, getDocs } from 'firebase/firestore';
+import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 import { trimEnd } from 'lodash';
-import { db } from '../../firebase-config';
+import {
+  actionUserCloseLoadingUpdateProfile,
+  actionUserOpenLoadingUpdateProfile
+} from '../../redux/actions/userAction';
+import { db, storage } from '../../firebase-config';
 import {
   actionOpenSnackbar,
   actionPostCloseCreatePost,
-  actionPostOpenTagPeople
+  actionPostOpenTagPeople,
+  actionPostClearTags,
+  getAllPosts
 } from '../../redux/actions/postAction';
 
 const BoxModal = styled(Card)(({ theme }) => ({
@@ -93,6 +100,7 @@ function CreatePost({ user }) {
   const [status, setStatus] = useState('public');
   const [type, setType] = useState('text');
   const [background, setBackground] = useState('');
+  const [textColor, setTextColor] = useState('');
   const [textColorBackground, setTextColorBackground] = useState('');
   const [allBackground, setAllBackground] = useState([]);
   const [contentText, setContentText] = useState('');
@@ -161,6 +169,8 @@ function CreatePost({ user }) {
     setBackground('');
   };
   const savePost = () => {
+    const tagIds = [];
+    tags.forEach((tag) => tagIds.push({ userId: tag.id }));
     if (type === 'text') {
       const post = {
         contentText,
@@ -168,11 +178,32 @@ function CreatePost({ user }) {
         shares: [],
         userId: user.id,
         status,
-        tags: [],
+        tags: tagIds,
         type: 'text',
         createdAt: new Date().getTime()
       };
-      console.log(post);
+      window.scrollTo(0, 0);
+      dispatch(actionUserOpenLoadingUpdateProfile());
+      addDoc(collection(db, 'posts'), post)
+        .then(() => {
+          dispatch(actionPostClearTags());
+          dispatch(actionUserCloseLoadingUpdateProfile());
+          dispatch(getAllPosts(user.id, 'desc'));
+          dispatch(actionPostCloseCreatePost());
+          dispatch(
+            actionOpenSnackbar({
+              status: true,
+              content: 'Post success',
+              type: 'success'
+            })
+          );
+        })
+        .then(() => {
+          window.location.reload();
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     }
     if (type === 'background') {
       const post = {
@@ -182,22 +213,91 @@ function CreatePost({ user }) {
         shares: [],
         userId: user.id,
         status,
-        tags: [],
-        type: 'text',
+        textColor,
+        tags: tagIds,
+        type: 'background',
         createdAt: new Date().getTime()
       };
-      console.log(post);
+      window.scrollTo(0, 0);
+      dispatch(actionUserOpenLoadingUpdateProfile());
+      addDoc(collection(db, 'posts'), post)
+        .then(() => {
+          dispatch(actionPostClearTags());
+          dispatch(actionUserCloseLoadingUpdateProfile());
+          dispatch(getAllPosts(user.id, 'desc'));
+          dispatch(actionPostCloseCreatePost());
+          dispatch(
+            actionOpenSnackbar({
+              status: true,
+              content: 'Post success',
+              type: 'success'
+            })
+          );
+        })
+        .then(() => {
+          window.location.reload();
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     } else {
-      const post = {
-        contentText,
-        loves: [],
-        shares: [],
-        userId: user.id,
-        status,
-        tags: [],
-        type: 'text',
-        createdAt: new Date().getTime()
+      const metadata = {
+        contentType: 'image/*'
       };
+      const storageRef = ref(storage, `post/${user.id}.${new Date().getTime()}`);
+      const uploadTask = uploadBytesResumable(storageRef, image, metadata);
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          switch (snapshot.state) {
+            case 'running':
+              dispatch(actionPostCloseCreatePost());
+              window.scrollTo(0, 0);
+              dispatch(actionUserOpenLoadingUpdateProfile());
+              break;
+            default:
+              console.log('ok');
+              break;
+          }
+        },
+        (error) => {
+          console.log(error);
+        },
+        () => {
+          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+            const post = {
+              contentFile: downloadURL,
+              contentText,
+              loves: [],
+              shares: [],
+              userId: user.id,
+              status,
+              tags: tagIds,
+              type: 'image',
+              createdAt: new Date().getTime()
+            };
+            addDoc(collection(db, 'posts'), post)
+              .then(() => {
+                dispatch(actionPostClearTags());
+                dispatch(actionUserCloseLoadingUpdateProfile());
+                dispatch(getAllPosts(user.id, 'desc'));
+                dispatch(
+                  actionOpenSnackbar({
+                    status: true,
+                    content: 'Post success',
+                    type: 'success'
+                  })
+                );
+              })
+              .then(() => {
+                window.location.reload();
+              })
+              .catch((error) => {
+                console.log(error);
+              });
+          });
+        }
+      );
     }
   };
   const BoxBackground = () => {
@@ -219,6 +319,7 @@ function CreatePost({ user }) {
         </Grid>
         {allBackground.map((item, index) => {
           const onChooseBackground = () => {
+            setTextColor(item.textColor);
             setBackground(item.url);
             setTextColorBackground(item.textColor);
           };
@@ -371,7 +472,10 @@ function CreatePost({ user }) {
                 icon="bx:bxs-image-add"
               />
             </IconButton>
-            <IconButton onClick={() => dispatch(actionPostOpenTagPeople())}>
+            <IconButton
+              sx={{ background: tags.length > 0 ? '#3713eb' : '#fff' }}
+              onClick={() => dispatch(actionPostOpenTagPeople())}
+            >
               <Icon
                 style={{ color: '#07b8f2', width: '25px', height: '25px' }}
                 icon="fa-solid:user-tag"

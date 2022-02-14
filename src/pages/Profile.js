@@ -15,6 +15,7 @@ import Post from '../components/post/Post';
 import { getAllPosts } from '../redux/actions/postAction';
 import Snack from '../components/Snack';
 import Friends from '../components/profile/Friends';
+import EmptyPost from '../components/profile/EmptyPost';
 
 const RootStyle = styled(Stack)(({ theme }) => ({
   marginTop: '60px',
@@ -79,7 +80,7 @@ function Profile({ user }) {
           <Grid item xs={12} sm={12} lg={6.8} md={6.8}>
             <UpPost user={user} />
             {allPosts.length === 0 ? (
-              <div>cc</div>
+              <EmptyPost />
             ) : (
               allPosts.map((item, index) => (
                 <div key={index}>

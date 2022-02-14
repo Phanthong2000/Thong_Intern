@@ -49,7 +49,7 @@ function Router() {
       children: [
         { element: <Navigate to="/home/app" replace /> },
         { path: 'app', element: <Home user={user} /> },
-        { path: 'chat', element: <Chat /> },
+        { path: 'chat', element: <Chat user={user} /> },
         { path: 'request-friends', element: <RequestFriends /> },
         { path: 'setting', element: <Setting /> },
         { path: 'other/:id', element: <Other user={user} /> },

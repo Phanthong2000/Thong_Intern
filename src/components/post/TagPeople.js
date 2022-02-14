@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Button,
   Card,
   Divider,
+  Grid,
   IconButton,
   InputBase,
   Modal,
@@ -13,7 +14,13 @@ import {
 import { Icon } from '@iconify/react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
-import { actionPostCloseTagPeople, actionPostSetTags } from '../../redux/actions/postAction';
+import { getDoc, doc } from 'firebase/firestore';
+import { Scrollbar } from 'smooth-scrollbar-react';
+import { db } from '../../firebase-config';
+import { actionPostCloseTagPeople } from '../../redux/actions/postAction';
+import { actionGetAllFriendUser } from '../../redux/actions/userAction';
+import ItemSuggestion from './ItemSuggestion';
+import ChipTag from './ChipTag';
 
 const BoxModal = styled(Card)(({ theme }) => ({
   position: 'absolute',
@@ -46,9 +53,17 @@ const InputSearch = styled(InputBase)(() => ({
   width: '90%',
   marginLeft: '5px'
 }));
+const BoxTag = styled(Grid)(({ theme }) => ({
+  border: `1px solid lightgrey`,
+  padding: theme.spacing(1, 1, 1),
+  minHeight: '50px',
+  maxHeight: '100px',
+  overflow: 'auto'
+}));
 const BoxSuggestion = styled(Box)(() => ({
-  height: '300px',
-  marginTop: '10px'
+  maxHeight: '250px',
+  marginTop: '10px',
+  display: 'flex'
 }));
 TagPeople.prototype = {
   user: PropTypes.object
@@ -57,10 +72,24 @@ function TagPeople({ user }) {
   const dispatch = useDispatch();
   const tags = useSelector((state) => state.post.tags);
   const isOpenTagPeople = useSelector((state) => state.post.isOpenTagPeople);
+  const friends = useSelector((state) => state.user.friends);
+  const [suggestions, setSuggestions] = useState([]);
   useEffect(() => {
-    console.log('tags');
+    getSuggestions();
     return null;
   }, [user]);
+  const getSuggestions = () => {
+    const data = [];
+    friends.forEach((friend) => {
+      getDoc(doc(db, 'users', friend.friendId)).then((snapshot) => {
+        data.push({
+          ...snapshot.data(),
+          id: snapshot.id
+        });
+        if (data.length === friends.length) setSuggestions(data);
+      });
+    });
+  };
   return (
     <Modal open={isOpenTagPeople} onClose={() => dispatch(actionPostCloseTagPeople())}>
       <BoxModal>
@@ -83,8 +112,21 @@ function TagPeople({ user }) {
           </BoxSearch>
           <ButtonDone>Done</ButtonDone>
         </Box>
+        <Box>
+          <Typography sx={{ color: 'gray', fontSize: '14px' }}>TAGGED</Typography>
+          <BoxTag container>
+            {tags.map((item, index) => (
+              <ChipTag tag={item} index={index} key={index} />
+            ))}
+          </BoxTag>
+        </Box>
         <BoxSuggestion>
-          <Typography sx={{ color: 'gray', fontSize: '14px' }}>SUGGESTIONS</Typography>
+          <Scrollbar alwaysShowTracks>
+            <Typography sx={{ color: 'gray', fontSize: '14px' }}>SUGGESTIONS</Typography>
+            {suggestions.map((item, index) => (
+              <ItemSuggestion key={index} friend={item} />
+            ))}
+          </Scrollbar>
         </BoxSuggestion>
       </BoxModal>
     </Modal>

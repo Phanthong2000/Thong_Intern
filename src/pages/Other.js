@@ -39,7 +39,7 @@ function Other({ user }) {
     });
     if (id === user.id) navigate(`/home/profile/${user.id}`);
     return null;
-  }, [user]);
+  }, [user, id]);
   return (
     <RootStyle>
       <BackgroundImage user={user} />

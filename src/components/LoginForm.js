@@ -127,7 +127,8 @@ function LoginForm() {
       setLoginFail('');
       const user = {
         id: data.docs.at(0).id,
-        ...data.docs.at(0).data()
+        ...data.docs.at(0).data(),
+        isOnline: true
       };
       // const userDoc = (await getDoc(doc(db, 'users', user.id))).data();
       const userDoc = doc(db, 'users', user.id);

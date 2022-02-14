@@ -7,7 +7,11 @@ import {
   ACTION_POST_OPEN_CREATE_POST,
   ACTION_POST_CLOSE_TAG_PEOPLE,
   ACTION_POST_OPEN_TAG_PEOPLE,
-  ACTION_POST_SET_TAGS
+  ACTION_POST_CLEAR_TAGS,
+  ACTION_POST_ADD_TAG,
+  ACTION_POST_REMOVE_TAG,
+  ACTION_POST_CLOSE_CONFIRM_DELETE_POST,
+  ACTION_POST_OPEN_CONFIRM_DELETE_POST
 } from '../actions/types';
 
 const defaultState = {
@@ -19,7 +23,11 @@ const defaultState = {
   },
   isOpenCreatePost: false,
   isOpenTagPeople: false,
-  tags: []
+  tags: [],
+  isOpenConfirmDeletePost: {
+    status: false,
+    postId: ''
+  }
 };
 const postReducer = (state = defaultState, action) => {
   switch (action.type) {
@@ -69,10 +77,40 @@ const postReducer = (state = defaultState, action) => {
         ...state,
         isOpenTagPeople: false
       };
-    case ACTION_POST_SET_TAGS:
+    case ACTION_POST_CLEAR_TAGS:
       return {
         ...state,
-        tags: action.payload
+        tags: []
+      };
+    case ACTION_POST_ADD_TAG:
+      return {
+        ...state,
+        tags: [...state.tags, action.payload]
+      };
+    case ACTION_POST_REMOVE_TAG:
+      return {
+        ...state,
+        tags: [
+          ...state.tags
+            .slice(0, action.payload)
+            .concat(...state.tags.slice(action.payload + 1, state.tags.length))
+        ]
+      };
+    case ACTION_POST_OPEN_CONFIRM_DELETE_POST:
+      return {
+        ...state,
+        isOpenConfirmDeletePost: {
+          status: true,
+          postId: action.payload
+        }
+      };
+    case ACTION_POST_CLOSE_CONFIRM_DELETE_POST:
+      return {
+        ...state,
+        isOpenConfirmDeletePost: {
+          status: false,
+          postId: ''
+        }
       };
     default:
       return state;

@@ -12,7 +12,9 @@ import {
   ACTION_USER_CLOSE_LOADING_UPDATE_PROFILE,
   ACTION_USER_OPEN_LOADING_UPDATE_PROFILE,
   ACTION_USER_CONTACT_USER_AND_OTHER,
-  ACTION_USER_GET_ALL_FRIEND_USER
+  ACTION_USER_GET_ALL_FRIEND_USER,
+  ACTION_USER_GET_USER_SEARCH,
+  ACTION_USER_SCROLL_TOP
 } from '../actions/types';
 
 const defaultState = {
@@ -26,7 +28,9 @@ const defaultState = {
     id: '',
     status: ''
   },
-  friends: []
+  friends: [],
+  search: [],
+  scrollTop: 0
 };
 const userReducer = (state = defaultState, action) => {
   switch (action.type) {
@@ -126,6 +130,16 @@ const userReducer = (state = defaultState, action) => {
       return {
         ...state,
         friends: action.payload
+      };
+    case ACTION_USER_GET_USER_SEARCH:
+      return {
+        ...state,
+        search: action.payload
+      };
+    case ACTION_USER_SCROLL_TOP:
+      return {
+        ...state,
+        scrollTop: state.scrollTop + 1
       };
     default:
       return state;

@@ -37,7 +37,6 @@ function Friends({ user }) {
   const { id } = useParams();
   useEffect(() => {
     dispatch(actionGetAllFriendUser(id));
-    console.log(friends);
     return null;
   }, [user]);
   const getQuantityFriend = () => {

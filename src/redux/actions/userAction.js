@@ -14,7 +14,9 @@ import {
   ACTION_USER_CLOSE_LOADING_UPDATE_PROFILE,
   ACTION_USER_OPEN_LOADING_UPDATE_PROFILE,
   ACTION_USER_CONTACT_USER_AND_OTHER,
-  ACTION_USER_GET_ALL_FRIEND_USER
+  ACTION_USER_GET_ALL_FRIEND_USER,
+  ACTION_USER_GET_USER_SEARCH,
+  ACTION_USER_SCROLL_TOP
 } from './types';
 
 export const actionUserOpenSearch = () => ({ type: ACTION_USER_OPEN_SEARCH });
@@ -40,6 +42,13 @@ export const actionUserContactUserAndOther = (data) => ({
 export const actionUserGetAllFriendUser = (data) => ({
   type: ACTION_USER_GET_ALL_FRIEND_USER,
   payload: data
+});
+export const actionUserGetUserSearch = (data) => ({
+  type: ACTION_USER_GET_USER_SEARCH,
+  payload: data
+});
+export const actionUserScrollTop = () => ({
+  type: ACTION_USER_SCROLL_TOP
 });
 export const actionGetContact = (userId, otherId) => async (dispatch) => {
   const contact1 = await getDocs(

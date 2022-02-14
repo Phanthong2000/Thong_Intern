@@ -31,7 +31,7 @@ const BoxSearch = styled(Box)(({ theme }) => ({
   background: '#fff',
   borderBottomLeftRadius: '20px',
   borderBottomRightRadius: '20px',
-  width: '300px',
+  width: '350px',
   top: '0px',
   color: '#000',
   zIndex: 999
@@ -55,7 +55,7 @@ function HomeNavbar({ user }) {
       </Toolbar>
       {isSearching ? (
         <BoxSearch>
-          <ListSearch />
+          <ListSearch user={user} />
         </BoxSearch>
       ) : null}
     </RootStyle>

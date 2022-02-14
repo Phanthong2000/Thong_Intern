@@ -23,6 +23,7 @@ import {
 } from '../../redux/actions/postAction';
 import CreatePost from '../post/CreatePost';
 import TagPeople from '../post/TagPeople';
+import ModalConfirmDeletePosts from '../post/ModalConfirmDeletePost';
 
 const RootStyle = styled(Card)(({ theme }) => ({
   marginTop: '20px',
@@ -76,6 +77,7 @@ function UpPost({ user }) {
   const [sort, setSort] = useState('desc');
   const isOpenCreatePost = useSelector((state) => state.post.isOpenCreatePost);
   const isOpenTagPeople = useSelector((state) => state.post.isOpenTagPeople);
+  const isOpenConfirmDeletePost = useSelector((state) => state.post.isOpenConfirmDeletePost);
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -96,7 +98,7 @@ function UpPost({ user }) {
     <RootStyle>
       <BoxUpPost>
         <Avatar sx={{ cursor: 'pointer', width: '50px', height: '50px' }} src={user.avatar} />
-        <ButtonUpPost onClick={() => dispatch(actionPostOpenTagPeople())}>
+        <ButtonUpPost onClick={() => dispatch(actionPostOpenCreatePost())}>
           What's on your mind
         </ButtonUpPost>
       </BoxUpPost>
@@ -133,6 +135,7 @@ function UpPost({ user }) {
       </BoxFilter>
       {isOpenTagPeople ? <TagPeople user={user} /> : null}
       {isOpenCreatePost ? <CreatePost user={user} /> : null}
+      {isOpenConfirmDeletePost.status ? <ModalConfirmDeletePosts /> : null}
     </RootStyle>
   );
 }

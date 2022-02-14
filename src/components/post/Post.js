@@ -8,6 +8,7 @@ import {
   Grid,
   IconButton,
   InputBase,
+  Popover,
   Stack,
   styled,
   Typography
@@ -15,7 +16,7 @@ import {
 import { Icon } from '@iconify/react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   doc,
   getDoc,
@@ -29,8 +30,9 @@ import {
 import ShowMore from 'react-show-more';
 import { db } from '../../firebase-config';
 import Comment from './Comment';
-import { getAllPosts } from '../../redux/actions/postAction';
+import { actionPostOpenConfirmDeletePost, getAllPosts } from '../../redux/actions/postAction';
 import Tag from './Tag';
+import ModalConfirmDeletePost from './ModalConfirmDeletePost';
 
 const RootStyle = styled(Card)(({ theme }) => ({
   marginTop: '10px',
@@ -58,13 +60,15 @@ const DotOnline = styled(Icon)(({ theme }) => ({
 const Username = styled(Typography)(() => ({
   fontWeight: 'bold',
   fontFamily: 'sans-serif',
-  fontSize: '14px'
+  fontSize: '13px'
 }));
 Post.prototype = {
   post: PropTypes.object,
   user: PropTypes.object
 };
 function Post({ user, post }) {
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const open = Boolean(anchorEl);
   const inputCommentRef = useRef('');
   const dispatch = useDispatch();
   const [userPost, setUserPost] = useState({});
@@ -116,6 +120,29 @@ function Post({ user, post }) {
       return <DateTime>{moment(post.createdAt).fromNow()}</DateTime>;
     return <DateTime>{moment(post.createdAt).format('MMMM D, YYYY')}</DateTime>;
   };
+  const ContentBackground = () => {
+    const BoxBackground = styled(Box)(({ theme }) => ({
+      backgroundImage: `url(${post.background})`,
+      width: '100%',
+      height: '400px',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center'
+    }));
+    const ContentBackground = styled(Typography)(() => ({
+      fontWeight: 'bold',
+      fontSize: '20px',
+      color: post.textColor,
+      width: '50%'
+    }));
+    if (post.type === 'background')
+      return (
+        <BoxBackground>
+          <ContentBackground>{post.contentText}</ContentBackground>
+        </BoxBackground>
+      );
+    return null;
+  };
   const ContentImage = () => {
     const Image = styled('img')(() => ({
       width: '100%',
@@ -123,6 +150,16 @@ function Post({ user, post }) {
     }));
     if (post.type === 'image') return <Image src={post.contentFile} alt="post" />;
     return null;
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+  const openOptionsPost = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const deletePost = () => {
+    dispatch(actionPostOpenConfirmDeletePost(post.id));
+    handleClose();
   };
   const InfoContact = () => {
     const BoxInfoContact = styled(Box)(({ theme }) => ({
@@ -213,7 +250,9 @@ function Post({ user, post }) {
               }
             ]
           };
-          updateDoc(doc(db, 'posts', post.id), postNew).then(() => dispatch(getAllPosts(user.id)));
+          updateDoc(doc(db, 'posts', post.id), postNew).then(() =>
+            dispatch(getAllPosts(user.id, 'desc'))
+          );
         });
       } else {
         getDoc(doc(db, 'posts', post.id)).then((snapshot) => {
@@ -225,11 +264,11 @@ function Post({ user, post }) {
             updateDoc(doc(db, 'posts', post.id), {
               ...postNew,
               loves: []
-            }).then(() => dispatch(getAllPosts(user.id)));
+            }).then(() => dispatch(getAllPosts(user.id, 'desc')));
           } else {
             updateDoc(doc(db, 'posts', post.id), {
               ...postNew
-            }).then(() => dispatch(getAllPosts(user.id)));
+            }).then(() => dispatch(getAllPosts(user.id, 'desc')));
           }
         });
       }
@@ -450,28 +489,76 @@ function Post({ user, post }) {
               <DotOnline icon="ci:dot-05-xl" style={userPost.isOnline ? null : { color: 'grey' }} />
             </Button>
             <Stack>
-              <Stack sx={{ display: 'flex', alignItems: 'center' }} direction="row">
+              <Box sx={{ display: 'flex', alignItems: 'center', textAlign: 'left' }}>
                 <Username>{userPost.username}</Username>
                 <Tags />
-              </Stack>
+              </Box>
               <Stack sx={{ display: 'flex', alignItems: 'center' }} direction="row">
                 <DatePost />
                 <StatusPost />
               </Stack>
             </Stack>
           </Stack>
-          <IconButton>
+          <IconButton onClick={openOptionsPost}>
             <Icon icon="bx:bx-dots-horizontal-rounded" />
           </IconButton>
+          <Popover
+            id="basic-menu"
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleClose}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'left'
+            }}
+            transformOrigin={{
+              vertical: 'center',
+              horizontal: 'right'
+            }}
+          >
+            <Stack sx={{ padding: '10px', background: '#fff' }}>
+              <Button
+                sx={{ color: 'gray', textTransform: 'none', justifyContent: 'left' }}
+                startIcon={<Icon style={{ marginLeft: '5px' }} icon="bytesize:edit" />}
+              >
+                Edit post
+              </Button>
+              <Button
+                sx={{ color: 'gray', textTransform: 'none', justifyContent: 'left' }}
+                startIcon={<StatusPost />}
+              >
+                Edit audience
+              </Button>
+              <Divider sx={{ margin: `10px 0px` }} />
+              <Button
+                onClick={deletePost}
+                sx={{ color: 'gray', textTransform: 'none', justifyContent: 'left' }}
+                startIcon={<Icon style={{ marginLeft: '5px' }} icon="ion:trash-outline" />}
+              >
+                Delete post
+              </Button>
+            </Stack>
+          </Popover>
         </BoxInfoUserPost>
-        <ShowMore
-          lines={4}
-          more={<Typography sx={{ fontWeight: 'bold', color: '#30ab78' }}>Show more</Typography>}
-          less={<Typography sx={{ fontWeight: 'bold', color: '#30ab78' }}>Show less</Typography>}
-        >
-          <Typography>{post.contentText}</Typography>
-        </ShowMore>
-        <ContentImage />
+        {post.type !== 'background' ? (
+          <>
+            <ShowMore
+              lines={4}
+              more={
+                <Typography sx={{ fontWeight: 'bold', color: '#30ab78' }}>Show more</Typography>
+              }
+              less={
+                <Typography sx={{ fontWeight: 'bold', color: '#30ab78' }}>Show less</Typography>
+              }
+            >
+              <Typography>{post.contentText}</Typography>
+            </ShowMore>
+            <ContentImage />
+          </>
+        ) : (
+          <ContentBackground />
+        )}
+
         <InfoContact />
         <ButtonContact />
         <Divider />
