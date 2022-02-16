@@ -1,22 +1,185 @@
-import React from 'react';
+import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { Stack, styled } from '@mui/material';
+import { Avatar, Box, Card, Skeleton, Stack, styled, Typography } from '@mui/material';
 import {} from '@iconify/react';
+import { useDispatch, useSelector } from 'react-redux';
+import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
+import { useBeforeunload } from 'react-beforeunload';
+import { actionChatGetChatbox, actionGetAllMessagesChatbox } from '../../redux/actions/chatAction';
+import { actionGetContact } from '../../redux/actions/userAction';
+import { db } from '../../firebase-config';
+import Message from './Message';
 
-const RootStyle = styled(Stack)(({ theme }) => ({
+const RootStyle = styled(Card)(({ theme }) => ({
   width: '100%',
-  maxHeight: '100%',
   background: '#fff',
-  marginLeft: '50px',
-  [theme.breakpoints.down('md')]: {
-    marginLeft: 0
-  }
+  maxHeight: '100%',
+  height: `100%`,
+  marginLeft: '10px',
+  marginTop: '10px',
+  display: 'block',
+  padding: theme.spacing(1, 1, 1)
 }));
+
 BoxMessage.prototype = {
   user: PropTypes.object
 };
+
 function BoxMessage({ user }) {
-  return <RootStyle>{user.username}</RootStyle>;
+  const scrollRef = useRef();
+  const chatbox = useSelector((state) => state.chat.chatbox);
+  const dispatch = useDispatch();
+  const contact = useSelector((state) => state.user.contact);
+  const messages = useSelector((state) => state.chat.messages);
+  const [messagesState, setMessagesState] = useState([]);
+  const isLoadingMessages = useSelector((state) => state.chat.isLoadingMessages);
+  const getAllMessage = () => {
+    getDocs(query(collection(db, 'messages'), where('chatboxId', '==', chatbox.id))).then(
+      (snapshots) => {
+        if (snapshots.empty) {
+          setMessagesState([]);
+        } else {
+          const messages = [];
+          snapshots.docs.forEach((message) => {
+            messages.push({ ...message.data(), id: message.id });
+          });
+          const messageSort = messages.sort((a, b) => a.createdAt - b.createdAt);
+          setMessagesState(messageSort);
+        }
+      }
+    );
+  };
+  useEffect(() => {
+    if (chatbox.id !== '') {
+      dispatch(actionGetContact(user.id, chatbox.user.id));
+      dispatch(actionGetAllMessagesChatbox(chatbox.id));
+    }
+    return () => null;
+  }, [user, chatbox]);
+  useMemo(() => {
+    console.log('dd');
+    getDocs(query(collection(db, 'messages'), where('chatboxId', '==', chatbox.id))).then(
+      (snapshots) => {
+        if (snapshots.empty) {
+          setMessagesState([]);
+        } else {
+          const messages = [];
+          snapshots.docs.forEach((message) => {
+            messages.push({ ...message.data(), id: message.id });
+          });
+          const messageSort = messages.sort((a, b) => a.createdAt - b.createdAt);
+          setMessagesState(messageSort);
+        }
+      }
+    );
+  }, [messages]);
+  const AlwaysScrollToBottom = () => {
+    const elementRef = useRef();
+    const ScrollTo = styled('div')(() => ({
+      color: '#000'
+    }));
+    useEffect(() => elementRef.current.scrollIntoView(), []);
+    return <ScrollTo ref={elementRef} />;
+  };
+  const ContentMessage = () => (
+    <Box
+      ref={scrollRef}
+      sx={{ display: 'block', maxHeight: '100%', width: '100%', overflowY: 'auto', flexGrow: 1 }}
+    >
+      {/* <Scrollbar ref={scrollRef} alwaysShowTracks> */}
+      <BoxUserEmptyMessage />
+      {messagesState.map((item, index) => (
+        <Message key={index} user={user} message={item} index={index} />
+      ))}
+      <AlwaysScrollToBottom />
+      {/* </Scrollbar> */}
+    </Box>
+  );
+  const BoxUserEmptyMessage = () => {
+    const BoxUser = styled(Box)(() => ({
+      width: '100%',
+      display: 'flex',
+      justifyContent: 'center',
+      textAlign: 'center',
+      marginTop: '50px'
+    }));
+    const Username = styled(Typography)(() => ({
+      fontWeight: 'bold',
+      fontFamily: 'inherit',
+      fontSize: '22px',
+      marginTop: '10px'
+    }));
+    const InfoDetail = styled(Typography)(() => ({
+      color: 'gray',
+      fontSize: '14px'
+    }));
+    const checkContact = () => {
+      if (contact.status === 'none') return `You aren't friend on Facebook`;
+      if (contact.status === 'friend') return `You're friend on Facebook`;
+      if (contact.status === 'sent') return `You sent request for ${chatbox.user.username}`;
+      return `${chatbox.user.username} is waiting for your respond`;
+    };
+    return (
+      <BoxUser>
+        <Box sx={{ textAlign: 'center' }}>
+          <Box sx={{ textAlign: 'center', display: 'flex', justifyContent: 'center' }}>
+            <Avatar sx={{ width: '100px', height: '100px' }} src={chatbox.user.avatar} />
+          </Box>
+          <Username>{chatbox.user.username}</Username>
+          <InfoDetail>ThongIntern</InfoDetail>
+          <InfoDetail>{checkContact()}</InfoDetail>
+        </Box>
+      </BoxUser>
+    );
+  };
+  const ContentMessageSkeleton = () => {
+    const width = 40 + Math.random() * (200 - 40);
+    const widthRound = Math.round(width);
+    const BoxSkeleton = styled(Box)(() => ({
+      width: '100%',
+      display: 'flex',
+      marginBottom: '10px',
+      justifyContent: widthRound % 2 === 0 ? 'start' : 'end',
+      flexDirection: widthRound % 2 === 0 ? 'row' : 'row-reverse'
+    }));
+    const CircleSkeleton = styled(Skeleton)(() => ({
+      width: '30px',
+      height: '30px'
+    }));
+    const MessageSkeleton = styled(Skeleton)(() => ({
+      width,
+      height: '60px',
+      marginLeft: widthRound % 2 === 0 ? '10px' : '0px',
+      marginTop: '0px',
+      borderRadius: '10px',
+      marginRight: '10px'
+    }));
+    return (
+      <Box sx={{ alignItems: 'end' }}>
+        <BoxSkeleton>
+          <CircleSkeleton variant="circular" />
+          <MessageSkeleton variant="rectangular" />
+        </BoxSkeleton>
+      </Box>
+    );
+  };
+  if (chatbox.id === '' || !isLoadingMessages)
+    return (
+      <RootStyle>
+        <ContentMessageSkeleton />
+        <ContentMessageSkeleton />
+        <ContentMessageSkeleton />
+        <ContentMessageSkeleton />
+        <ContentMessageSkeleton />
+        <ContentMessageSkeleton />
+        <ContentMessageSkeleton />
+      </RootStyle>
+    );
+  return (
+    <RootStyle>
+      <ContentMessage />
+    </RootStyle>
+  );
 }
 
 export default BoxMessage;

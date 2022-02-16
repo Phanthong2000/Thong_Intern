@@ -10,7 +10,7 @@ const RootStyle = styled(Box)(({ theme }) => ({
   position: 'fixed'
 }));
 const MenuBox = styled(Stack)(({ theme }) => ({
-  background: '#fff'
+  background: '#f5f7f6'
 }));
 const SpaceTop = styled('div')(({ theme }) => ({
   width: '80px',

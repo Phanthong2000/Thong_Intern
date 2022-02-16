@@ -42,7 +42,7 @@ function MenuItem({ path, icon }) {
     <>
       {location.pathname === path ? <Space1 /> : null}
       <RootStyle to={path}>
-        <WrapIcon style={location.pathname === path ? { background: '#fff' } : null}>
+        <WrapIcon style={location.pathname === path ? { background: '#f5f7f6' } : null}>
           <IconButton>
             <Icon
               icon={icon}
