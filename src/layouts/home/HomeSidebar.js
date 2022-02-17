@@ -1,8 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { styled, Box, Stack, IconButton } from '@mui/material';
+import PropTypes from 'prop-types';
+import { useDispatch, useSelector } from 'react-redux';
+
 import sidebarConfig from './SidebarConfig';
 import MenuItem from '../../components/home/MenuItem';
 import SettingItem from '../../components/home/SettingItem';
+import {
+  actionGetAllFriendRequest,
+  actionGetAllFriendUserManual
+} from '../../redux/actions/userAction';
 
 const RootStyle = styled(Box)(({ theme }) => ({
   width: '80px',
@@ -25,13 +32,26 @@ const SpaceBottom = styled(Box)(({ theme }) => ({
   justifyContent: 'center',
   alignItems: 'center'
 }));
-function HomeSidebar() {
+HomeSidebar.prototype = {
+  user: PropTypes.object
+};
+function HomeSidebar({ user }) {
+  const dispatch = useDispatch();
+  const friendRequests = useSelector((state) => state.user.friendRequests);
+  const isLoadingFriendRequest = useSelector((state) => state.user.isLoadingFriendRequest);
+  useEffect(() => {
+    if (user.id !== undefined) {
+      dispatch(actionGetAllFriendRequest(user.id));
+      dispatch(actionGetAllFriendUserManual(user.id));
+    }
+    return () => null;
+  }, [user]);
   return (
     <RootStyle>
       <SpaceTop />
       <MenuBox>
         {sidebarConfig.map((item, index) => (
-          <MenuItem key={index} path={item.path} icon={item.icon} />
+          <MenuItem user={user} key={index} path={item.path} icon={item.icon} />
         ))}
       </MenuBox>
       <SpaceBottom>

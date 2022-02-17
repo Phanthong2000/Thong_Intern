@@ -5,9 +5,9 @@ const sidebarConfig = [
     icon: 'mdi:home'
   },
   {
-    title: 'request-friends',
-    path: '/home/request-friends',
-    icon: 'mdi:account-box-multiple'
+    title: 'friends',
+    path: '/home/friends',
+    icon: 'fa-solid:user-friends'
   },
   {
     title: 'chat',

@@ -8,6 +8,7 @@ import BoxInfoUserChat from '../components/chat/BoxInfoUserChat';
 import OptionsMessage from '../components/chat/OptionsMessage';
 import Snack from '../components/Snack';
 import BoxImageMessage from '../components/chat/BoxImageMessage';
+import BoxFileMessage from '../components/chat/BoxFileMessage';
 
 const heightScreen = window.screen.height;
 const RootStyle = styled(Stack)(({ theme }) => ({
@@ -29,6 +30,7 @@ function Chat({ user }) {
       <BoxUserChat user={user} />
       <Stack sx={{ width: '100%', marginRight: '20px' }}>
         <BoxInfoUserChat user={user} />
+        <BoxFileMessage />
         <BoxMessage user={user} />
         {imageMessages.length !== 0 ? <BoxImageMessage user={user} /> : null}
         <OptionsMessage user={user} />

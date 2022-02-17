@@ -8,7 +8,9 @@ import {
   ACTION_CHAT_DELETE_MESSAGE,
   ACTION_CHAT_ADD_IMAGE_MESSAGE,
   ACTION_CHAT_DELETE_IMAGE_MESSAGE,
-  ACTION_CHAT_GET_IMAGE_MESSAGE
+  ACTION_CHAT_CLEAR_IMAGE_MESSAGE,
+  ACTION_CHAT_ADD_MESSAGE,
+  ACTION_CHAT_UPDATE_MESSAGE
 } from './types';
 
 export const actionChatGetAllChat = (data) => ({
@@ -36,6 +38,17 @@ export const actionChatAddImageMessage = (data) => ({
 });
 export const actionChatDeleteImageMessage = (data) => ({
   type: ACTION_CHAT_DELETE_IMAGE_MESSAGE,
+  payload: data
+});
+export const actionChatClearImageMessage = () => ({
+  type: ACTION_CHAT_CLEAR_IMAGE_MESSAGE
+});
+export const actionChatAddMessage = (data) => ({
+  type: ACTION_CHAT_ADD_MESSAGE,
+  payload: data
+});
+export const actionChatUpdateMessage = (data) => ({
+  type: ACTION_CHAT_UPDATE_MESSAGE,
   payload: data
 });
 export const actionGetAllChat = (id) => async (dispatch) => {

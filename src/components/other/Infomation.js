@@ -13,7 +13,7 @@ import {
   Popper
 } from '@mui/material';
 import { Icon } from '@iconify/react';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   collection,
@@ -30,7 +30,8 @@ import { db } from '../../firebase-config';
 import {
   actionGetAllFriendUser,
   actionGetContact,
-  actionUserContactUserAndOther
+  actionUserContactUserAndOther,
+  actionUserDeleteFriendRequest
 } from '../../redux/actions/userAction';
 import AvatarFriend from '../profile/AvatarFriend';
 
@@ -97,6 +98,7 @@ const WrapperButtonContact = styled(Box)(({ theme }) => ({
 }));
 const BoxAvatarFriends = styled(Box)(({ theme }) => ({
   width: '35%',
+  display: 'flex',
   [theme.breakpoints.down('md')]: {
     width: '100%',
     display: 'flex',
@@ -135,6 +137,7 @@ Information.prototype = {
   user: PropTypes.object
 };
 function Information({ user }) {
+  const { pathname } = useLocation();
   const { id } = useParams();
   const [other, setOther] = useState({});
   const contact = useSelector((state) => state.user.contact);
@@ -144,10 +147,10 @@ function Information({ user }) {
     getDoc(doc(db, 'users', id)).then((snapshot) => {
       setOther({ ...snapshot.data(), id });
     });
-    dispatch(actionGetAllFriendUser(other.id));
-    dispatch(actionGetContact(user.id, other.id));
-    return null;
-  }, [user]);
+    // dispatch(actionGetAllFriendUser(other.id));
+    dispatch(actionGetContact(user.id, id));
+    return () => null;
+  }, [user, pathname]);
   const getTotalFriends = () => {
     if (friends.length < 2) return `${friends.length} Friend`;
     return `${friends.length} Friends`;
@@ -172,6 +175,8 @@ function Information({ user }) {
         })
       );
       handleClose();
+      dispatch(actionUserDeleteFriendRequest(contact.id));
+      dispatch(actionGetAllFriendUser(other.id));
     });
   };
   const deleteRequest = () => {
@@ -284,12 +289,6 @@ function Information({ user }) {
       <WrapperInfo>
         <AvatarUser sx={{ '&:hover': { backgroundColor: 'transparent' } }} aria-label="Delete">
           <AvatarImage onClick={() => console.log('avatar')} src={other.avatar} />
-          <AvatarButton>
-            <Icon
-              icon="ic:baseline-photo-camera"
-              style={{ color: '#000', width: '20px', height: '20px' }}
-            />
-          </AvatarButton>
         </AvatarUser>
         <InfoUser>
           <Username>{other.username}</Username>
@@ -364,7 +363,12 @@ function Information({ user }) {
                   Add friend
                 </ButtonContact>
               ) : null}
-              <ButtonChat startIcon={<Icon icon="bi:chat-left-fill" />}>Chat</ButtonChat>
+              <ButtonChat
+                onClick={() => console.log(contact)}
+                startIcon={<Icon icon="bi:chat-left-fill" />}
+              >
+                Chat
+              </ButtonChat>
             </BoxButtonContact>
           </WrapperButtonContact>
         </InfoUser>

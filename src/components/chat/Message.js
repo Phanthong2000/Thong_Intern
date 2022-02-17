@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Avatar,
   Box,
@@ -13,7 +13,7 @@ import {
 import { Icon } from '@iconify/react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../firebase-config';
 import { actionChatDeleteMessage } from '../../redux/actions/chatAction';
@@ -36,6 +36,7 @@ const AvatarUserSent = styled(Avatar)(() => ({
 }));
 const BoxContentMessage = styled(Box)(({ theme }) => ({
   marginLeft: '10px',
+  heigh: '200px',
   background: theme.palette.background,
   padding: theme.spacing(1, 1, 1),
   borderRadius: '10px',
@@ -81,15 +82,17 @@ Message.prototype = {
   index: PropTypes.number
 };
 function Message({ user, message, index }) {
+  const contentRef = useRef(null);
   const dispatch = useDispatch();
   const [userSent, setUserSent] = useState({});
   const [showOptions, setShowOptions] = useState(false);
   const [anchorElReaction, setAnchorElReaction] = React.useState(null);
   const [anchorElDelete, setAnchorElDelete] = React.useState(null);
   const [nameReactChosen, setNameReactChosen] = useState('');
-  const [test, setTest] = useState({});
+  const [imageMessage, setImageMessage] = useState('');
   const [reaction, setReaction] = useState(message.reaction);
   const [isRestore, setIsRestore] = useState(message.isRestore);
+  const [heightContentText, setHeightContentText] = useState(0);
   const handleClickReaction = (event) => {
     setAnchorElReaction(event.currentTarget);
   };
@@ -106,7 +109,11 @@ function Message({ user, message, index }) {
   };
   const openReact = Boolean(anchorElReaction);
   const openDelete = Boolean(anchorElDelete);
+  const updateMessage = useSelector((state) => state.chat.updateMessage);
   useEffect(() => {
+    if (contentRef.current !== null) {
+      setHeightContentText(contentRef.current.clientHeight);
+    }
     getDoc(doc(db, 'users', message.senderId)).then((snapshot) => {
       setUserSent({
         ...snapshot.data(),
@@ -120,6 +127,12 @@ function Message({ user, message, index }) {
     }
     return () => null;
   }, [user]);
+  useEffect(() => {
+    if (message.type === 'image') setImageMessage(message.contentFile);
+    if (updateMessage.messageId === message.id) {
+      setImageMessage(updateMessage.image);
+    }
+  }, [updateMessage]);
   const BoxMessageUnsentUser = () => {
     const BoxUnsent = styled(Box)(({ theme }) => ({
       border: `1px solid lightgray`,
@@ -336,6 +349,15 @@ function Message({ user, message, index }) {
       </BoxChoose>
     );
   };
+  const BoxContentImageMessage = () => {
+    const ContentImage = styled('img')(() => ({
+      width: '150px',
+      height: '180px',
+      borderRadius: '20px'
+    }));
+    if (imageMessage === '') return <Icon icon="eos-icons:loading" />;
+    return <ContentImage src={imageMessage} />;
+  };
   if (user.id === message.senderId)
     return (
       <BoxMessageUserSender>
@@ -346,7 +368,14 @@ function Message({ user, message, index }) {
             sx={{ display: 'block', alignItems: 'center', width: '100%', justifyContent: 'end' }}
           >
             <Box
-              sx={{ display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'end' }}
+              onClick={() => console.log(contentRef.current.clientHeight)}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                width: '100%',
+                justifyContent: 'end',
+                minHeight: message.type === 'image' ? `${224 + heightContentText}px` : '24px'
+              }}
             >
               {showOptions ? (
                 <BoxOptionUser onMouseEnter={mouseEnterMessage} onMouseLeave={mouseLeaveMessage}>
@@ -472,7 +501,8 @@ function Message({ user, message, index }) {
                   marginLeft: '0px'
                 }}
               >
-                <Typography>{message.content}</Typography>
+                <Typography ref={contentRef}>{message.content}</Typography>
+                {message.type === 'image' ? <BoxContentImageMessage /> : null}
               </BoxContentMessage>
             </Box>
             <Box
@@ -499,9 +529,17 @@ function Message({ user, message, index }) {
         <BoxMessageUnsentOther />
       ) : (
         <Box sx={{ display: 'block', alignItems: 'center', width: '100%' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              width: '100%',
+              minHeight: message.type === 'image' ? `${200 + heightContentText}px` : '24px'
+            }}
+          >
             <BoxContentMessage onMouseEnter={mouseEnterMessage} onMouseLeave={mouseLeaveMessage}>
               <Typography>{message.content}</Typography>
+              {message.type === 'image' ? <BoxContentImageMessage /> : null}
             </BoxContentMessage>
             <BoxReactMessageOther />
             {showOptions ? (

@@ -49,7 +49,7 @@ function HomeLayout() {
   return (
     <RootStyle>
       <Responsive width="mdDown">
-        <HomeSidebar />
+        <HomeSidebar user={user} />
       </Responsive>
       <HomeNavbar user={user} />
       <MainStyle

@@ -8,12 +8,14 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import HomeLayout from './layouts/HomeLayout';
 import Chat from './pages/Chat';
-import RequestFriends from './pages/RequestFriends';
+import Friends from './pages/Friends';
 import Setting from './pages/Setting';
 import Profile from './pages/Profile';
 import Error from './pages/Error';
 import UserNotFound from './components/profile/UserNotFound';
 import Other from './pages/Other';
+import FriendRequests from './components/friend/FriendRequests';
+import AllFriends from './components/friend/AllFriends';
 
 function Router() {
   const navigate = useNavigate();
@@ -50,7 +52,15 @@ function Router() {
         { element: <Navigate to="/home/app" replace /> },
         { path: 'app', element: <Home user={user} /> },
         { path: 'chat', element: <Chat user={user} /> },
-        { path: 'request-friends', element: <RequestFriends /> },
+        {
+          path: 'friends',
+          element: <Friends user={user} />,
+          children: [
+            { path: 'friend-requests', element: <FriendRequests user={user} /> },
+            { path: 'all-friends', element: <AllFriends user={user} /> },
+            { element: <Navigate to="/home/friends/friend-requests" /> }
+          ]
+        },
         { path: 'setting', element: <Setting /> },
         { path: 'other/:id', element: <Other user={user} /> },
         { path: 'profile/:id', element: <Profile user={user} /> },
@@ -59,15 +69,15 @@ function Router() {
           element: <UserNotFound />
         }
       ]
-    },
-    {
-      path: '/error',
-      element: <Error />
-    },
-    {
-      path: '/*',
-      element: <Navigate to="/error" />
     }
+    // {
+    //   path: '/error',
+    //   element: <Error />
+    // },
+    // {
+    //   path: '/*',
+    //   element: <Navigate to="/error" />
+    // }
   ]);
 }
 

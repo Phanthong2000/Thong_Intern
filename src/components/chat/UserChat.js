@@ -14,7 +14,7 @@ import { Icon } from '@iconify/react';
 import { useDispatch, useSelector } from 'react-redux';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase-config';
-import { actionChatGetChatbox } from '../../redux/actions/chatAction';
+import { actionChatClearImageMessage, actionChatGetChatbox } from '../../redux/actions/chatAction';
 
 const RootStyle = styled(ListItemButton)(({ theme }) => ({
   width: '100%',
@@ -58,6 +58,7 @@ function UserChat({ chatbox }) {
     return () => null;
   }, []);
   const chooseUserChat = () => {
+    dispatch(actionChatClearImageMessage());
     dispatch(
       actionChatGetChatbox({
         id: chatbox.id,

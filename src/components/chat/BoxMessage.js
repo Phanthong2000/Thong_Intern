@@ -1,11 +1,16 @@
 import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { Avatar, Box, Card, Skeleton, Stack, styled, Typography } from '@mui/material';
-import {} from '@iconify/react';
+import { Icon } from '@iconify/react';
 import { useDispatch, useSelector } from 'react-redux';
+import { Scrollbar } from 'smooth-scrollbar-react';
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import { useBeforeunload } from 'react-beforeunload';
-import { actionChatGetChatbox, actionGetAllMessagesChatbox } from '../../redux/actions/chatAction';
+import {
+  actionChatGetChatbox,
+  actionChatUpdateMessage,
+  actionGetAllMessagesChatbox
+} from '../../redux/actions/chatAction';
 import { actionGetContact } from '../../redux/actions/userAction';
 import { db } from '../../firebase-config';
 import Message from './Message';
@@ -26,7 +31,7 @@ BoxMessage.prototype = {
 };
 
 function BoxMessage({ user }) {
-  const scrollRef = useRef();
+  const scrollRef = useRef(null);
   const chatbox = useSelector((state) => state.chat.chatbox);
   const dispatch = useDispatch();
   const contact = useSelector((state) => state.user.contact);
@@ -54,41 +59,52 @@ function BoxMessage({ user }) {
       dispatch(actionGetContact(user.id, chatbox.user.id));
       dispatch(actionGetAllMessagesChatbox(chatbox.id));
     }
+    // if (scrollRef) {
+    //   scrollRef.current.addEventListener('DOMNodeInserted', (event) => {
+    //     const { currentTarget: target } = event;
+    //     target.scroll({ top: target.scrollHeight, behavior: 'smooth' });
+    //   });
+    // }
     return () => null;
   }, [user, chatbox]);
-  useMemo(() => {
-    console.log('dd');
-    getDocs(query(collection(db, 'messages'), where('chatboxId', '==', chatbox.id))).then(
-      (snapshots) => {
-        if (snapshots.empty) {
-          setMessagesState([]);
-        } else {
-          const messages = [];
-          snapshots.docs.forEach((message) => {
-            messages.push({ ...message.data(), id: message.id });
-          });
-          const messageSort = messages.sort((a, b) => a.createdAt - b.createdAt);
-          setMessagesState(messageSort);
-        }
-      }
-    );
-  }, [messages]);
+  // useMemo(() => {
+  //   getDocs(query(collection(db, 'messages'), where('chatboxId', '==', chatbox.id))).then(
+  //     (snapshots) => {
+  //       if (snapshots.empty) {
+  //         setMessagesState([]);
+  //       } else {
+  //         const messages = [];
+  //         snapshots.docs.forEach((message) => {
+  //           messages.push({ ...message.data(), id: message.id });
+  //         });
+  //         const messageSort = messages.sort((a, b) => a.createdAt - b.createdAt);
+  //         setMessagesState(messageSort);
+  //       }
+  //     }
+  //   );
+  // }, [messages]);
   const AlwaysScrollToBottom = () => {
     const elementRef = useRef();
     const ScrollTo = styled('div')(() => ({
       color: '#000'
     }));
-    useEffect(() => elementRef.current.scrollIntoView(), []);
+    useEffect(() => elementRef.current.scrollIntoView(0, 100), []);
     return <ScrollTo ref={elementRef} />;
   };
   const ContentMessage = () => (
     <Box
       ref={scrollRef}
-      sx={{ display: 'block', maxHeight: '100%', width: '100%', overflowY: 'auto', flexGrow: 1 }}
+      sx={{
+        display: 'block',
+        maxHeight: '100%',
+        width: '100%',
+        overflowY: 'auto',
+        flexGrow: 1
+      }}
     >
-      {/* <Scrollbar ref={scrollRef} alwaysShowTracks> */}
+      {/* <Scrollbar alwaysShowTracks> */}
       <BoxUserEmptyMessage />
-      {messagesState.map((item, index) => (
+      {messages.map((item, index) => (
         <Message key={index} user={user} message={item} index={index} />
       ))}
       <AlwaysScrollToBottom />

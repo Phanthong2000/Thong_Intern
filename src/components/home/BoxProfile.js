@@ -16,7 +16,11 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { Icon } from '@iconify/react';
-import { actionUserLogout, actionUserCloseProfile } from '../../redux/actions/userAction';
+import {
+  actionUserLogout,
+  actionUserCloseProfile,
+  actionUserGetAllFriendRequest
+} from '../../redux/actions/userAction';
 
 const BootStyle = styled(Box)(({ theme }) => ({
   position: 'absolute',

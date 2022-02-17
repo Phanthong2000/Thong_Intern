@@ -1,15 +1,19 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Box, Button, Card, IconButton, InputBase, Skeleton, styled } from '@mui/material';
 import { Icon } from '@iconify/react';
 import PropTypes from 'prop-types';
-import { addDoc, collection, doc } from 'firebase/firestore';
+import { addDoc, collection, doc, updateDoc } from 'firebase/firestore';
 import { Scrollbar } from 'smooth-scrollbar-react';
+import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 import { useSelector, useDispatch } from 'react-redux';
 import { db, storage } from '../../firebase-config';
 import {
   actionGetAllMessagesChatbox,
   actionChatDeleteImageMessage,
-  actionChatAddImageMessage
+  actionChatAddImageMessage,
+  actionChatAddMessage,
+  actionChatClearImageMessage,
+  actionChatUpdateMessage
 } from '../../redux/actions/chatAction';
 import { actionOpenSnackbar } from '../../redux/actions/postAction';
 
@@ -65,11 +69,16 @@ OptionsMessage.prototype = {
 function OptionsMessage({ user }) {
   const fileRef = useRef(null);
   const chatbox = useSelector((state) => state.chat.chatbox);
+  const imageMessages = useSelector((state) => state.chat.imageMessages);
   const [isChatting, setIsChatting] = useState(false);
   const [messageText, setMessageText] = useState('');
   const [lineInput, setLineInput] = useState(1);
   const [type, setType] = useState('text');
   const dispatch = useDispatch();
+  useEffect(() => {
+    setMessageText('');
+    return () => null;
+  }, [chatbox]);
   const inputText = (text) => {
     setMessageText(text);
     if (text !== '') {
@@ -102,7 +111,55 @@ function OptionsMessage({ user }) {
     }
   };
   const sendMessage = () => {
-    if (messageText !== '') {
+    if (type === 'image' && imageMessages.length > 0) {
+      const message = {
+        chatboxId: chatbox.id,
+        content: messageText,
+        contentFile: '',
+        isRead: false,
+        type: 'image',
+        isRestore: false,
+        reaction: [],
+        senderId: user.id,
+        receiverId: chatbox.user.id,
+        createdAt: new Date().getTime()
+      };
+      addDoc(collection(db, 'messages'), message).then((docRef) => {
+        dispatch(actionChatClearImageMessage());
+        setMessageText('');
+        dispatch(actionGetAllMessagesChatbox(chatbox.id));
+        const metadata = {
+          contentType: 'image/*'
+        };
+        const storageRef = ref(storage, `messages/${user.id}.${new Date().getTime()}`);
+        const uploadTask = uploadBytesResumable(storageRef, imageMessages.at(0), metadata);
+        uploadTask.on(
+          'state_changed',
+          (snapshot) => {
+            switch (snapshot.state) {
+              case 'running':
+                break;
+              default:
+                break;
+            }
+          },
+          (error) => {
+            console.log(error);
+          },
+          () => {
+            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+              updateDoc(doc(db, 'messages', docRef.id), {
+                ...message,
+                contentFile: downloadURL
+              }).then(() => {
+                dispatch(actionChatUpdateMessage({ messageId: docRef.id, image: downloadURL }));
+              });
+            });
+          }
+        );
+      });
+    } else {
+      console.log(type);
       const message = {
         chatboxId: chatbox.id,
         content: messageText,
@@ -115,11 +172,11 @@ function OptionsMessage({ user }) {
         createdAt: new Date().getTime()
       };
       addDoc(collection(db, 'messages'), message)
-        .then(() => {
-          dispatch(actionGetAllMessagesChatbox(chatbox.id));
+        .then((docRef) => {
+          dispatch(actionChatAddMessage(message));
           setMessageText('');
           setIsChatting(false);
-          console.log('ok');
+          console.log('id add', docRef.id);
         })
         .catch((error) => {
           console.log(error);
@@ -167,7 +224,7 @@ function OptionsMessage({ user }) {
           <IconOption icon="carbon:face-satisfied-filled" />
         </IconButtonOption>
       </BoxInput>
-      {!isChatting ? (
+      {!isChatting && imageMessages.length === 0 ? (
         <IconButtonOption>
           <IconOption icon="fontisto:like" />
         </IconButtonOption>

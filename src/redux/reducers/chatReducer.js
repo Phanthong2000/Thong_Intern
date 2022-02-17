@@ -5,7 +5,10 @@ import {
   ACTION_CHAT_LOAD_ALL_MESSAGES_CHATBOX_SUCCESS,
   ACTION_CHAT_DELETE_MESSAGE,
   ACTION_CHAT_ADD_IMAGE_MESSAGE,
-  ACTION_CHAT_DELETE_IMAGE_MESSAGE
+  ACTION_CHAT_DELETE_IMAGE_MESSAGE,
+  ACTION_CHAT_ADD_MESSAGE,
+  ACTION_CHAT_CLEAR_IMAGE_MESSAGE,
+  ACTION_CHAT_UPDATE_MESSAGE
 } from '../actions/types';
 
 const defaultState = {
@@ -16,7 +19,11 @@ const defaultState = {
   },
   messages: [],
   isLoadingMessages: false,
-  imageMessages: []
+  imageMessages: [],
+  updateMessage: {
+    messageId: '',
+    image: ''
+  }
 };
 
 const chatReducer = (state = defaultState, action) => {
@@ -50,10 +57,20 @@ const chatReducer = (state = defaultState, action) => {
             .concat(...state.messages.slice(action.payload + 1, state.messages.length))
         ]
       };
+    case ACTION_CHAT_ADD_MESSAGE:
+      return {
+        ...state,
+        messages: [...state.messages, action.payload]
+      };
     case ACTION_CHAT_ADD_IMAGE_MESSAGE:
       return {
         ...state,
         imageMessages: [...state.imageMessages, action.payload]
+      };
+    case ACTION_CHAT_UPDATE_MESSAGE:
+      return {
+        ...state,
+        updateMessage: action.payload
       };
     case ACTION_CHAT_DELETE_IMAGE_MESSAGE:
       return {
@@ -63,6 +80,11 @@ const chatReducer = (state = defaultState, action) => {
             .slice(0, action.payload)
             .concat(...state.imageMessages.slice(action.payload + 1, state.imageMessages.length))
         ]
+      };
+    case ACTION_CHAT_CLEAR_IMAGE_MESSAGE:
+      return {
+        ...state,
+        imageMessages: []
       };
     default:
       return state;

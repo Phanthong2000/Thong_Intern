@@ -11,7 +11,9 @@ import {
   ACTION_POST_ADD_TAG,
   ACTION_POST_REMOVE_TAG,
   ACTION_POST_CLOSE_CONFIRM_DELETE_POST,
-  ACTION_POST_OPEN_CONFIRM_DELETE_POST
+  ACTION_POST_OPEN_CONFIRM_DELETE_POST,
+  ACTION_POST_GET_ALL_OTHER,
+  ACTION_POST_LOADING_GET_ALL_OTHER
 } from '../actions/types';
 
 const defaultState = {
@@ -27,7 +29,9 @@ const defaultState = {
   isOpenConfirmDeletePost: {
     status: false,
     postId: ''
-  }
+  },
+  postsOther: [],
+  isLoadingPostsOther: true
 };
 const postReducer = (state = defaultState, action) => {
   switch (action.type) {
@@ -111,6 +115,16 @@ const postReducer = (state = defaultState, action) => {
           status: false,
           postId: ''
         }
+      };
+    case ACTION_POST_GET_ALL_OTHER:
+      return {
+        ...state,
+        postsOther: action.payload
+      };
+    case ACTION_POST_LOADING_GET_ALL_OTHER:
+      return {
+        ...state,
+        isLoadingPostsOther: false
       };
     default:
       return state;

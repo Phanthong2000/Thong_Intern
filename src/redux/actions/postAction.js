@@ -13,7 +13,9 @@ import {
   ACTION_POST_ADD_TAG,
   ACTION_POST_REMOVE_TAG,
   ACTION_POST_CLOSE_CONFIRM_DELETE_POST,
-  ACTION_POST_OPEN_CONFIRM_DELETE_POST
+  ACTION_POST_OPEN_CONFIRM_DELETE_POST,
+  ACTION_POST_GET_ALL_OTHER,
+  ACTION_POST_LOADING_GET_ALL_OTHER
 } from './types';
 
 export const actionPostGetAll = (data) => ({
@@ -63,6 +65,13 @@ export const actionPostOpenConfirmDeletePost = (data) => ({
 export const actionPostCloseConfirmDeletePost = () => ({
   type: ACTION_POST_CLOSE_CONFIRM_DELETE_POST
 });
+export const actionPostGetAllOther = (data) => ({
+  type: ACTION_POST_GET_ALL_OTHER,
+  payload: data
+});
+export const actionPostGetLoadingAllOther = () => ({
+  type: ACTION_POST_LOADING_GET_ALL_OTHER
+});
 export const getAllPosts = (id, sort) => (dispatch) => {
   const posts = getDocs(query(collection(db, 'posts'), where('userId', '==', id)));
   if (posts.empty) {
@@ -85,4 +94,32 @@ export const getAllPosts = (id, sort) => (dispatch) => {
       }
     });
   }
+};
+
+export const getAllPostsOther = (id, sort) => (dispatch) => {
+  getDocs(
+    query(collection(db, 'posts'), where('userId', '==', id), where('status', '==', 'public'))
+  ).then((snapshots) => {
+    if (snapshots.empty) {
+      dispatch(actionPostGetAllOther([]));
+      dispatch(actionPostGetLoadingAllOther());
+    } else {
+      const posts = [];
+      snapshots.docs.forEach((post) => {
+        posts.push({
+          ...post.data(),
+          id: post.id
+        });
+      });
+      if (sort === 'desc') {
+        const postsSort = posts.sort((a, b) => b.createdAt - a.createdAt);
+        dispatch(actionPostGetAllOther(postsSort));
+        dispatch(actionPostGetLoadingAllOther());
+      } else {
+        const postsSort = posts.sort((a, b) => a.createdAt - b.createdAt);
+        dispatch(actionPostGetAllOther(postsSort));
+        dispatch(actionPostGetLoadingAllOther());
+      }
+    }
+  });
 };

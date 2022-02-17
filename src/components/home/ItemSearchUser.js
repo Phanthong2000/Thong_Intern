@@ -12,10 +12,15 @@ import {
 } from '@mui/material';
 import { Icon } from '@iconify/react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../firebase-config';
-import { actionUserCloseSearch, actionUserGetUserSearch } from '../../redux/actions/userAction';
+import {
+  actionGetContact,
+  actionTestSearch,
+  actionUserCloseSearch,
+  actionUserGetUserSearch
+} from '../../redux/actions/userAction';
 
 const RootStyle = styled(ListItemButton)(() => ({
   display: 'flex',
@@ -29,7 +34,9 @@ function ItemSearchUser({ search }) {
   const [userBySearch, setUserBySearch] = useState({});
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [isFriend, setIsFriend] = useState(false);
+  const contact = useSelector((state) => state.user.contact);
   const getContact = async (userId, otherId) => {
     const contact1 = await getDocs(
       query(
@@ -72,7 +79,12 @@ function ItemSearchUser({ search }) {
     return null;
   }, []);
   const chooseSearch = () => {
+    dispatch(actionGetContact(search.userId, search.content));
     navigate(`/home/other/${search.content}`);
+    if (pathname.includes('/home/other/')) {
+      navigate('/home/app');
+      dispatch(actionTestSearch(search.content));
+    }
     dispatch(actionUserCloseSearch());
     dispatch(actionUserGetUserSearch([]));
   };

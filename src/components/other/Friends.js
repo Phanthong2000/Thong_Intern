@@ -3,8 +3,11 @@ import PropTypes from 'prop-types';
 import { Box, Button, Card, Grid, Stack, styled, Typography } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { doc, getDoc } from 'firebase/firestore';
-import { actionGetAllFriendUser } from '../../redux/actions/userAction';
+import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
+import {
+  actionGetAllFriendUser,
+  actionGetAllFriendUserManual
+} from '../../redux/actions/userAction';
 import { db } from '../../firebase-config';
 import ItemFriend from '../profile/ItemFriend';
 
@@ -33,13 +36,56 @@ Friends.prototype = {
 };
 function Friends({ user }) {
   const friends = useSelector((state) => state.user.friends);
+  const friendManual = useSelector((state) => state.user.friendManual);
+  const [quantityMutualFriend, setQuantityMutualFriend] = useState(-1);
   const dispatch = useDispatch();
   const { id } = useParams();
+  const getAllFriendsSender = async () => {
+    const data1 = await getDocs(
+      query(collection(db, 'contacts'), where('senderId', '==', id), where('status', '==', true))
+    );
+    const data2 = await getDocs(
+      query(collection(db, 'contacts'), where('receiverId', '==', id), where('status', '==', true))
+    );
+    if (data1.empty && data2.empty) {
+      setQuantityMutualFriend(0);
+    }
+    const contacts = [];
+    data1.docs.forEach((contact) => {
+      contacts.push(contact.data().receiverId);
+    });
+    data2.docs.forEach((contact) => {
+      contacts.push(contact.data().senderId);
+    });
+    const temp = [];
+    if (friendManual.length >= contacts.length) {
+      contacts.forEach((friend) => {
+        if (friendManual.includes(friend)) {
+          temp.push(friend);
+        }
+      });
+    } else {
+      friendManual.forEach((friend) => {
+        if (contacts.includes(friend)) {
+          temp.push(friend);
+        }
+      });
+    }
+    setQuantityMutualFriend(temp.length);
+  };
+  useEffect(() => {
+    getAllFriendsSender();
+    return () => null;
+  }, [user, friendManual]);
   useEffect(() => {
     dispatch(actionGetAllFriendUser(id));
-    return null;
+    return () => null;
   }, [user]);
   const getQuantityFriend = () => {
+    if (quantityMutualFriend > 0) {
+      if (quantityMutualFriend === 1) return `1 mutual friend`;
+      return `${quantityMutualFriend} mutual friends`;
+    }
     if (friends.length === 1) return `1 friend`;
     return `${friends.length} friends`;
   };
@@ -54,7 +100,7 @@ function Friends({ user }) {
       </Stack>
       {friends.length > 0 ? (
         <Box>
-          <QuantityFriend>{getQuantityFriend()}</QuantityFriend>
+          {quantityMutualFriend > 0 ? <QuantityFriend>{getQuantityFriend()}</QuantityFriend> : null}
           <Grid sx={{ textAlign: 'center' }} container>
             {friends.map((item, index) => (
               <ItemFriend key={index} friend={item} />

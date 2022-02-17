@@ -1,4 +1,4 @@
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../firebase-config';
 import {
   ACTION_USER_CLOSE_SEARCH,
@@ -16,7 +16,12 @@ import {
   ACTION_USER_CONTACT_USER_AND_OTHER,
   ACTION_USER_GET_ALL_FRIEND_USER,
   ACTION_USER_GET_USER_SEARCH,
-  ACTION_USER_SCROLL_TOP
+  ACTION_USER_SCROLL_TOP,
+  ACTION_USER_GET_ALL_FRIEND_REQUESTS,
+  ACTION_USER_LOADING_GET_ALL_FRIEND_REQUESTS,
+  ACTION_USER_DELETE_FRIEND_REQUEST,
+  ACTION_USER_GET_ALL_FRIEND_USER_MANUAL,
+  TEST_SEARCH
 } from './types';
 
 export const actionUserOpenSearch = () => ({ type: ACTION_USER_OPEN_SEARCH });
@@ -49,6 +54,21 @@ export const actionUserGetUserSearch = (data) => ({
 });
 export const actionUserScrollTop = () => ({
   type: ACTION_USER_SCROLL_TOP
+});
+export const actionUserGetAllFriendRequest = (data) => ({
+  type: ACTION_USER_GET_ALL_FRIEND_REQUESTS,
+  payload: data
+});
+export const actionUserLoadingGetAllRequestFriend = () => ({
+  type: ACTION_USER_LOADING_GET_ALL_FRIEND_REQUESTS
+});
+export const actionUserDeleteFriendRequest = (data) => ({
+  type: ACTION_USER_DELETE_FRIEND_REQUEST,
+  payload: data
+});
+export const actionUserGetAllFriendUserManual = (data) => ({
+  type: ACTION_USER_GET_ALL_FRIEND_USER_MANUAL,
+  payload: data
 });
 export const actionGetContact = (userId, otherId) => async (dispatch) => {
   const contact1 = await getDocs(
@@ -134,3 +154,48 @@ export const actionGetAllFriendUser = (id) => async (dispatch) => {
   const contactSort = contacts.sort((a, b) => b.createdAt - a.createdAt);
   return dispatch(actionUserGetAllFriendUser(contactSort));
 };
+export const actionGetAllFriendRequest = (id) => (dispatch) => {
+  getDocs(
+    query(collection(db, 'contacts'), where('receiverId', '==', id), where('status', '==', false))
+  ).then((snapshots) => {
+    if (snapshots.empty) {
+      dispatch(actionUserGetAllFriendRequest([]));
+      dispatch(actionUserLoadingGetAllRequestFriend());
+    } else {
+      const requests = [];
+      snapshots.docs.forEach((request) => {
+        requests.push({
+          ...request.data(),
+          id: request.id
+        });
+      });
+      const requestsSort = requests.sort((a, b) => b.createdAt - a.createdAt);
+      dispatch(actionUserGetAllFriendRequest(requestsSort));
+      dispatch(actionUserLoadingGetAllRequestFriend());
+    }
+  });
+};
+export const actionGetAllFriendUserManual = (id) => async (dispatch) => {
+  const data1 = await getDocs(
+    query(collection(db, 'contacts'), where('senderId', '==', id), where('status', '==', true))
+  );
+  const data2 = await getDocs(
+    query(collection(db, 'contacts'), where('receiverId', '==', id), where('status', '==', true))
+  );
+  if (data1.empty && data2.empty) {
+    return dispatch(actionUserGetAllFriendUserManual([]));
+  }
+  const contacts = [];
+  data1.docs.forEach((contact) => {
+    contacts.push(contact.data().receiverId);
+  });
+  data2.docs.forEach((contact) => {
+    contacts.push(contact.data().senderId);
+  });
+  return dispatch(actionUserGetAllFriendUserManual(contacts));
+};
+
+export const actionTestSearch = (data) => ({
+  type: TEST_SEARCH,
+  payload: data
+});

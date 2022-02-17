@@ -3,12 +3,17 @@ import PropTypes from 'prop-types';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Box, Grid, Stack, styled, Typography } from '@mui/material';
 import { doc, getDoc } from 'firebase/firestore';
+import { useDispatch, useSelector } from 'react-redux';
+import { Icon } from '@iconify/react';
 import { db } from '../firebase-config';
 import BackgroundImage from '../components/other/BackgroundImage';
 import Information from '../components/other/Infomation';
 import Intro from '../components/other/Intro';
 import UpPost from '../components/other/UpPost';
 import Friends from '../components/other/Friends';
+import { getAllPostsOther } from '../redux/actions/postAction';
+import Post from '../components/other/Post';
+import EmptyPost from '../components/profile/EmptyPost';
 
 const RootStyle = styled(Stack)(({ theme }) => ({
   marginTop: '60px',
@@ -29,6 +34,9 @@ function Other({ user }) {
   const navigate = useNavigate();
   const { id } = useParams();
   const [other, setOther] = useState({});
+  const postsOther = useSelector((state) => state.post.postsOther);
+  const isLoadingPostsOther = useSelector((state) => state.post.isLoadingPostsOther);
+  const dispatch = useDispatch();
   useEffect(() => {
     getDoc(doc(db, 'users', id)).then((snapshot) => {
       setOther({
@@ -38,8 +46,19 @@ function Other({ user }) {
       document.title = `${snapshot.data().username} | Thong Intern`;
     });
     if (id === user.id) navigate(`/home/profile/${user.id}`);
-    return null;
+    dispatch(getAllPostsOther(id, 'desc'));
+    return () => null;
   }, [user, id]);
+  const BoxMessage = () => {
+    if (postsOther.length === 0) return <EmptyPost />;
+    return (
+      <>
+        {postsOther.map((item, index) => (
+          <Post key={index} post={item} user={user} />
+        ))}
+      </>
+    );
+  };
   return (
     <RootStyle>
       <BackgroundImage user={user} />
@@ -55,6 +74,20 @@ function Other({ user }) {
           </Grid>
           <Grid item xs={12} sm={12} lg={6.8} md={6.8}>
             <UpPost user={user} />
+            {isLoadingPostsOther ? (
+              <Icon
+                style={{
+                  width: '50px',
+                  height: '50px',
+                  marginTop: '50px',
+                  color: 'gray',
+                  marginLeft: '50%'
+                }}
+                icon="eos-icons:loading"
+              />
+            ) : (
+              <BoxMessage />
+            )}
           </Grid>
         </Grid>
       </BoxContent>
