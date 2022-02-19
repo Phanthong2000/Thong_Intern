@@ -3,6 +3,8 @@ import { Avatar, Box, Card, IconButton, Skeleton, styled, Typography } from '@mu
 import { Icon } from '@iconify/react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { callUser } from '../../utils/wssConnection';
 
 const RootStyle = styled(Card)(({ theme }) => ({
   padding: theme.spacing(1, 1, 1),
@@ -29,10 +31,16 @@ const ButtonOptions = styled(IconButton)(({ theme }) => ({
   marginRight: '10px'
 }));
 BoxInfoUserChat.prototype = {
-  user: PropTypes
+  user: PropTypes.object
 };
 function BoxInfoUserChat({ user }) {
   const chatbox = useSelector((state) => state.chat.chatbox);
+  const usersSocket = useSelector((state) => state.user.usersSocket);
+  const me = useSelector((state) => state.call.me);
+  const navigate = useNavigate();
+  const videoCall = () => {
+    navigate('/home/video-call');
+  };
   return (
     <RootStyle>
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -41,7 +49,12 @@ function BoxInfoUserChat({ user }) {
             <Avatar sx={{ width: '40px', height: '40px' }} src={chatbox.user.avatar} />
             <IsOnline
               icon="akar-icons:circle-fill"
-              style={{ color: !chatbox.user.isOnline ? 'gray' : null }}
+              style={{
+                color:
+                  usersSocket.find((socket) => socket.userId === chatbox.user.id) === undefined
+                    ? 'gray'
+                    : null
+              }}
             />
           </IconButton>
         ) : (
@@ -54,7 +67,9 @@ function BoxInfoUserChat({ user }) {
                 {chatbox.user.username}
               </Typography>
               <Typography sx={{ fontFamily: 'inherit', fontSize: '14px', color: 'gray' }}>
-                {chatbox.user.isOnline ? `Online` : `Offline`}
+                {usersSocket.find((socket) => socket.userId === chatbox.user.id) !== undefined
+                  ? `Online`
+                  : `Offline`}
               </Typography>
             </>
           ) : (
@@ -64,13 +79,13 @@ function BoxInfoUserChat({ user }) {
             </>
           )}
         </Box>
-      </Box>{' '}
+      </Box>
       {chatbox.id !== '' ? (
         <Box>
           <ButtonOptions>
             <Icon icon="fluent:call-48-filled" />
           </ButtonOptions>
-          <ButtonOptions>
+          <ButtonOptions onClick={videoCall}>
             <Icon icon="bi:camera-video-fill" />
           </ButtonOptions>
           <ButtonOptions>

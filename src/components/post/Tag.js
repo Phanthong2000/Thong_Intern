@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { styled, Typography } from '@mui/material';
+import { Box, styled, Typography } from '@mui/material';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase-config';
 
@@ -30,7 +30,13 @@ function Tag({ userId }) {
     getUserPost();
     return null;
   }, [userId]);
-  return <Username> {userTag.username}</Username>;
+  if (userTag.username === undefined) return null;
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', marginLeft: '3px' }}>
+      <Typography>is with</Typography>
+      <Username> {userTag.username}</Username>;
+    </Box>
+  );
 }
 
 export default Tag;

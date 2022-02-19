@@ -33,10 +33,6 @@ Friends.prototype = {
 function Friends({ user }) {
   const friends = useSelector((state) => state.user.friends);
   const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(actionGetAllFriendUser(user.id));
-    return null;
-  }, [user]);
   const getQuantityFriend = () => {
     if (friends.length === 1) return `1 friend`;
     return `${friends.length} friends`;

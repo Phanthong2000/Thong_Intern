@@ -21,7 +21,10 @@ import {
   ACTION_USER_LOADING_GET_ALL_FRIEND_REQUESTS,
   ACTION_USER_DELETE_FRIEND_REQUEST,
   ACTION_USER_GET_ALL_FRIEND_USER_MANUAL,
-  TEST_SEARCH
+  TEST_SEARCH,
+  ACTION_USER_GET_ALL_CONTACT_ONLINE,
+  ACTION_USER_GET_ALL_FRIEND_OTHER,
+  ACTION_USER_BROADCAST_SOCKET
 } from './types';
 
 export const actionUserOpenSearch = () => ({ type: ACTION_USER_OPEN_SEARCH });
@@ -48,6 +51,10 @@ export const actionUserGetAllFriendUser = (data) => ({
   type: ACTION_USER_GET_ALL_FRIEND_USER,
   payload: data
 });
+export const actionUserGetAllFriendOther = (data) => ({
+  type: ACTION_USER_GET_ALL_FRIEND_OTHER,
+  payload: data
+});
 export const actionUserGetUserSearch = (data) => ({
   type: ACTION_USER_GET_USER_SEARCH,
   payload: data
@@ -68,6 +75,10 @@ export const actionUserDeleteFriendRequest = (data) => ({
 });
 export const actionUserGetAllFriendUserManual = (data) => ({
   type: ACTION_USER_GET_ALL_FRIEND_USER_MANUAL,
+  payload: data
+});
+export const actionUserGetAllContactOnline = (data) => ({
+  type: ACTION_USER_GET_ALL_CONTACT_ONLINE,
   payload: data
 });
 export const actionGetContact = (userId, otherId) => async (dispatch) => {
@@ -154,6 +165,34 @@ export const actionGetAllFriendUser = (id) => async (dispatch) => {
   const contactSort = contacts.sort((a, b) => b.createdAt - a.createdAt);
   return dispatch(actionUserGetAllFriendUser(contactSort));
 };
+export const actionGetAllFriendOther = (id) => async (dispatch) => {
+  const data1 = await getDocs(
+    query(collection(db, 'contacts'), where('senderId', '==', id), where('status', '==', true))
+  );
+  const data2 = await getDocs(
+    query(collection(db, 'contacts'), where('receiverId', '==', id), where('status', '==', true))
+  );
+  if (data1.empty && data2.empty) {
+    return dispatch(actionUserGetAllFriendOther([]));
+  }
+  const contacts = [];
+  data1.docs.forEach((contact) => {
+    contacts.push({
+      friendId: contact.data().receiverId,
+      id: contact.id,
+      createdAt: contact.data().createdAt
+    });
+  });
+  data2.docs.forEach((contact) => {
+    contacts.push({
+      friendId: contact.data().senderId,
+      id: contact.id,
+      createdAt: contact.data().createdAt
+    });
+  });
+  const contactSort = contacts.sort((a, b) => b.createdAt - a.createdAt);
+  return dispatch(actionUserGetAllFriendOther(contactSort));
+};
 export const actionGetAllFriendRequest = (id) => (dispatch) => {
   getDocs(
     query(collection(db, 'contacts'), where('receiverId', '==', id), where('status', '==', false))
@@ -197,5 +236,9 @@ export const actionGetAllFriendUserManual = (id) => async (dispatch) => {
 
 export const actionTestSearch = (data) => ({
   type: TEST_SEARCH,
+  payload: data
+});
+export const actionUserBroadcastSocket = (data) => ({
+  type: ACTION_USER_BROADCAST_SOCKET,
   payload: data
 });

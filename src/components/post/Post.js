@@ -9,6 +9,7 @@ import {
   IconButton,
   InputBase,
   Popover,
+  Skeleton,
   Stack,
   styled,
   Typography
@@ -30,7 +31,11 @@ import {
 import ShowMore from 'react-show-more';
 import { db } from '../../firebase-config';
 import Comment from './Comment';
-import { actionPostOpenConfirmDeletePost, getAllPosts } from '../../redux/actions/postAction';
+import {
+  actionPostOpenConfirmDeletePost,
+  getAllPosts,
+  actionGetAllPostAllFriend
+} from '../../redux/actions/postAction';
 import Tag from './Tag';
 import ModalConfirmDeletePost from './ModalConfirmDeletePost';
 
@@ -101,7 +106,7 @@ function Post({ user, post }) {
   useEffect(() => {
     getUserPost();
     getCommentsByPostId();
-    return null;
+    return () => null;
   }, []);
   const StatusPost = () => {
     const IconStatus = styled(Icon)(() => ({
@@ -155,7 +160,7 @@ function Post({ user, post }) {
     setAnchorEl(null);
   };
   const openOptionsPost = (event) => {
-    setAnchorEl(event.currentTarget);
+    if (user.id === userPost.id) setAnchorEl(event.currentTarget);
   };
   const deletePost = () => {
     dispatch(actionPostOpenConfirmDeletePost(post.id));
@@ -250,9 +255,10 @@ function Post({ user, post }) {
               }
             ]
           };
-          updateDoc(doc(db, 'posts', post.id), postNew).then(() =>
-            dispatch(getAllPosts(user.id, 'desc'))
-          );
+          updateDoc(doc(db, 'posts', post.id), postNew).then(() => {
+            dispatch(getAllPosts(user.id, 'desc'));
+            dispatch(actionGetAllPostAllFriend(user.id));
+          });
         });
       } else {
         getDoc(doc(db, 'posts', post.id)).then((snapshot) => {
@@ -264,11 +270,17 @@ function Post({ user, post }) {
             updateDoc(doc(db, 'posts', post.id), {
               ...postNew,
               loves: []
-            }).then(() => dispatch(getAllPosts(user.id, 'desc')));
+            }).then(() => {
+              dispatch(getAllPosts(user.id, 'desc'));
+              dispatch(actionGetAllPostAllFriend(user.id));
+            });
           } else {
             updateDoc(doc(db, 'posts', post.id), {
               ...postNew
-            }).then(() => dispatch(getAllPosts(user.id, 'desc')));
+            }).then(() => {
+              dispatch(getAllPosts(user.id, 'desc'));
+              dispatch(actionGetAllPostAllFriend(user.id));
+            });
           }
         });
       }
@@ -414,7 +426,6 @@ function Post({ user, post }) {
           <Grid item xs={10} sm={10} md={10} lg={10} xl={10}>
             <WrapperComment>
               <InputBase
-                autoFocus
                 type="text"
                 onChange={(e) => {
                   inputCommentRef.current = e.target.value;
@@ -485,12 +496,20 @@ function Post({ user, post }) {
                 '&:focus': { backgroundColor: 'transparent' }
               }}
             >
-              <Avatar src={userPost.avatar} />
+              {userPost.avatar === undefined ? (
+                <Skeleton sx={{ width: '40px', height: '40px' }} variant="circular" />
+              ) : (
+                <Avatar src={userPost.avatar} />
+              )}
               <DotOnline icon="ci:dot-05-xl" style={userPost.isOnline ? null : { color: 'grey' }} />
             </Button>
             <Stack>
               <Box sx={{ display: 'flex', alignItems: 'center', textAlign: 'left' }}>
-                <Username>{userPost.username}</Username>
+                {userPost.username === undefined ? (
+                  <Skeleton variant="text" sx={{ width: '100px', height: '20px' }} />
+                ) : (
+                  <Username>{userPost.username}</Username>
+                )}
                 <Tags />
               </Box>
               <Stack sx={{ display: 'flex', alignItems: 'center' }} direction="row">
@@ -551,7 +570,7 @@ function Post({ user, post }) {
                 <Typography sx={{ fontWeight: 'bold', color: '#30ab78' }}>Show less</Typography>
               }
             >
-              <Typography>{post.contentText}</Typography>
+              <Typography sx={{ maxWidth: '100%' }}>{post.contentText}</Typography>
             </ShowMore>
             <ContentImage />
           </>

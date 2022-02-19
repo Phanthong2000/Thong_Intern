@@ -10,7 +10,8 @@ import {
   Typography,
   Button,
   Popover,
-  Popper
+  Popper,
+  Skeleton
 } from '@mui/material';
 import { Icon } from '@iconify/react';
 import { useLocation, useParams } from 'react-router-dom';
@@ -28,6 +29,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../../firebase-config';
 import {
+  actionGetAllFriendOther,
   actionGetAllFriendUser,
   actionGetContact,
   actionUserContactUserAndOther,
@@ -61,12 +63,9 @@ const AvatarImage = styled(Avatar)(() => ({
   border: '2px solid #30ab78',
   cursor: 'pointer'
 }));
-const AvatarButton = styled(IconButton)(({ theme }) => ({
-  position: 'absolute',
-  zIndex: 2,
-  bottom: '5px',
-  right: '5px',
-  background: theme.palette.background
+const SkeletonAvatar = styled(Skeleton)(() => ({
+  width: '100px',
+  height: '100px'
 }));
 const InfoUser = styled(Stack)(({ theme }) => ({
   width: '78%',
@@ -142,18 +141,17 @@ function Information({ user }) {
   const [other, setOther] = useState({});
   const contact = useSelector((state) => state.user.contact);
   const dispatch = useDispatch();
-  const friends = useSelector((state) => state.user.friends);
+  const friendsOther = useSelector((state) => state.user.friendsOther);
   useEffect(() => {
     getDoc(doc(db, 'users', id)).then((snapshot) => {
       setOther({ ...snapshot.data(), id });
     });
-    // dispatch(actionGetAllFriendUser(other.id));
     dispatch(actionGetContact(user.id, id));
     return () => null;
   }, [user, pathname]);
   const getTotalFriends = () => {
-    if (friends.length < 2) return `${friends.length} Friend`;
-    return `${friends.length} Friends`;
+    if (friendsOther.length < 2) return `${friendsOther.length} Friend`;
+    return `${friendsOther.length} Friends`;
   };
   const [anchorEl, setAnchorEl] = React.useState(null);
   const handleClick = (event) => {
@@ -255,8 +253,8 @@ function Information({ user }) {
     return null;
   };
   const GetBoxAvatarFriend = () => {
-    if (friends.length <= 4) {
-      const temp = friends.slice(0, friends.length);
+    if (friendsOther.length <= 4) {
+      const temp = friendsOther.slice(0, friendsOther.length);
       return (
         <BoxAvatarFriends>
           {temp.map((item, index) => (
@@ -265,7 +263,7 @@ function Information({ user }) {
         </BoxAvatarFriends>
       );
     }
-    const temp = friends.slice(0, 3);
+    const temp = friendsOther.slice(0, 3);
     return (
       <BoxAvatarFriends>
         {temp.map((item, index) => (
@@ -288,10 +286,18 @@ function Information({ user }) {
     <RootStyle>
       <WrapperInfo>
         <AvatarUser sx={{ '&:hover': { backgroundColor: 'transparent' } }} aria-label="Delete">
-          <AvatarImage onClick={() => console.log('avatar')} src={other.avatar} />
+          {user.id === undefined ? (
+            <SkeletonAvatar variant="circular" />
+          ) : (
+            <AvatarImage onClick={() => console.log('avatar')} src={other.avatar} />
+          )}
         </AvatarUser>
         <InfoUser>
-          <Username>{other.username}</Username>
+          {user.id === undefined ? (
+            <Skeleton variant="text" sx={{ width: '150px', height: '33px' }} />
+          ) : (
+            <Username>{other.username}</Username>
+          )}
           <TotalFriend>{getTotalFriends()}</TotalFriend>
           <WrapperButtonContact>
             <GetBoxAvatarFriend />
@@ -356,9 +362,7 @@ function Information({ user }) {
                   Remove
                 </ButtonContact>
               ) : null}
-              {contact.status !== 'sent' &&
-              contact.status !== 'received' &&
-              contact.status !== 'friend' ? (
+              {contact.status === 'none' ? (
                 <ButtonContact onClick={addFriend} startIcon={<Icon icon="bx:bxs-user-plus" />}>
                   Add friend
                 </ButtonContact>

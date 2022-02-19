@@ -9,6 +9,7 @@ import {
   IconButton,
   InputBase,
   Popover,
+  Skeleton,
   Stack,
   styled,
   Typography
@@ -101,7 +102,7 @@ function Post({ user, post }) {
   useEffect(() => {
     getUserPost();
     getCommentsByPostId();
-    return null;
+    return () => null;
   }, []);
   const StatusPost = () => {
     const IconStatus = styled(Icon)(() => ({
@@ -432,13 +433,7 @@ function Post({ user, post }) {
   };
   const Tags = () => {
     if (post.tags.length === 0) return null;
-    if (post.tags.length === 1)
-      return (
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Typography sx={{ marginLeft: '3px' }}> is with </Typography>
-          <Tag userId={post.tags.at(0).userId} />
-        </Box>
-      );
+    if (post.tags.length === 1) return <Tag userId={post.tags.at(0).userId} />;
     if (post.tags.length === 2)
       return (
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -473,12 +468,20 @@ function Post({ user, post }) {
                 '&:focus': { backgroundColor: 'transparent' }
               }}
             >
-              <Avatar src={userPost.avatar} />
+              {userPost.avatar === undefined ? (
+                <Skeleton sx={{ width: '40px', height: '40px' }} variant="circular" />
+              ) : (
+                <Avatar src={userPost.avatar} />
+              )}
               <DotOnline icon="ci:dot-05-xl" style={userPost.isOnline ? null : { color: 'grey' }} />
             </Button>
             <Stack>
               <Box sx={{ display: 'flex', alignItems: 'center', textAlign: 'left' }}>
-                <Username>{userPost.username}</Username>
+                {userPost.username === undefined ? (
+                  <Skeleton variant="text" sx={{ width: '150px', height: '20px' }} />
+                ) : (
+                  <Username>{userPost.username}</Username>
+                )}
                 <Tags />
               </Box>
               <Stack sx={{ display: 'flex', alignItems: 'center' }} direction="row">
@@ -487,7 +490,7 @@ function Post({ user, post }) {
               </Stack>
             </Stack>
           </Stack>
-          <IconButton onClick={openOptionsPost}>
+          <IconButton>
             <Icon icon="bx:bx-dots-horizontal-rounded" />
           </IconButton>
           <Popover

@@ -23,7 +23,6 @@ function AvatarMutualFriend({ mutualFriendId, margin, zIndex }) {
   useEffect(() => {
     if (mutualFriendId !== undefined)
       getDoc(doc(db, 'users', mutualFriendId)).then((snapshot) => {
-        console.log(snapshot.data());
         setUserMutualFriend({
           ...snapshot.data(),
           id: snapshot.id

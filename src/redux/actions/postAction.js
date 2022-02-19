@@ -15,7 +15,9 @@ import {
   ACTION_POST_CLOSE_CONFIRM_DELETE_POST,
   ACTION_POST_OPEN_CONFIRM_DELETE_POST,
   ACTION_POST_GET_ALL_OTHER,
-  ACTION_POST_LOADING_GET_ALL_OTHER
+  ACTION_POST_LOADING_GET_ALL_OTHER,
+  ACTION_POST_GET_ALL_POST_ALL_FRIEND,
+  ACTION_POST_LOADING_GET_ALL_POST_ALL_FRIEND
 } from './types';
 
 export const actionPostGetAll = (data) => ({
@@ -72,6 +74,105 @@ export const actionPostGetAllOther = (data) => ({
 export const actionPostGetLoadingAllOther = () => ({
   type: ACTION_POST_LOADING_GET_ALL_OTHER
 });
+export const actionPostGetAllPostAllFriend = (data) => ({
+  type: ACTION_POST_GET_ALL_POST_ALL_FRIEND,
+  payload: data
+});
+export const actionPostLoadingGetAllPostAllFriend = () => ({
+  type: ACTION_POST_LOADING_GET_ALL_POST_ALL_FRIEND
+});
+export const actionGetAllPostAllFriend = (id) => (dispatch) => {
+  const allPostUser = [];
+  getDocs(
+    query(collection(db, 'posts'), where('userId', '==', id), where('status', '==', 'public'))
+  )
+    .then((snapshots) => {
+      if (!snapshots.empty) {
+        snapshots.docs.forEach((post) => {
+          allPostUser.push({
+            ...post.data(),
+            id: post.id
+          });
+        });
+      }
+    })
+    .then(() => {
+      getDocs(
+        query(collection(db, 'contacts'), where('senderId', '==', id), where('status', '==', true))
+      ).then((snapshots) => {
+        let count = 0;
+        if (!snapshots.empty) {
+          snapshots.docs.forEach((contact) => {
+            // count += 1;
+            // console.log('1', count);
+            getDocs(
+              query(
+                collection(db, 'posts'),
+                where('userId', '==', contact.data().receiverId),
+                where('status', '==', 'public')
+              )
+            )
+              .then((posts) => {
+                count += 1;
+                // console.log('2', count);
+                if (!posts.empty) {
+                  posts.docs.forEach((post) => {
+                    allPostUser.push({
+                      ...post.data(),
+                      id: post.id
+                    });
+                  });
+                }
+              })
+              .then(() => {
+                if (count === snapshots.size) {
+                  getDocs(
+                    query(
+                      collection(db, 'contacts'),
+                      where('receiverId', '==', id),
+                      where('status', '==', true)
+                    )
+                  ).then((snapshots2) => {
+                    let count2 = 0;
+                    if (!snapshots2.empty) {
+                      snapshots2.docs.forEach((contact2) => {
+                        getDocs(
+                          query(
+                            collection(db, 'posts'),
+                            where('userId', '==', contact2.data().senderId),
+                            where('status', '==', 'public')
+                          )
+                        )
+                          .then((posts2) => {
+                            count2 += 1;
+                            if (!posts2.empty) {
+                              posts2.docs.forEach((post) => {
+                                allPostUser.push({
+                                  ...post.data(),
+                                  id: post.id
+                                });
+                              });
+                            }
+                          })
+                          .then(() => {
+                            if (count2 === snapshots2.size) {
+                              const allPostUserSort = allPostUser.sort(
+                                (a, b) => b.createdAt - a.createdAt
+                              );
+                              dispatch(actionPostGetAllPostAllFriend(allPostUserSort));
+                              dispatch(actionPostLoadingGetAllPostAllFriend());
+                            }
+                          });
+                      });
+                    }
+                  });
+                }
+              });
+          });
+        }
+      });
+    });
+};
 export const getAllPosts = (id, sort) => (dispatch) => {
   const posts = getDocs(query(collection(db, 'posts'), where('userId', '==', id)));
   if (posts.empty) {

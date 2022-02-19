@@ -18,7 +18,6 @@ import { getDoc, doc } from 'firebase/firestore';
 import { Scrollbar } from 'smooth-scrollbar-react';
 import { db } from '../../firebase-config';
 import { actionPostCloseTagPeople } from '../../redux/actions/postAction';
-import { actionGetAllFriendUser } from '../../redux/actions/userAction';
 import ItemSuggestion from './ItemSuggestion';
 import ChipTag from './ChipTag';
 

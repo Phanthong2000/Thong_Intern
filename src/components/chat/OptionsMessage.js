@@ -1,5 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Box, Button, Card, IconButton, InputBase, Skeleton, styled } from '@mui/material';
+import {
+  Box,
+  Button,
+  Card,
+  IconButton,
+  InputBase,
+  Popover,
+  Skeleton,
+  styled,
+  Typography
+} from '@mui/material';
 import { Icon } from '@iconify/react';
 import PropTypes from 'prop-types';
 import { addDoc, collection, doc, updateDoc } from 'firebase/firestore';
@@ -13,9 +23,14 @@ import {
   actionChatAddImageMessage,
   actionChatAddMessage,
   actionChatClearImageMessage,
-  actionChatUpdateMessage
+  actionChatUpdateMessage,
+  actionGetAllChat,
+  actionGetAllChatSort
 } from '../../redux/actions/chatAction';
 import { actionOpenSnackbar } from '../../redux/actions/postAction';
+import GifMessage from './Gif';
+import StickerMessage from './StickerMessage';
+import ReactionMessage from './ReactionMessage';
 
 const RootStyle = styled(Card)(({ theme }) => ({
   width: '100%',
@@ -68,17 +83,36 @@ OptionsMessage.prototype = {
 };
 function OptionsMessage({ user }) {
   const fileRef = useRef(null);
+  const chatboxs = useSelector((state) => state.chat.chatboxs);
   const chatbox = useSelector((state) => state.chat.chatbox);
   const imageMessages = useSelector((state) => state.chat.imageMessages);
   const [isChatting, setIsChatting] = useState(false);
   const [messageText, setMessageText] = useState('');
   const [lineInput, setLineInput] = useState(1);
   const [type, setType] = useState('text');
+  const [anchorElGif, setAnchorElGif] = React.useState(null);
+  const [anchorElSticker, setAnchorElSticker] = React.useState(null);
+  const handleClickGif = (event) => {
+    setAnchorElGif(event.currentTarget);
+  };
+
+  const handleCloseGif = () => {
+    setAnchorElGif(null);
+  };
+  const handleClickSticker = (event) => {
+    setAnchorElSticker(event.currentTarget);
+  };
+
+  const handleCloseSticker = () => {
+    setAnchorElSticker(null);
+  };
+  const openGif = Boolean(anchorElGif);
+  const openGSticker = Boolean(anchorElSticker);
   const dispatch = useDispatch();
   useEffect(() => {
     setMessageText('');
     return () => null;
-  }, [chatbox]);
+  }, [chatbox, chatboxs]);
   const inputText = (text) => {
     setMessageText(text);
     if (text !== '') {
@@ -153,6 +187,12 @@ function OptionsMessage({ user }) {
                 contentFile: downloadURL
               }).then(() => {
                 dispatch(actionChatUpdateMessage({ messageId: docRef.id, image: downloadURL }));
+                updateDoc(doc(db, 'chatboxs', chatbox.id), {
+                  ...chatbox,
+                  updatedAt: new Date().getTime()
+                }).then(() => {
+                  dispatch(actionGetAllChatSort(user.id));
+                });
               });
             });
           }
@@ -174,9 +214,14 @@ function OptionsMessage({ user }) {
       addDoc(collection(db, 'messages'), message)
         .then((docRef) => {
           dispatch(actionChatAddMessage(message));
-          setMessageText('');
-          setIsChatting(false);
-          console.log('id add', docRef.id);
+          updateDoc(doc(db, 'chatboxs', chatbox.id), {
+            ...chatbox,
+            updatedAt: new Date().getTime()
+          }).then(() => {
+            setMessageText('');
+            setIsChatting(false);
+            dispatch(actionGetAllChatSort(user.id));
+          });
         })
         .catch((error) => {
           console.log(error);
@@ -203,12 +248,44 @@ function OptionsMessage({ user }) {
       <IconButtonOption onClick={chooseMessage}>
         <IconOption icon="gridicons:image-multiple" />
       </IconButtonOption>
-      <IconButtonOption>
+      <IconButtonOption onClick={handleClickSticker}>
         <IconOption icon="fluent:sticker-24-filled" />
       </IconButtonOption>
-      <IconButtonOption>
+      <Popover
+        id="simple-popover"
+        open={openGSticker}
+        anchorEl={anchorElSticker}
+        onClose={handleCloseSticker}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'center'
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center'
+        }}
+      >
+        <ReactionMessage close={handleCloseSticker} user={user} />
+      </Popover>
+      <IconButtonOption onClick={handleClickGif}>
         <IconOption icon="mdi:file-gif-box" />
       </IconButtonOption>
+      <Popover
+        id="simple-popover"
+        open={openGif}
+        anchorEl={anchorElGif}
+        onClose={handleCloseGif}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'center'
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center'
+        }}
+      >
+        <GifMessage close={handleCloseGif} user={user} />
+      </Popover>
       <BoxInput>
         <Scrollbar alwaysShowTracks>
           <InputMessage

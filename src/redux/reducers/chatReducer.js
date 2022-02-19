@@ -8,7 +8,8 @@ import {
   ACTION_CHAT_DELETE_IMAGE_MESSAGE,
   ACTION_CHAT_ADD_MESSAGE,
   ACTION_CHAT_CLEAR_IMAGE_MESSAGE,
-  ACTION_CHAT_UPDATE_MESSAGE
+  ACTION_CHAT_UPDATE_MESSAGE,
+  ACTION_CHAT_GET_CHATBOX_HOME
 } from '../actions/types';
 
 const defaultState = {
@@ -23,6 +24,10 @@ const defaultState = {
   updateMessage: {
     messageId: '',
     image: ''
+  },
+  chatboxHome: {
+    status: false,
+    user: {}
   }
 };
 
@@ -85,6 +90,11 @@ const chatReducer = (state = defaultState, action) => {
       return {
         ...state,
         imageMessages: []
+      };
+    case ACTION_CHAT_GET_CHATBOX_HOME:
+      return {
+        ...state,
+        chatboxHome: action.payload
       };
     default:
       return state;

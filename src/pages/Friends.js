@@ -14,6 +14,7 @@ import { Icon } from '@iconify/react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { actionGetAllFriendRequest, actionGetAllFriendUser } from '../redux/actions/userAction';
+import { actionChatGetChatbox } from '../redux/actions/chatAction';
 
 const heightScreen = window.innerHeight;
 const RootStyle = styled(Box)(({ theme }) => ({
@@ -82,6 +83,15 @@ function Friends({ user }) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(
+      actionChatGetChatbox({
+        id: '',
+        user: {}
+      })
+    );
+    return () => null;
+  }, []);
   const goToFriendRequests = () => {
     navigate('/home/friends/friend-requests');
   };

@@ -16,11 +16,7 @@ import PropTypes from 'prop-types';
 import { Icon } from '@iconify/react';
 import { useDispatch, useSelector } from 'react-redux';
 import { db } from '../../firebase-config';
-import {
-  actionGetAllFriendUser,
-  actionUserCloseSearch,
-  actionUserGetUserSearch
-} from '../../redux/actions/userAction';
+import { actionUserCloseSearch, actionUserGetUserSearch } from '../../redux/actions/userAction';
 import ItemSearchUser from './ItemSearchUser';
 import ItemSearchText from './ItemSearchText';
 

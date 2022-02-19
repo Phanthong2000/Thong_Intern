@@ -14,6 +14,8 @@ import Friends from '../components/other/Friends';
 import { getAllPostsOther } from '../redux/actions/postAction';
 import Post from '../components/other/Post';
 import EmptyPost from '../components/profile/EmptyPost';
+import { actionGetAllFriendOther } from '../redux/actions/userAction';
+import { actionChatGetChatbox } from '../redux/actions/chatAction';
 
 const RootStyle = styled(Stack)(({ theme }) => ({
   marginTop: '60px',
@@ -47,6 +49,13 @@ function Other({ user }) {
     });
     if (id === user.id) navigate(`/home/profile/${user.id}`);
     dispatch(getAllPostsOther(id, 'desc'));
+    dispatch(actionGetAllFriendOther(id));
+    dispatch(
+      actionChatGetChatbox({
+        id: '',
+        user: {}
+      })
+    );
     return () => null;
   }, [user, id]);
   const BoxMessage = () => {

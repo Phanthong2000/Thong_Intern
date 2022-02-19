@@ -16,6 +16,7 @@ import { getAllPosts } from '../redux/actions/postAction';
 import Snack from '../components/Snack';
 import Friends from '../components/profile/Friends';
 import EmptyPost from '../components/profile/EmptyPost';
+import { actionChatGetChatbox } from '../redux/actions/chatAction';
 
 const RootStyle = styled(Stack)(({ theme }) => ({
   marginTop: '60px',
@@ -36,15 +37,33 @@ function Profile({ user }) {
   const allPosts = useSelector((state) => state.post.posts);
   const { id } = useParams();
   const dispatch = useDispatch();
+  const [quantityPost, setQuantityPost] = useState(-1);
   const isLoadingUpdateProfile = useSelector((state) => state.user.isLoadingUpdateProfile);
   useEffect(() => {
-    if (user.id !== id) navigate(`/home/other/${id}`);
+    if (user.id !== undefined) {
+      if (user.id !== id) navigate(`/home/other/${id}`);
+    }
     getDoc(doc(db, 'users', id)).then((snapshot) => {
       document.title = `${snapshot.data().username} | Thong Intern`;
     });
     dispatch(getAllPosts(id, 'desc'));
-    return null;
+    dispatch(
+      actionChatGetChatbox({
+        id: '',
+        user: {}
+      })
+    );
+    setQuantityPost(allPosts.length);
+    return () => null;
   }, [user]);
+  const BoxPost = () => {
+    if (quantityPost.length === 0) return <EmptyPost />;
+    return allPosts.map((item, index) => (
+      <div key={index}>
+        <Post user={user} post={item} />
+      </div>
+    ));
+  };
   return (
     <RootStyle sx={{ alignItems: 'center' }}>
       {isLoadingUpdateProfile ? (
@@ -79,14 +98,19 @@ function Profile({ user }) {
           </Grid>
           <Grid item xs={12} sm={12} lg={6.8} md={6.8}>
             <UpPost user={user} />
-            {allPosts.length === 0 ? (
-              <EmptyPost />
+            {quantityPost < 0 ? (
+              <Icon
+                style={{
+                  width: '50px',
+                  height: '50px',
+                  marginTop: '50px',
+                  color: 'gray',
+                  marginLeft: '50%'
+                }}
+                icon="eos-icons:loading"
+              />
             ) : (
-              allPosts.map((item, index) => (
-                <div key={index}>
-                  <Post user={user} post={item} />
-                </div>
-              ))
+              <BoxPost />
             )}
           </Grid>
         </Grid>

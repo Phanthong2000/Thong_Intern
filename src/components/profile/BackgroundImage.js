@@ -1,6 +1,16 @@
 import React, { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Card, IconButton, Button, styled, Snackbar, Alert, Typography } from '@mui/material';
+import {
+  Box,
+  Card,
+  IconButton,
+  Button,
+  styled,
+  Snackbar,
+  Alert,
+  Typography,
+  Skeleton
+} from '@mui/material';
 import { getDownloadURL, ref, uploadBytes, uploadBytesResumable } from 'firebase/storage';
 import { doc, updateDoc } from 'firebase/firestore';
 import { Icon } from '@iconify/react';
@@ -33,6 +43,14 @@ const CoverButton = styled(IconButton)(() => ({
   background: '#fff',
   zIndex: 2
 }));
+const SkeletonCover = styled(Skeleton)(({ theme }) => ({
+  width: '80%',
+  height: '400px',
+  borderRadius: theme.spacing(0, 0, 2, 2),
+  [theme.breakpoints.down('md')]: {
+    width: '100%'
+  }
+}));
 InfoMain.prototype = {
   user: PropTypes.object
 };
@@ -46,7 +64,7 @@ function InfoMain({ user }) {
   const [choosing, setChoosing] = useState(false);
   useEffect(() => {
     setBackground(user.background);
-    return null;
+    return () => null;
   }, [user]);
   const chooseBackground = () => {
     fileRef.current.click();
@@ -172,12 +190,16 @@ function InfoMain({ user }) {
   return (
     <RootStyle>
       {!choosing ? null : <ChangeBackgroundBar />}
-      <CoverImage
-        onMouseLeave={() => setShowEditCover('none')}
-        onMouseEnter={() => setShowEditCover('flex')}
-        on
-        src={background}
-      />
+      {user.id === undefined ? (
+        <SkeletonCover variant="rectangular" />
+      ) : (
+        <CoverImage
+          onMouseLeave={() => setShowEditCover('none')}
+          onMouseEnter={() => setShowEditCover('flex')}
+          on
+          src={background}
+        />
+      )}
       <input
         onClick={(e) => {
           e.target.value = null;

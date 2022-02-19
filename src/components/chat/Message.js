@@ -16,7 +16,7 @@ import moment from 'moment';
 import { useDispatch, useSelector } from 'react-redux';
 import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../firebase-config';
-import { actionChatDeleteMessage } from '../../redux/actions/chatAction';
+import { actionChatDeleteMessage, actionGetAllChatSort } from '../../redux/actions/chatAction';
 
 const BoxMessageUserSender = styled(Box)(() => ({
   width: '100%',
@@ -82,6 +82,7 @@ Message.prototype = {
   index: PropTypes.number
 };
 function Message({ user, message, index }) {
+  const chatbox = useSelector((state) => state.chat.chatbox);
   const contentRef = useRef(null);
   const dispatch = useDispatch();
   const [userSent, setUserSent] = useState({});
@@ -235,11 +236,19 @@ function Message({ user, message, index }) {
       setReaction(reactionNew);
       setNameReactChosen('');
       handleCloseReaction();
+      updateDoc(doc(db, 'messages', message.id), {
+        ...message,
+        reaction: reactionNew
+      });
     } else {
       const reactionNew = reaction.filter((item) => item.userId !== user.id);
       setReaction([...reactionNew, { react: 'like', userId: user.id }]);
       setNameReactChosen('like');
       handleCloseReaction();
+      updateDoc(doc(db, 'messages', message.id), {
+        ...message,
+        reaction: [...reactionNew, { react: 'like', userId: user.id }]
+      });
     }
   };
   const loveMessage = () => {
@@ -248,11 +257,19 @@ function Message({ user, message, index }) {
       setReaction(reactionNew);
       setNameReactChosen('');
       handleCloseReaction();
+      updateDoc(doc(db, 'messages', message.id), {
+        ...message,
+        reaction: reactionNew
+      });
     } else {
       const reactionNew = reaction.filter((item) => item.userId !== user.id);
       setReaction([...reactionNew, { react: 'love', userId: user.id }]);
       setNameReactChosen('love');
       handleCloseReaction();
+      updateDoc(doc(db, 'messages', message.id), {
+        ...message,
+        reaction: [...reactionNew, { react: 'love', userId: user.id }]
+      });
     }
   };
   const smileMessage = () => {
@@ -261,11 +278,19 @@ function Message({ user, message, index }) {
       setReaction(reactionNew);
       setNameReactChosen('');
       handleCloseReaction();
+      updateDoc(doc(db, 'messages', message.id), {
+        ...message,
+        reaction: reactionNew
+      });
     } else {
       const reactionNew = reaction.filter((item) => item.userId !== user.id);
       setReaction([...reactionNew, { react: 'smile', userId: user.id }]);
       setNameReactChosen('smile');
       handleCloseReaction();
+      updateDoc(doc(db, 'messages', message.id), {
+        ...message,
+        reaction: [...reactionNew, { react: 'smile', userId: user.id }]
+      });
     }
   };
   const wowMessage = () => {
@@ -274,11 +299,19 @@ function Message({ user, message, index }) {
       setReaction(reactionNew);
       setNameReactChosen('');
       handleCloseReaction();
+      updateDoc(doc(db, 'messages', message.id), {
+        ...message,
+        reaction: reactionNew
+      });
     } else {
       const reactionNew = reaction.filter((item) => item.userId !== user.id);
       setReaction([...reactionNew, { react: 'wow', userId: user.id }]);
       setNameReactChosen('wow');
       handleCloseReaction();
+      updateDoc(doc(db, 'messages', message.id), {
+        ...message,
+        reaction: [...reactionNew, { react: 'wow', userId: user.id }]
+      });
     }
   };
   const cryMessage = () => {
@@ -287,11 +320,19 @@ function Message({ user, message, index }) {
       setReaction(reactionNew);
       setNameReactChosen('');
       handleCloseReaction();
+      updateDoc(doc(db, 'messages', message.id), {
+        ...message,
+        reaction: reactionNew
+      });
     } else {
       const reactionNew = reaction.filter((item) => item.userId !== user.id);
       setReaction([...reactionNew, { react: 'cry', userId: user.id }]);
       setNameReactChosen('cry');
       handleCloseReaction();
+      updateDoc(doc(db, 'messages', message.id), {
+        ...message,
+        reaction: [...reactionNew, { react: 'cry', userId: user.id }]
+      });
     }
   };
   const angryMessage = () => {
@@ -300,11 +341,19 @@ function Message({ user, message, index }) {
       setReaction(reactionNew);
       setNameReactChosen('');
       handleCloseReaction();
+      updateDoc(doc(db, 'messages', message.id), {
+        ...message,
+        reaction: reactionNew
+      });
     } else {
       const reactionNew = reaction.filter((item) => item.userId !== user.id);
       setReaction([...reactionNew, { react: 'angry', userId: user.id }]);
       setNameReactChosen('angry');
       handleCloseReaction();
+      updateDoc(doc(db, 'messages', message.id), {
+        ...message,
+        reaction: [...reactionNew, { react: 'angry', userId: user.id }]
+      });
     }
   };
   const unsentMessage = () => {
@@ -358,6 +407,22 @@ function Message({ user, message, index }) {
     if (imageMessage === '') return <Icon icon="eos-icons:loading" />;
     return <ContentImage src={imageMessage} />;
   };
+  const BoxContentGifMessage = () => {
+    const ContentGif = styled('img')(() => ({
+      width: '150px',
+      height: '180px',
+      borderRadius: '20px'
+    }));
+    return <ContentGif src={message.contentFile} />;
+  };
+  const BoxContentStickerMessage = () => {
+    const ContentSticker = styled('img')(() => ({
+      width: '150px',
+      height: '180px',
+      borderRadius: '20px'
+    }));
+    return <ContentSticker src={message.contentFile} />;
+  };
   if (user.id === message.senderId)
     return (
       <BoxMessageUserSender>
@@ -377,7 +442,7 @@ function Message({ user, message, index }) {
                 minHeight: message.type === 'image' ? `${224 + heightContentText}px` : '24px'
               }}
             >
-              {showOptions ? (
+              {showOptions && (
                 <BoxOptionUser onMouseEnter={mouseEnterMessage} onMouseLeave={mouseLeaveMessage}>
                   <ButtonOptionUser onClick={handleClickDelete}>
                     <Icon
@@ -489,7 +554,7 @@ function Message({ user, message, index }) {
                     </Card>
                   </Popover>
                 </BoxOptionUser>
-              ) : null}
+              )}
               <BoxReactMessageUser />
               <BoxContentMessage
                 onMouseEnter={mouseEnterMessage}
@@ -502,7 +567,9 @@ function Message({ user, message, index }) {
                 }}
               >
                 <Typography ref={contentRef}>{message.content}</Typography>
-                {message.type === 'image' ? <BoxContentImageMessage /> : null}
+                {message.type === 'image' && <BoxContentImageMessage />}
+                {message.type === 'gif' && <BoxContentGifMessage />}
+                {message.type === 'sticker' && <BoxContentStickerMessage />}
               </BoxContentMessage>
             </Box>
             <Box
@@ -539,7 +606,9 @@ function Message({ user, message, index }) {
           >
             <BoxContentMessage onMouseEnter={mouseEnterMessage} onMouseLeave={mouseLeaveMessage}>
               <Typography>{message.content}</Typography>
-              {message.type === 'image' ? <BoxContentImageMessage /> : null}
+              {message.type === 'image' && <BoxContentImageMessage />}
+              {message.type === 'gif' && <BoxContentGifMessage />}
+              {message.type === 'sticker' && <BoxContentStickerMessage />}
             </BoxContentMessage>
             <BoxReactMessageOther />
             {showOptions ? (

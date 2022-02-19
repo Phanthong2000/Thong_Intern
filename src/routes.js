@@ -16,6 +16,7 @@ import UserNotFound from './components/profile/UserNotFound';
 import Other from './pages/Other';
 import FriendRequests from './components/friend/FriendRequests';
 import AllFriends from './components/friend/AllFriends';
+import VideoCall from './pages/VideoCall';
 
 function Router() {
   const navigate = useNavigate();
@@ -52,6 +53,7 @@ function Router() {
         { element: <Navigate to="/home/app" replace /> },
         { path: 'app', element: <Home user={user} /> },
         { path: 'chat', element: <Chat user={user} /> },
+        { path: 'video-call', element: <VideoCall user={user} /> },
         {
           path: 'friends',
           element: <Friends user={user} />,

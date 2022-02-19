@@ -35,9 +35,9 @@ Friends.prototype = {
   other: PropTypes.object
 };
 function Friends({ user }) {
-  const friends = useSelector((state) => state.user.friends);
   const friendManual = useSelector((state) => state.user.friendManual);
   const [quantityMutualFriend, setQuantityMutualFriend] = useState(-1);
+  const friendsOther = useSelector((state) => state.user.friendsOther);
   const dispatch = useDispatch();
   const { id } = useParams();
   const getAllFriendsSender = async () => {
@@ -77,17 +77,13 @@ function Friends({ user }) {
     getAllFriendsSender();
     return () => null;
   }, [user, friendManual]);
-  useEffect(() => {
-    dispatch(actionGetAllFriendUser(id));
-    return () => null;
-  }, [user]);
   const getQuantityFriend = () => {
     if (quantityMutualFriend > 0) {
       if (quantityMutualFriend === 1) return `1 mutual friend`;
       return `${quantityMutualFriend} mutual friends`;
     }
-    if (friends.length === 1) return `1 friend`;
-    return `${friends.length} friends`;
+    if (friendsOther.length === 1) return `1 friend`;
+    return `${friendsOther.length} friends`;
   };
   return (
     <RootStyle>
@@ -98,11 +94,13 @@ function Friends({ user }) {
         <Title>Friends</Title>
         <ButtonSeeAllFriends>See all friends</ButtonSeeAllFriends>
       </Stack>
-      {friends.length > 0 ? (
+      {friendsOther.length > 0 ? (
         <Box>
-          {quantityMutualFriend > 0 ? <QuantityFriend>{getQuantityFriend()}</QuantityFriend> : null}
+          {quantityMutualFriend >= 0 ? (
+            <QuantityFriend>{getQuantityFriend()}</QuantityFriend>
+          ) : null}
           <Grid sx={{ textAlign: 'center' }} container>
-            {friends.map((item, index) => (
+            {friendsOther.map((item, index) => (
               <ItemFriend key={index} friend={item} />
             ))}
           </Grid>

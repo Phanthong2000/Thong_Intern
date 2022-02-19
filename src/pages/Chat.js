@@ -14,7 +14,7 @@ const heightScreen = window.screen.height;
 const RootStyle = styled(Stack)(({ theme }) => ({
   marginTop: '60px',
   background: theme.palette.background,
-  height: `calc(${heightScreen}px - 210px)`
+  height: `calc(${heightScreen}px - 180px)`
 }));
 Chat.prototype = {
   user: PropTypes.object

@@ -14,7 +14,10 @@ import {
   where
 } from 'firebase/firestore';
 import { db } from '../../firebase-config';
-import { actionUserDeleteFriendRequest } from '../../redux/actions/userAction';
+import {
+  actionGetAllFriendUser,
+  actionUserDeleteFriendRequest
+} from '../../redux/actions/userAction';
 import AvatarMutualFriend from './AvatarMutualFriend';
 
 const RootStyle = styled(Grid)(() => ({
@@ -22,12 +25,12 @@ const RootStyle = styled(Grid)(() => ({
 }));
 const Wrapper = styled(Card)(() => ({
   width: '100%',
-  background: '#fff',
-  cursor: 'pointer'
+  background: '#fff'
 }));
 const Avatar = styled('img')(() => ({
   width: '100%',
-  height: '200px'
+  height: '200px',
+  cursor: 'pointer'
 }));
 const WrapperInfo = styled(Stack)(() => ({
   width: '100%',
@@ -145,6 +148,7 @@ function Request({ user, contact, index }) {
         id: snapshot.id
       });
     });
+    return () => null;
   }, [user, friendManual, friendRequests]);
   const chooseRequest = () => {
     navigate(`/home/other/${userSent.id}`);
@@ -156,6 +160,7 @@ function Request({ user, contact, index }) {
     })
       .then(() => {
         dispatch(actionUserDeleteFriendRequest(contact.id));
+        dispatch(actionGetAllFriendUser(user.id));
       })
       .catch((error) => console.log(error));
   };

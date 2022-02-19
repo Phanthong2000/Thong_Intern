@@ -12,7 +12,8 @@ import {
   Modal,
   Alert,
   Snackbar,
-  Divider
+  Divider,
+  Skeleton
 } from '@mui/material';
 import { Icon } from '@iconify/react';
 import { useParams } from 'react-router-dom';
@@ -53,6 +54,10 @@ const AvatarImage = styled(Avatar)(() => ({
   height: '100px',
   border: '2px solid #30ab78',
   cursor: 'pointer'
+}));
+const SkeletonAvatar = styled(Skeleton)(() => ({
+  width: '100px',
+  height: '100px'
 }));
 const AvatarButton = styled(IconButton)(({ theme }) => ({
   position: 'absolute',
@@ -126,7 +131,6 @@ function Information({ user }) {
   const friends = useSelector((state) => state.user.friends);
   useEffect(() => {
     setAvatar(user.avatar);
-    dispatch(actionGetAllFriendUser(user.id));
     return null;
   }, [user]);
   const getTotalFriends = () => {
@@ -371,7 +375,11 @@ function Information({ user }) {
     <RootStyle>
       <WrapperInfo>
         <AvatarUser sx={{ '&:hover': { backgroundColor: 'transparent' } }} aria-label="Delete">
-          <AvatarImage onClick={() => console.log('avatar')} src={avatar} />
+          {user.id === undefined ? (
+            <SkeletonAvatar variant="circular" />
+          ) : (
+            <AvatarImage onClick={() => console.log(ref.current.clientWidth)} src={avatar} />
+          )}
           <AvatarButton
             onClick={() => {
               fileRef.current.click();
@@ -384,7 +392,11 @@ function Information({ user }) {
           </AvatarButton>
         </AvatarUser>
         <InfoUser>
-          <Username>{user.username}</Username>
+          {user.id === undefined ? (
+            <Skeleton variant="text" sx={{ width: '150px', height: '33px' }} />
+          ) : (
+            <Username>{user.username}</Username>
+          )}
           <TotalFriend>{getTotalFriends()}</TotalFriend>
           <WrapperEditProfile>
             <GetBoxAvatarFriend />

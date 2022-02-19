@@ -8,6 +8,7 @@ import {
   Divider,
   Menu,
   MenuItem,
+  Skeleton,
   styled,
   Typography
 } from '@mui/material';
@@ -97,7 +98,11 @@ function UpPost({ user }) {
   return (
     <RootStyle>
       <BoxUpPost>
-        <Avatar sx={{ cursor: 'pointer', width: '50px', height: '50px' }} src={user.avatar} />
+        {user.id === undefined ? (
+          <Skeleton variant="circular" sx={{ width: '50px', height: '50px' }} />
+        ) : (
+          <Avatar sx={{ cursor: 'pointer', width: '50px', height: '50px' }} src={user.avatar} />
+        )}
         <ButtonUpPost onClick={() => dispatch(actionPostOpenCreatePost())}>
           What's on your mind
         </ButtonUpPost>

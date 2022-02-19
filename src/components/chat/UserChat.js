@@ -11,8 +11,9 @@ import {
 } from '@mui/material';
 import PropTypes from 'prop-types';
 import { Icon } from '@iconify/react';
+import moment from 'moment';
 import { useDispatch, useSelector } from 'react-redux';
-import { doc, getDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../firebase-config';
 import { actionChatClearImageMessage, actionChatGetChatbox } from '../../redux/actions/chatAction';
 
@@ -37,13 +38,17 @@ const IconButtonOption = styled(IconButton)(({ theme }) => ({
   }
 }));
 UserChat.prototype = {
-  chatbox: PropTypes.object
+  chatbox: PropTypes.object,
+  user: PropTypes.object
 };
-function UserChat({ chatbox }) {
+function UserChat({ chatbox, user }) {
+  const sendMessage = useSelector((state) => state.chat.sendMessage);
   const [userChat, setUserChat] = useState({});
+  const chatboxs = useSelector((state) => state.chat.chatboxs);
   const [showOptions, setShowOptions] = useState(false);
   const chatboxChosen = useSelector((state) => state.chat.chatbox);
   const [isLoadingUserChat, setIsLoadingUserChat] = useState(false);
+  const [messageLast, setMessageLast] = useState({});
   const dispatch = useDispatch();
   const getUserChat = () => {
     getDoc(doc(db, 'users', chatbox.tempId)).then((snapshot) => {
@@ -53,10 +58,30 @@ function UserChat({ chatbox }) {
       });
     });
   };
+  const getMessagesByChatbox = () => {
+    const allMessages = [];
+    getDocs(query(collection(db, 'messages'), where('chatboxId', '==', chatbox.id))).then(
+      (snapshots) => {
+        if (!snapshots.empty) {
+          snapshots.docs.forEach((message) => {
+            allMessages.push({
+              ...message.data(),
+              id: message.id
+            });
+          });
+          const allMessagesSort = allMessages.sort((a, b) => a.createdAt - b.createdAt);
+          setMessageLast(allMessagesSort.at(allMessagesSort.length - 1));
+        } else {
+          setMessageLast({});
+        }
+      }
+    );
+  };
   useEffect(() => {
+    getMessagesByChatbox();
     getUserChat();
     return () => null;
-  }, []);
+  }, [chatboxs]);
   const chooseUserChat = () => {
     dispatch(actionChatClearImageMessage());
     dispatch(
@@ -95,6 +120,30 @@ function UserChat({ chatbox }) {
   if (userChat.id === undefined) {
     return <BoxSkeleton />;
   }
+  const checkContentMessage = () => {
+    if (messageLast.isRestore) {
+      if (messageLast.senderId === user.id) return `You: Unsent a message`;
+      return `Unsent a message`;
+    }
+    if (messageLast.type === 'text') {
+      if (messageLast.senderId === user.id) {
+        if (messageLast.content.length < 10) return `You: ${messageLast.content}`;
+        return `You: ${messageLast.content.substring(0, 10)}...`;
+      }
+      if (messageLast.content.length < 10) return `${messageLast.content}`;
+      return `${messageLast.content.substring(0, 10)}...`;
+    }
+    if (messageLast.type === 'gif') {
+      if (messageLast.senderId === user.id) return `You: sent a gif`;
+      return `Sent a gif`;
+    }
+    if (messageLast.type === 'sticker') {
+      if (messageLast.senderId === user.id) return `You: sent a sticker`;
+      return `Sent a sticker`;
+    }
+    if (messageLast.senderId === user.id) return `You: sent a image`;
+    return `Sent a image`;
+  };
   return (
     <RootStyle
       sx={{ background: checkUserChosen() }}
@@ -105,14 +154,36 @@ function UserChat({ chatbox }) {
       <Box sx={{ display: 'flex' }}>
         <Avatar src={userChat.avatar} />
         <BoxInfo>
-          <Typography sx={{ fontSize: '16px', fontFamily: 'inherit', fontWeight: 'bold' }}>
-            {userChat.username}
-          </Typography>
-          <Stack direction="row" sx={{ alignItems: 'center' }}>
-            <Typography sx={{ fontSize: '13px', color: 'gray' }}>{checkUserChosen()}</Typography>
-            <Icon icon="ci:dot-01-xs" />
-            <Typography sx={{ fontSize: '13px', color: 'gray' }}>data</Typography>
-          </Stack>
+          {userChat.username === undefined ? (
+            <div> ccc</div>
+          ) : (
+            <Typography sx={{ fontSize: '16px', fontFamily: 'inherit', fontWeight: 'bold' }}>
+              {userChat.username}
+            </Typography>
+          )}
+          {messageLast.id === undefined ? null : (
+            <Stack direction="row" sx={{ alignItems: 'center' }}>
+              <Typography sx={{ fontSize: '13px', color: 'gray' }}>
+                {checkContentMessage()}
+              </Typography>
+              <Icon icon="ci:dot-01-xs" />
+              <Typography sx={{ fontSize: '13px', color: 'gray' }}>
+                {new Date().getTime() - messageLast.createdAt >= 259200000
+                  ? `${moment(messageLast.createdAt)
+                      .fromNow(true)
+                      .substring(
+                        0,
+                        moment(messageLast.createdAt).fromNow(true).indexOf(' ')
+                      )}${moment(messageLast.createdAt)
+                      .fromNow(true)
+                      .substring(
+                        moment(messageLast.createdAt).fromNow(true).indexOf(' ') + 1,
+                        moment(messageLast.createdAt).fromNow(true).indexOf(' ') + 2
+                      )}`
+                  : `${moment(messageLast.createdAt).fromNow()}`}
+              </Typography>
+            </Stack>
+          )}
         </BoxInfo>
       </Box>
       {showOptions ? (

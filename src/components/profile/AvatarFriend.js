@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Avatar, Box, Grid, styled, Typography } from '@mui/material';
+import { Avatar, Box, Grid, Skeleton, styled, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase-config';
@@ -30,7 +30,11 @@ function AvatarFriend({ friend, index }) {
   };
   return (
     <Box sx={{ marginLeft: '-10px', zIndex: 10 - index }}>
-      <ImageAvatar onClick={goToOther} src={userFriend.avatar} />
+      {userFriend.avatar === undefined ? (
+        <Skeleton variant="circular" sx={{ width: '30px', height: '30px' }} />
+      ) : (
+        <ImageAvatar onClick={goToOther} src={userFriend.avatar} />
+      )}
     </Box>
   );
 }

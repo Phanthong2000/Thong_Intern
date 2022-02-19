@@ -10,10 +10,10 @@ import { db } from '../../firebase-config';
 import UserChat from './UserChat';
 
 const RootStyle = styled(Card)(({ theme }) => ({
-  width: '400px',
+  width: '450px',
   maxHeight: '100%',
   background: '#fff',
-  marginLeft: '50px',
+  marginLeft: '10px',
   marginTop: '10px',
   padding: theme.spacing(1, 1, 1),
   [theme.breakpoints.down('md')]: {
@@ -50,10 +50,6 @@ BoxUserChat.prototype = {
 function BoxUserChat({ user }) {
   const chatboxs = useSelector((state) => state.chat.chatboxs);
   const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(actionGetAllChat(user.id));
-    return () => null;
-  }, [user]);
   const BoxSkeleton = () => (
     <Box sx={{ display: 'flex', marginBottom: '20px' }}>
       <Skeleton sx={{ width: '40px', height: '40px' }} variant="circular" />
@@ -84,10 +80,10 @@ function BoxUserChat({ user }) {
         <InputSearch placeholder="Search messenger" />
       </BoxSearch>
       <BoxAllChatbox>
-        {chatboxs.length !== 0 ? (
+        {chatboxs.length >= 0 ? (
           <Scrollbar alwaysShowTracks>
             {chatboxs.map((item, index) => (
-              <UserChat key={index} chatbox={item} />
+              <UserChat user={user} key={index} chatbox={item} />
             ))}
           </Scrollbar>
         ) : (

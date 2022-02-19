@@ -19,7 +19,9 @@ import {
   ACTION_USER_LOADING_GET_ALL_FRIEND_REQUESTS,
   ACTION_USER_DELETE_FRIEND_REQUEST,
   ACTION_USER_GET_ALL_FRIEND_USER_MANUAL,
-  TEST_SEARCH
+  TEST_SEARCH,
+  ACTION_USER_GET_ALL_FRIEND_OTHER,
+  ACTION_USER_BROADCAST_SOCKET
 } from '../actions/types';
 
 const defaultState = {
@@ -40,7 +42,9 @@ const defaultState = {
   isLoadingFriendRequest: false,
   otherId: '',
   friendManual: [],
-  testSearch: ''
+  testSearch: '',
+  friendsOther: [],
+  usersSocket: []
 };
 const userReducer = (state = defaultState, action) => {
   switch (action.type) {
@@ -141,6 +145,11 @@ const userReducer = (state = defaultState, action) => {
         ...state,
         friends: action.payload
       };
+    case ACTION_USER_GET_ALL_FRIEND_OTHER:
+      return {
+        ...state,
+        friendsOther: action.payload
+      };
     case ACTION_USER_GET_USER_SEARCH:
       return {
         ...state,
@@ -176,6 +185,11 @@ const userReducer = (state = defaultState, action) => {
       return {
         ...state,
         testSearch: action.payload
+      };
+    case ACTION_USER_BROADCAST_SOCKET:
+      return {
+        ...state,
+        usersSocket: action.payload
       };
     default:
       return state;

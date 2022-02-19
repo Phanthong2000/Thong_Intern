@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { Card, styled } from '@mui/material';
+import { Card, Skeleton, styled } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase-config';
@@ -21,6 +21,14 @@ const CoverImage = styled('img')(({ theme }) => ({
     width: '100%'
   }
 }));
+const SkeletonCover = styled(Skeleton)(({ theme }) => ({
+  width: '80%',
+  height: '400px',
+  borderRadius: theme.spacing(0, 0, 2, 2),
+  [theme.breakpoints.down('md')]: {
+    width: '100%'
+  }
+}));
 BackgroundImage.prototype = {
   user: PropTypes.object
 };
@@ -31,11 +39,15 @@ function BackgroundImage({ user }) {
     getDoc(doc(db, 'users', id)).then((snapshot) => {
       setBackground(snapshot.data().background);
     });
-    return null;
+    return () => null;
   }, [user]);
   return (
     <RootStyle>
-      <CoverImage src={background} />
+      {user.id === undefined ? (
+        <SkeletonCover variant="circular" />
+      ) : (
+        <CoverImage src={background} />
+      )}
     </RootStyle>
   );
 }

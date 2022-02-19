@@ -10,7 +10,8 @@ import {
   ACTION_CHAT_DELETE_IMAGE_MESSAGE,
   ACTION_CHAT_CLEAR_IMAGE_MESSAGE,
   ACTION_CHAT_ADD_MESSAGE,
-  ACTION_CHAT_UPDATE_MESSAGE
+  ACTION_CHAT_UPDATE_MESSAGE,
+  ACTION_CHAT_GET_CHATBOX_HOME
 } from './types';
 
 export const actionChatGetAllChat = (data) => ({
@@ -51,6 +52,35 @@ export const actionChatUpdateMessage = (data) => ({
   type: ACTION_CHAT_UPDATE_MESSAGE,
   payload: data
 });
+export const actionChatGetChatboxHome = (data) => ({
+  type: ACTION_CHAT_GET_CHATBOX_HOME,
+  payload: data
+});
+export const actionGetAllChatSort = (id) => async (dispatch) => {
+  const data1 = await getDocs(query(collection(db, 'chatboxs'), where('user1', '==', id)));
+  const data2 = await getDocs(query(collection(db, 'chatboxs'), where('user2', '==', id)));
+  if (data1.empty && data2.empty) {
+    return dispatch(actionChatGetAllChat([]));
+  }
+  const chatboxs = [];
+  data1.docs.forEach((chatbox) => {
+    chatboxs.push({
+      ...chatbox.data(),
+      id: chatbox.id,
+      tempId: chatbox.data().user2
+    });
+  });
+  data2.docs.forEach((chatbox) => {
+    chatboxs.push({
+      ...chatbox.data(),
+      id: chatbox.id,
+      tempId: chatbox.data().user1
+    });
+  });
+  const chatboxsSort = chatboxs.sort((a, b) => b.updatedAt - a.updatedAt);
+  return dispatch(actionChatGetAllChat(chatboxsSort));
+};
+
 export const actionGetAllChat = (id) => async (dispatch) => {
   const data1 = await getDocs(query(collection(db, 'chatboxs'), where('user1', '==', id)));
   const data2 = await getDocs(query(collection(db, 'chatboxs'), where('user2', '==', id)));

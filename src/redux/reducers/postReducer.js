@@ -13,7 +13,9 @@ import {
   ACTION_POST_CLOSE_CONFIRM_DELETE_POST,
   ACTION_POST_OPEN_CONFIRM_DELETE_POST,
   ACTION_POST_GET_ALL_OTHER,
-  ACTION_POST_LOADING_GET_ALL_OTHER
+  ACTION_POST_LOADING_GET_ALL_OTHER,
+  ACTION_POST_GET_ALL_POST_ALL_FRIEND,
+  ACTION_POST_LOADING_GET_ALL_POST_ALL_FRIEND
 } from '../actions/types';
 
 const defaultState = {
@@ -31,7 +33,9 @@ const defaultState = {
     postId: ''
   },
   postsOther: [],
-  isLoadingPostsOther: true
+  isLoadingPostsOther: true,
+  allPosts: [],
+  isLoadingAllPosts: false
 };
 const postReducer = (state = defaultState, action) => {
   switch (action.type) {
@@ -125,6 +129,16 @@ const postReducer = (state = defaultState, action) => {
       return {
         ...state,
         isLoadingPostsOther: false
+      };
+    case ACTION_POST_GET_ALL_POST_ALL_FRIEND:
+      return {
+        ...state,
+        allPosts: action.payload
+      };
+    case ACTION_POST_LOADING_GET_ALL_POST_ALL_FRIEND:
+      return {
+        ...state,
+        isLoadingAllPosts: true
       };
     default:
       return state;
