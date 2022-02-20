@@ -109,7 +109,7 @@ function TagPeople({ user }) {
             <Icon style={{ width: '20px', height: '20px', color: 'grey' }} icon="fe:search" />
             <InputSearch placeholder="Search for friends" />
           </BoxSearch>
-          <ButtonDone>Done</ButtonDone>
+          <ButtonDone onClick={() => dispatch(actionPostCloseTagPeople())}>Done</ButtonDone>
         </Box>
         <Box>
           <Typography sx={{ color: 'gray', fontSize: '14px' }}>TAGGED</Typography>

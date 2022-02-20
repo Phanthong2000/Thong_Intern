@@ -24,11 +24,16 @@ import {
   TEST_SEARCH,
   ACTION_USER_GET_ALL_CONTACT_ONLINE,
   ACTION_USER_GET_ALL_FRIEND_OTHER,
-  ACTION_USER_BROADCAST_SOCKET
+  ACTION_USER_BROADCAST_SOCKET,
+  ACTION_USER_OPEN_MESSENGER,
+  ACTION_USER_CLOSE_MESSENGER,
+  ACTION_USER_OPEN_EDIT_DETAIL
 } from './types';
 
 export const actionUserOpenSearch = () => ({ type: ACTION_USER_OPEN_SEARCH });
 export const actionUserCloseSearch = () => ({ type: ACTION_USER_CLOSE_SEARCH });
+export const actionUserOpenMessenger = () => ({ type: ACTION_USER_OPEN_MESSENGER });
+export const actionUserCloseMessenger = () => ({ type: ACTION_USER_CLOSE_MESSENGER });
 export const actionUserCloseProfile = () => ({ type: ACTION_USER_CLOSE_PROFILE });
 export const actionUserOpenProfile = () => ({ type: ACTION_USER_OPEN_PROFILE });
 export const actionUserLogin = () => ({ type: ACTION_USER_LOGIN });
@@ -37,6 +42,10 @@ export const actionUserOpenNotifications = () => ({ type: ACTION_USER_OPEN_NOTIF
 export const actionUserCloseNotifications = () => ({ type: ACTION_USER_CLOSE_NOTIFICATIONS });
 export const actionUserOpenRequests = () => ({ type: ACTION_USER_OPEN_REQUESTS });
 export const actionUserCloseRequests = () => ({ type: ACTION_USER_CLOSE_REQUESTS });
+export const actionUserOpenEditDetail = (data) => ({
+  type: ACTION_USER_OPEN_EDIT_DETAIL,
+  payload: data
+});
 export const actionUserOpenLoadingUpdateProfile = () => ({
   type: ACTION_USER_OPEN_LOADING_UPDATE_PROFILE
 });

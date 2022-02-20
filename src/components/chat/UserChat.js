@@ -13,9 +13,15 @@ import PropTypes from 'prop-types';
 import { Icon } from '@iconify/react';
 import moment from 'moment';
 import { useDispatch, useSelector } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../firebase-config';
-import { actionChatClearImageMessage, actionChatGetChatbox } from '../../redux/actions/chatAction';
+import {
+  actionChatClearImageMessage,
+  actionChatGetChatbox,
+  actionChatGetChatboxHome
+} from '../../redux/actions/chatAction';
+import { actionUserCloseMessenger } from '../../redux/actions/userAction';
 
 const RootStyle = styled(ListItemButton)(({ theme }) => ({
   width: '100%',
@@ -39,9 +45,11 @@ const IconButtonOption = styled(IconButton)(({ theme }) => ({
 }));
 UserChat.prototype = {
   chatbox: PropTypes.object,
-  user: PropTypes.object
+  user: PropTypes.object,
+  home: PropTypes.bool
 };
-function UserChat({ chatbox, user }) {
+function UserChat({ chatbox, user, home }) {
+  const { pathname } = useLocation();
   const sendMessage = useSelector((state) => state.chat.sendMessage);
   const [userChat, setUserChat] = useState({});
   const chatboxs = useSelector((state) => state.chat.chatboxs);
@@ -83,13 +91,33 @@ function UserChat({ chatbox, user }) {
     return () => null;
   }, [chatboxs]);
   const chooseUserChat = () => {
-    dispatch(actionChatClearImageMessage());
-    dispatch(
-      actionChatGetChatbox({
-        id: chatbox.id,
-        user: userChat
-      })
-    );
+    if (home) {
+      if (pathname === '/home/chat') {
+        dispatch(actionUserCloseMessenger());
+        dispatch(
+          actionChatGetChatbox({
+            id: chatbox.id,
+            user: userChat
+          })
+        );
+      } else {
+        dispatch(actionUserCloseMessenger());
+        dispatch(
+          actionChatGetChatboxHome({
+            status: true,
+            user: userChat
+          })
+        );
+      }
+    } else {
+      dispatch(actionChatClearImageMessage());
+      dispatch(
+        actionChatGetChatbox({
+          id: chatbox.id,
+          user: userChat
+        })
+      );
+    }
   };
   const checkUserChosen = () => {
     if (chatbox.id === chatboxChosen.id) return '#ddfc92';

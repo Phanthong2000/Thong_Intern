@@ -1,6 +1,12 @@
 import Peer from 'simple-peer';
 import { io } from 'socket.io-client';
 import {
+  actionChatAddMessage,
+  actionGetAllChatSort,
+  actionChatSendReaction,
+  actionChatUpdateReactionMessage
+} from '../redux/actions/chatAction';
+import {
   actionModalReceiving,
   actionCall,
   actionCallAccepted,
@@ -25,7 +31,16 @@ export const connectWithSocket = () => {
   });
   socket.on('endCall', (data) => {
     console.log('endcall');
-    store.dispatch(actionCallEnded(true));
+    // store.dispatch(actionCallEnded(true));
+  });
+  socket.on('sendMessage', (data) => {
+    console.log('receiver message', data);
+    store.dispatch(actionChatAddMessage(data));
+    store.dispatch(actionGetAllChatSort(data.receiverId));
+  });
+  socket.on('sendReaction', (data) => {
+    console.log('sendReaction', data);
+    store.dispatch(actionChatSendReaction());
   });
 };
 export const registerUser = (data) => {
@@ -79,4 +94,13 @@ export const callUser = (id) => {
 };
 export const endCall = (id) => {
   socket.emit('endCall', { to: id });
+};
+export const sendMessageSocket = (data) => {
+  socket.emit('sendMessage', data);
+};
+export const sendReactionSocket = (data) => {
+  socket.emit('sendReaction', data);
+};
+export const logoutSocket = () => {
+  socket.disconnect();
 };

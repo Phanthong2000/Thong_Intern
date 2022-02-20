@@ -11,6 +11,12 @@ const RootStyle = styled(Stack)(({ theme }) => ({
   alignItems: 'center',
   flexDirection: 'column'
 }));
+const WrapperPost = styled(Box)(({ theme }) => ({
+  width: '50%',
+  [theme.breakpoints.down('md')]: {
+    width: '100%'
+  }
+}));
 BoxPost.prototype = {
   user: PropTypes.object
 };
@@ -21,13 +27,13 @@ function BoxPost({ user }) {
     <RootStyle>
       <BoxStory user={user} />
       <UpPost user={user} />
-      {isLoadingAllPosts ? (
-        <Box sx={{ width: '50%' }}>
+      {isLoadingAllPosts && (
+        <WrapperPost>
           {allPosts.map((item, index) => (
             <Post key={index} user={user} post={item} />
           ))}
-        </Box>
-      ) : null}
+        </WrapperPost>
+      )}
     </RootStyle>
   );
 }

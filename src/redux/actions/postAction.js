@@ -224,3 +224,95 @@ export const getAllPostsOther = (id, sort) => (dispatch) => {
     }
   });
 };
+export const actionGetAllPostAllFriend2 = (id) => async (dispatch) => {
+  const allPosts = [];
+  const postUserCurrent = await getDocs(
+    query(collection(db, 'posts'), where('userId', '==', id), where('status', '==', 'public'))
+  );
+  if (!postUserCurrent.empty) {
+    postUserCurrent.docs.forEach((post) => {
+      allPosts.push({
+        ...post.data(),
+        id: post.id
+      });
+    });
+  }
+  const userReceiver = await getDocs(
+    query(collection(db, 'contacts'), where('senderId', '==', id), where('status', '==', true))
+  );
+  if (!userReceiver.empty) {
+    userReceiver.docs.forEach((contact) => {
+      getDocs(
+        query(collection(db, 'posts'), where('userId', '==', contact.data().receiverId))
+      ).then((snapshots) => {
+        if (!snapshots.empty) {
+          snapshots.forEach((post) => {
+            allPosts.push({
+              ...post.data(),
+              id: post.id
+            });
+          });
+        }
+      });
+    });
+    const userSender = await getDocs(
+      query(collection(db, 'contacts'), where('receiverId', '==', id), where('status', '==', true))
+    );
+    if (!userSender.empty) {
+      userSender.docs.forEach((contact) => {
+        getDocs(
+          query(collection(db, 'posts'), where('userId', '==', contact.data().senderId))
+        ).then((snapshots) => {
+          if (!snapshots.empty) {
+            snapshots.forEach((post) => {
+              allPosts.push({
+                ...post.data(),
+                id: post.id
+              });
+            });
+          }
+        });
+      });
+    }
+    dispatch(actionPostGetAllPostAllFriend(allPosts));
+    dispatch(actionPostLoadingGetAllPostAllFriend());
+    return;
+  }
+  const userSender = await getDocs(
+    query(collection(db, 'contacts'), where('receiverId', '==', id), where('status', '==', true))
+  );
+  if (!userSender.empty) {
+    userSender.docs.forEach((contact) => {
+      getDocs(query(collection(db, 'posts'), where('userId', '==', contact.data().senderId))).then(
+        (snapshots) => {
+          if (!snapshots.empty) {
+            snapshots.forEach((post) => {
+              allPosts.push({
+                ...post.data(),
+                id: post.id
+              });
+            });
+          }
+        }
+      );
+    });
+    if (!userReceiver.empty) {
+      userReceiver.docs.forEach((contact) => {
+        getDocs(
+          query(collection(db, 'posts'), where('userId', '==', contact.data().receiverId))
+        ).then((snapshots) => {
+          if (!snapshots.empty) {
+            snapshots.forEach((post) => {
+              allPosts.push({
+                ...post.data(),
+                id: post.id
+              });
+            });
+          }
+        });
+      });
+    }
+    dispatch(actionPostGetAllPostAllFriend(allPosts));
+    dispatch(actionPostLoadingGetAllPostAllFriend());
+  }
+};

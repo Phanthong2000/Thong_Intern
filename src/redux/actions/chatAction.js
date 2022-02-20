@@ -11,7 +11,10 @@ import {
   ACTION_CHAT_CLEAR_IMAGE_MESSAGE,
   ACTION_CHAT_ADD_MESSAGE,
   ACTION_CHAT_UPDATE_MESSAGE,
-  ACTION_CHAT_GET_CHATBOX_HOME
+  ACTION_CHAT_GET_CHATBOX_HOME,
+  ACTION_CHAT_ADD_MESSAGE_CHATBOX_HOME,
+  ACTION_CHAT_SEND_REACTION,
+  ACTION_CHAT_UPDATE_REACTION_MESSAGE
 } from './types';
 
 export const actionChatGetAllChat = (data) => ({
@@ -54,6 +57,16 @@ export const actionChatUpdateMessage = (data) => ({
 });
 export const actionChatGetChatboxHome = (data) => ({
   type: ACTION_CHAT_GET_CHATBOX_HOME,
+  payload: data
+});
+export const actionChatAddMessageChatboxHome = () => ({
+  type: ACTION_CHAT_ADD_MESSAGE_CHATBOX_HOME
+});
+export const actionChatSendReaction = () => ({
+  type: ACTION_CHAT_SEND_REACTION
+});
+export const actionChatUpdateReactionMessage = (data) => ({
+  type: ACTION_CHAT_UPDATE_REACTION_MESSAGE,
   payload: data
 });
 export const actionGetAllChatSort = (id) => async (dispatch) => {

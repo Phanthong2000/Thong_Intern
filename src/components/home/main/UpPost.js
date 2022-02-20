@@ -1,7 +1,11 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Avatar, Box, Button, Card, styled, Skeleton } from '@mui/material';
-import { GiphyFetch } from '@giphy/js-fetch-api';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { actionPostOpenCreatePost } from '../../../redux/actions/postAction';
+import TagPeople from '../../post/TagPeople';
+import CreatePost from '../../post/CreatePost';
 
 const RootStyle = styled(Card)(({ theme }) => ({
   width: '50%',
@@ -42,19 +46,24 @@ const SkeletonButtonPost = styled(Skeleton)(() => ({
 UpPost.prototype = {
   user: PropTypes.object
 };
-const giphy = new GiphyFetch(process.env.REACT_APP_GIPHY_KEY);
 function UpPost({ user }) {
-  const handleClick = async () => {
-    const res = await giphy.emoji('hello', { limit: 20, offset: 0 });
-    console.log(res.data);
-  };
+  const dispatch = useDispatch();
+  const isOpenCreatePost = useSelector((state) => state.post.isOpenCreatePost);
+  const isOpenTagPeople = useSelector((state) => state.post.isOpenTagPeople);
+  const navigate = useNavigate();
   return (
     <RootStyle elevation={3}>
       <BoxUpPost>
         {user.avatar !== undefined ? (
           <>
-            <Avatar sx={{ cursor: 'pointer', width: '50px', height: '50px' }} src={user.avatar} />
-            <ButtonUpPost onClick={handleClick}>What's on your mind</ButtonUpPost>
+            <Avatar
+              onClick={() => navigate(`/home/profile/${user.id}`)}
+              sx={{ cursor: 'pointer', width: '50px', height: '50px' }}
+              src={user.avatar}
+            />
+            <ButtonUpPost onClick={() => dispatch(actionPostOpenCreatePost())}>
+              What's on your mind
+            </ButtonUpPost>
           </>
         ) : (
           <>
@@ -63,6 +72,8 @@ function UpPost({ user }) {
           </>
         )}
       </BoxUpPost>
+      {isOpenTagPeople ? <TagPeople user={user} /> : null}
+      {isOpenCreatePost ? <CreatePost user={user} /> : null}
     </RootStyle>
   );
 }

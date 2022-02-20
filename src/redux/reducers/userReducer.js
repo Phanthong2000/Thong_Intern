@@ -21,16 +21,21 @@ import {
   ACTION_USER_GET_ALL_FRIEND_USER_MANUAL,
   TEST_SEARCH,
   ACTION_USER_GET_ALL_FRIEND_OTHER,
-  ACTION_USER_BROADCAST_SOCKET
+  ACTION_USER_BROADCAST_SOCKET,
+  ACTION_USER_OPEN_MESSENGER,
+  ACTION_USER_CLOSE_MESSENGER,
+  ACTION_USER_OPEN_EDIT_DETAIL
 } from '../actions/types';
 
 const defaultState = {
   isLoggedIn: !!localStorage.getItem('user'),
   isSearching: false,
+  isMessenger: false,
   isOpeningProfile: false,
   isOpeningNotifications: false,
   isOpeningRequests: false,
   isLoadingUpdateProfile: false,
+  isEditDetail: false,
   contact: {
     id: '',
     status: ''
@@ -54,7 +59,8 @@ const userReducer = (state = defaultState, action) => {
         isSearching: true,
         isOpeningProfile: false,
         isOpeningNotifications: false,
-        isOpeningRequests: false
+        isOpeningRequests: false,
+        isMessenger: false
       };
     case ACTION_USER_CLOSE_SEARCH:
       return {
@@ -62,7 +68,8 @@ const userReducer = (state = defaultState, action) => {
         isSearching: false,
         isOpeningProfile: false,
         isOpeningNotifications: false,
-        isOpeningRequests: false
+        isOpeningRequests: false,
+        isMessenger: false
       };
     case ACTION_USER_CLOSE_PROFILE:
       return {
@@ -70,7 +77,8 @@ const userReducer = (state = defaultState, action) => {
         isOpeningProfile: false,
         isSearching: false,
         isOpeningNotifications: false,
-        isOpeningRequests: false
+        isOpeningRequests: false,
+        isMessenger: false
       };
     case ACTION_USER_OPEN_PROFILE:
       return {
@@ -78,7 +86,8 @@ const userReducer = (state = defaultState, action) => {
         isOpeningProfile: true,
         isSearching: false,
         isOpeningNotifications: false,
-        isOpeningRequests: false
+        isOpeningRequests: false,
+        isMessenger: false
       };
     case ACTION_USER_OPEN_NOTIFICATIONS:
       return {
@@ -86,7 +95,8 @@ const userReducer = (state = defaultState, action) => {
         isOpeningProfile: false,
         isSearching: false,
         isOpeningNotifications: true,
-        isOpeningRequests: false
+        isOpeningRequests: false,
+        isMessenger: false
       };
     case ACTION_USER_CLOSE_NOTIFICATIONS:
       return {
@@ -94,7 +104,8 @@ const userReducer = (state = defaultState, action) => {
         isOpeningProfile: false,
         isSearching: false,
         isOpeningNotifications: false,
-        isOpeningRequests: false
+        isOpeningRequests: false,
+        isMessenger: false
       };
     case ACTION_USER_OPEN_REQUESTS:
       return {
@@ -102,7 +113,8 @@ const userReducer = (state = defaultState, action) => {
         isOpeningProfile: false,
         isSearching: false,
         isOpeningNotifications: false,
-        isOpeningRequests: true
+        isOpeningRequests: true,
+        isMessenger: false
       };
     case ACTION_USER_CLOSE_REQUESTS:
       return {
@@ -110,7 +122,26 @@ const userReducer = (state = defaultState, action) => {
         isOpeningProfile: false,
         isSearching: false,
         isOpeningNotifications: false,
-        isOpeningRequests: false
+        isOpeningRequests: false,
+        isMessenger: false
+      };
+    case ACTION_USER_CLOSE_MESSENGER:
+      return {
+        ...state,
+        isOpeningProfile: false,
+        isSearching: false,
+        isOpeningNotifications: false,
+        isOpeningRequests: false,
+        isMessenger: false
+      };
+    case ACTION_USER_OPEN_MESSENGER:
+      return {
+        ...state,
+        isOpeningProfile: false,
+        isSearching: false,
+        isOpeningNotifications: false,
+        isOpeningRequests: false,
+        isMessenger: true
       };
     case ACTION_USER_LOGIN:
       return {
@@ -190,6 +221,11 @@ const userReducer = (state = defaultState, action) => {
       return {
         ...state,
         usersSocket: action.payload
+      };
+    case ACTION_USER_OPEN_EDIT_DETAIL:
+      return {
+        ...state,
+        isEditDetail: action.payload
       };
     default:
       return state;

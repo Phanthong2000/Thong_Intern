@@ -29,6 +29,7 @@ import {
   addDoc
 } from 'firebase/firestore';
 import ShowMore from 'react-show-more';
+import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase-config';
 import { actionPostOpenConfirmDeletePost, getAllPosts } from '../../redux/actions/postAction';
 import Comment from '../post/Comment';
@@ -74,7 +75,9 @@ function Post({ user, post }) {
   const [userPost, setUserPost] = useState({});
   const [isCommenting, setIsCommenting] = useState(false);
   const [lovesPost, setLovesPost] = useState(post.loves);
+  const usersSocket = useSelector((state) => state.user.usersSocket);
   const [commentByPostId, setCommentByPostId] = useState([]);
+  const navigate = useNavigate();
   const getUserPost = () => {
     getDoc(doc(db, 'users', post.userId)).then((post) => {
       setUserPost({
@@ -471,9 +474,20 @@ function Post({ user, post }) {
               {userPost.avatar === undefined ? (
                 <Skeleton sx={{ width: '40px', height: '40px' }} variant="circular" />
               ) : (
-                <Avatar src={userPost.avatar} />
+                <Avatar
+                  onClick={() => navigate(`/home/other/${userPost.id}`)}
+                  src={userPost.avatar}
+                />
               )}
-              <DotOnline icon="ci:dot-05-xl" style={userPost.isOnline ? null : { color: 'grey' }} />
+              <DotOnline
+                icon="ci:dot-05-xl"
+                style={{
+                  color:
+                    usersSocket.find((socket) => socket.userId === userPost.id) === undefined
+                      ? 'gray'
+                      : null
+                }}
+              />
             </Button>
             <Stack>
               <Box sx={{ display: 'flex', alignItems: 'center', textAlign: 'left' }}>

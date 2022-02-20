@@ -21,6 +21,7 @@ import {
   actionUserCloseProfile,
   actionUserGetAllFriendRequest
 } from '../../redux/actions/userAction';
+import { logoutSocket } from '../../utils/wssConnection';
 
 const BootStyle = styled(Box)(({ theme }) => ({
   position: 'absolute',
@@ -65,6 +66,7 @@ function BoxProfile({ user }) {
   const logout = () => {
     localStorage.removeItem('user');
     dispatch(actionUserLogout());
+    logoutSocket();
     navigate('/login');
   };
   const gotoProfile = () => {

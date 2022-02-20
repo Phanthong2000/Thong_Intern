@@ -17,7 +17,7 @@ import ChatBox from '../components/home/main/ChatBox';
 const RootStyle = styled(Box)(({ theme }) => ({
   width: '100%',
   marginTop: '60px',
-  height: '1000px',
+  height: '100%',
   background: theme.palette.background,
   display: 'flex'
 }));
@@ -72,7 +72,7 @@ function Home({ user }) {
       <BoxContact user={user} />
       {chatboxHome.status && <ChatBox user={user} other={chatboxHome.user} />}
       {!chatboxHome.status && chatboxHome.user.id !== undefined && (
-        <IconButton sx={{ position: 'fixed', right: 10, bottom: 50 }}>
+        <IconButton sx={{ position: 'fixed', right: 15, bottom: 130 }}>
           <Avatar
             onClick={showChatboxHome}
             sx={{ width: '50px', height: '50px' }}
@@ -101,6 +101,9 @@ function Home({ user }) {
           </Box>
         </IconButton>
       )}
+      <IconButton sx={{ position: 'fixed', right: 20, bottom: 50, background: '#fff' }}>
+        <Icon style={{ width: '40px', height: '40px', color: '#000' }} icon="bxs:message-alt-add" />
+      </IconButton>
     </RootStyle>
   );
 }

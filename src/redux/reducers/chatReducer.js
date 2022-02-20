@@ -9,7 +9,10 @@ import {
   ACTION_CHAT_ADD_MESSAGE,
   ACTION_CHAT_CLEAR_IMAGE_MESSAGE,
   ACTION_CHAT_UPDATE_MESSAGE,
-  ACTION_CHAT_GET_CHATBOX_HOME
+  ACTION_CHAT_GET_CHATBOX_HOME,
+  ACTION_CHAT_ADD_MESSAGE_CHATBOX_HOME,
+  ACTION_CHAT_SEND_REACTION,
+  ACTION_CHAT_UPDATE_REACTION_MESSAGE
 } from '../actions/types';
 
 const defaultState = {
@@ -28,7 +31,9 @@ const defaultState = {
   chatboxHome: {
     status: false,
     user: {}
-  }
+  },
+  addMessageChatboxHome: 0,
+  sendReaction: 0
 };
 
 const chatReducer = (state = defaultState, action) => {
@@ -77,6 +82,17 @@ const chatReducer = (state = defaultState, action) => {
         ...state,
         updateMessage: action.payload
       };
+    case ACTION_CHAT_UPDATE_REACTION_MESSAGE:
+      console.log(action.payload.message);
+      return {
+        ...state,
+        messages: [
+          ...state.messages
+            .slice(0, action.payload.index)
+            .concat([action.payload.message])
+            .concat([...state.messages.slice(action.payload.index + 1, state.messages.length)])
+        ]
+      };
     case ACTION_CHAT_DELETE_IMAGE_MESSAGE:
       return {
         ...state,
@@ -95,6 +111,16 @@ const chatReducer = (state = defaultState, action) => {
       return {
         ...state,
         chatboxHome: action.payload
+      };
+    case ACTION_CHAT_ADD_MESSAGE_CHATBOX_HOME:
+      return {
+        ...state,
+        addMessageChatboxHome: (state.addMessageChatboxHome += 1)
+      };
+    case ACTION_CHAT_SEND_REACTION:
+      return {
+        ...state,
+        sendReaction: (state.sendReaction += 1)
       };
     default:
       return state;

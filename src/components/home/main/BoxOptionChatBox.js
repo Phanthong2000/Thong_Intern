@@ -1,8 +1,14 @@
-import React from 'react';
-import { Box, Card, InputBase, styled } from '@mui/material';
+import React, { useEffect, useRef, useState } from 'react';
+import { Box, Card, InputBase, Popover, styled } from '@mui/material';
 import PropTypes from 'prop-types';
 import { Icon } from '@iconify/react';
+import { addDoc, collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 import { Scrollbar } from 'smooth-scrollbar-react';
+import { useSelector, useDispatch } from 'react-redux';
+import ReactionMessageHome from './ReactionMessageHome';
+import GifMessageHome from './GifMessageHome';
+import { db } from '../../../firebase-config';
+import { actionChatAddMessageChatboxHome } from '../../../redux/actions/chatAction';
 
 const RootStyle = styled(Box)(() => ({
   width: '100%',
@@ -44,9 +50,192 @@ const InputMessage = styled(InputBase)(() => ({
   maxHeight: '100px'
 }));
 BoxOptionChatBox.prototype = {
-  user: PropTypes.object
+  user: PropTypes.object,
+  other: PropTypes.object
 };
-function BoxOptionChatBox({ user }) {
+function BoxOptionChatBox({ user, other }) {
+  const fileRef = useRef(null);
+  const dispatch = useDispatch();
+  const [chatbox, setChatbox] = useState({});
+  const [isChatting, setIsChatting] = useState(false);
+  const [messageText, setMessageText] = useState('');
+  const [lineInput, setLineInput] = useState(1);
+  const [type, setType] = useState('text');
+  const [isExistsChatbox, setIsExistsChatbox] = useState(false);
+  const [anchorElGif, setAnchorElGif] = React.useState(null);
+  const [anchorElSticker, setAnchorElSticker] = React.useState(null);
+  const handleClickGif = (event) => {
+    setAnchorElGif(event.currentTarget);
+  };
+
+  const handleCloseGif = () => {
+    setAnchorElGif(null);
+  };
+  const handleClickSticker = (event) => {
+    setAnchorElSticker(event.currentTarget);
+  };
+
+  const handleCloseSticker = () => {
+    setAnchorElSticker(null);
+  };
+  const openGif = Boolean(anchorElGif);
+  const openGSticker = Boolean(anchorElSticker);
+  const chatboxHome = useSelector((state) => state.chat.chatboxHome);
+  const checkIsExistsChatbox = async () => {
+    const data1 = await getDocs(
+      query(
+        collection(db, 'chatboxs'),
+        where('user1', '==', user.id),
+        where('user2', '==', other.id)
+      )
+    );
+    const data2 = await getDocs(
+      query(
+        collection(db, 'chatboxs'),
+        where('user1', '==', other.id),
+        where('user2', '==', user.id)
+      )
+    );
+    if (data1.empty && data2.empty) {
+      setIsExistsChatbox(false);
+    } else {
+      if (!data1.empty) {
+        setChatbox({
+          ...data1.docs.at(0).data(),
+          id: data1.docs.at(0).id
+        });
+      } else {
+        setChatbox({
+          ...data2.docs.at(0).data(),
+          id: data2.docs.at(0).id
+        });
+      }
+      setIsExistsChatbox(true);
+    }
+  };
+  useEffect(() => {
+    checkIsExistsChatbox();
+    return () => null;
+  }, [chatboxHome]);
+  const inputMessage = (e) => {
+    const text = e.target.value;
+    setMessageText(text);
+    if (text === '') {
+      setIsChatting(false);
+    } else {
+      setIsChatting(true);
+    }
+  };
+  const sendMessage = () => {
+    // if (type === 'image') {
+    //   const message = {
+    //     chatboxId: chatbox.id,
+    //     content: messageText,
+    //     contentFile: '',
+    //     isRead: false,
+    //     type: 'image',
+    //     isRestore: false,
+    //     reaction: [],
+    //     senderId: user.id,
+    //     receiverId: chatbox.user.id,
+    //     createdAt: new Date().getTime()
+    //   };
+    //   addDoc(collection(db, 'messages'), message).then((docRef) => {
+    //     dispatch(actionChatClearImageMessage());
+    //     setMessageText('');
+    //     dispatch(actionGetAllMessagesChatbox(chatbox.id));
+    //     const metadata = {
+    //       contentType: 'image/*'
+    //     };
+    //     const storageRef = ref(storage, `messages/${user.id}.${new Date().getTime()}`);
+    //     const uploadTask = uploadBytesResumable(storageRef, imageMessages.at(0), metadata);
+    //     uploadTask.on(
+    //       'state_changed',
+    //       (snapshot) => {
+    //         switch (snapshot.state) {
+    //           case 'running':
+    //             break;
+    //           default:
+    //             break;
+    //         }
+    //       },
+    //       (error) => {
+    //         console.log(error);
+    //       },
+    //       () => {
+    //         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+    //           updateDoc(doc(db, 'messages', docRef.id), {
+    //             ...message,
+    //             contentFile: downloadURL
+    //           }).then(() => {
+    //             dispatch(actionChatUpdateMessage({ messageId: docRef.id, image: downloadURL }));
+    //             updateDoc(doc(db, 'chatboxs', chatbox.id), {
+    //               ...chatbox,
+    //               updatedAt: new Date().getTime()
+    //             }).then(() => {
+    //               dispatch(actionGetAllChatSort(user.id));
+    //             });
+    //           });
+    //         });
+    //       }
+    //     );
+    //   });
+    // }
+    // else {
+    console.log('exists', isExistsChatbox);
+    if (!isExistsChatbox) {
+      const chatbox = {
+        user1: user.id,
+        user2: other.id,
+        type: 'personal',
+        createdAt: new Date().getTime(),
+        updatedAt: new Date().getTime()
+      };
+      addDoc(collection(db, 'chatboxs'), chatbox).then((docRef) => {
+        const message = {
+          chatboxId: docRef.id,
+          content: messageText,
+          isRead: false,
+          type: 'text',
+          isRestore: false,
+          reaction: [],
+          senderId: user.id,
+          receiverId: chatboxHome.user.id,
+          createdAt: new Date().getTime()
+        };
+        addDoc(collection(db, 'messages'), message).then((docRef) => {
+          setMessageText('');
+          setIsChatting(false);
+        });
+      });
+    } else {
+      const message = {
+        chatboxId: chatbox.id,
+        content: messageText,
+        isRead: false,
+        type: 'text',
+        isRestore: false,
+        reaction: [],
+        senderId: user.id,
+        receiverId: chatboxHome.user.id,
+        createdAt: new Date().getTime()
+      };
+      addDoc(collection(db, 'messages'), message)
+        .then((docRef) => {
+          console.log(docRef.id);
+          updateDoc(doc(db, 'chatboxs', chatbox.id), {
+            updatedAt: new Date().getTime()
+          }).then(() => {
+            setMessageText('');
+            setIsChatting(false);
+            dispatch(actionChatAddMessageChatboxHome());
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+  };
   return (
     <RootStyle>
       <IconButtonOption>
@@ -55,26 +244,76 @@ function BoxOptionChatBox({ user }) {
       <IconButtonOption>
         <IconOption icon="gridicons:image-multiple" />
       </IconButtonOption>
-      <IconButtonOption>
+      <IconButtonOption onClick={handleClickSticker}>
         <IconOption icon="fluent:sticker-24-filled" />
       </IconButtonOption>
-      <IconButtonOption>
+      <Popover
+        id="simple-popover"
+        open={openGSticker}
+        anchorEl={anchorElSticker}
+        onClose={handleCloseSticker}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'center'
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center'
+        }}
+      >
+        <ReactionMessageHome
+          close={handleCloseSticker}
+          exists={isExistsChatbox}
+          chatbox={chatbox}
+          other={other}
+          user={user}
+        />
+      </Popover>
+      <IconButtonOption onClick={handleClickGif}>
         <IconOption icon="mdi:file-gif-box" />
       </IconButtonOption>
+      <Popover
+        id="simple-popover"
+        open={openGif}
+        anchorEl={anchorElGif}
+        onClose={handleCloseGif}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'center'
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center'
+        }}
+      >
+        <GifMessageHome
+          close={handleCloseGif}
+          exists={isExistsChatbox}
+          chatbox={chatbox}
+          other={other}
+          user={user}
+        />
+      </Popover>
       <BoxInput>
         <Scrollbar alwaysShowTracks>
-          <InputMessage multiline autoFocus placeholder="Aa" />
+          <InputMessage
+            value={messageText}
+            onChange={inputMessage}
+            multiline
+            autoFocus
+            placeholder="Aa"
+          />
         </Scrollbar>
         <IconButtonOption>
           <IconOption icon="carbon:face-satisfied-filled" />
         </IconButtonOption>
       </BoxInput>
-      {2 - 2 === 0 ? (
+      {!isChatting ? (
         <IconButtonOption>
           <IconOption icon="fontisto:like" />
         </IconButtonOption>
       ) : (
-        <IconButtonOption>
+        <IconButtonOption onClick={sendMessage}>
           <IconOption icon="teenyicons:send-solid" />
         </IconButtonOption>
       )}

@@ -13,7 +13,7 @@ import {
   Typography
 } from '@mui/material';
 import { Icon } from '@iconify/react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { collection, getDoc, getDocs, query, where, doc } from 'firebase/firestore';
 import { db } from '../../firebase-config';
@@ -72,6 +72,7 @@ function UpPost({ user }) {
   const [sort, setSort] = useState('desc');
   const { id } = useParams();
   const [other, setOther] = useState({});
+  const navigate = useNavigate();
   useEffect(() => {
     getDoc(doc(db, 'users', id)).then((snapshot) => {
       setOther({ ...snapshot.data(), id });
@@ -90,7 +91,11 @@ function UpPost({ user }) {
         {user.id === undefined ? (
           <Skeleton variant="circular" sx={{ width: '50px', height: '50px' }} />
         ) : (
-          <Avatar sx={{ cursor: 'pointer', width: '50px', height: '50px' }} src={user.avatar} />
+          <Avatar
+            onClick={() => navigate(`/home/profile/${user.id}`)}
+            sx={{ cursor: 'pointer', width: '50px', height: '50px' }}
+            src={user.avatar}
+          />
         )}
         <ButtonUpPost>{`Write something to ${other.username}`}</ButtonUpPost>
       </BoxUpPost>

@@ -83,7 +83,7 @@ function BoxUserChat({ user }) {
         {chatboxs.length >= 0 ? (
           <Scrollbar alwaysShowTracks>
             {chatboxs.map((item, index) => (
-              <UserChat user={user} key={index} chatbox={item} />
+              <UserChat user={user} home={false} key={index} chatbox={item} />
             ))}
           </Scrollbar>
         ) : (

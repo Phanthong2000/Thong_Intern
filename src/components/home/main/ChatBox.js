@@ -8,6 +8,7 @@ import BoxOptionChatBox from './BoxOptionChatBox';
 const RootStyle = styled(Card)(() => ({
   width: '350px',
   height: '450px',
+  maxHeight: '600px',
   position: 'fixed',
   bottom: 0,
   right: 100,

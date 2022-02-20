@@ -31,6 +31,7 @@ import { actionOpenSnackbar } from '../../redux/actions/postAction';
 import GifMessage from './Gif';
 import StickerMessage from './StickerMessage';
 import ReactionMessage from './ReactionMessage';
+import { sendMessageSocket, endCall } from '../../utils/wssConnection';
 
 const RootStyle = styled(Card)(({ theme }) => ({
   width: '100%',
@@ -92,6 +93,7 @@ function OptionsMessage({ user }) {
   const [type, setType] = useState('text');
   const [anchorElGif, setAnchorElGif] = React.useState(null);
   const [anchorElSticker, setAnchorElSticker] = React.useState(null);
+  const usersSocket = useSelector((state) => state.user.usersSocket);
   const handleClickGif = (event) => {
     setAnchorElGif(event.currentTarget);
   };
@@ -146,86 +148,176 @@ function OptionsMessage({ user }) {
   };
   const sendMessage = () => {
     if (type === 'image' && imageMessages.length > 0) {
-      const message = {
-        chatboxId: chatbox.id,
-        content: messageText,
-        contentFile: '',
-        isRead: false,
-        type: 'image',
-        isRestore: false,
-        reaction: [],
-        senderId: user.id,
-        receiverId: chatbox.user.id,
-        createdAt: new Date().getTime()
-      };
-      addDoc(collection(db, 'messages'), message).then((docRef) => {
-        dispatch(actionChatClearImageMessage());
-        setMessageText('');
-        dispatch(actionGetAllMessagesChatbox(chatbox.id));
-        const metadata = {
-          contentType: 'image/*'
+      const userCall = usersSocket.find((user) => user.userId === chatbox.user.id);
+      if (userCall === undefined) {
+        const message = {
+          chatboxId: chatbox.id,
+          content: messageText,
+          contentFile: '',
+          isRead: false,
+          type: 'image',
+          isRestore: false,
+          reaction: [],
+          senderId: user.id,
+          receiverId: chatbox.user.id,
+          createdAt: new Date().getTime()
         };
-        const storageRef = ref(storage, `messages/${user.id}.${new Date().getTime()}`);
-        const uploadTask = uploadBytesResumable(storageRef, imageMessages.at(0), metadata);
-        uploadTask.on(
-          'state_changed',
-          (snapshot) => {
-            switch (snapshot.state) {
-              case 'running':
-                break;
-              default:
-                break;
-            }
-          },
-          (error) => {
-            console.log(error);
-          },
-          () => {
-            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-              updateDoc(doc(db, 'messages', docRef.id), {
-                ...message,
-                contentFile: downloadURL
-              }).then(() => {
-                dispatch(actionChatUpdateMessage({ messageId: docRef.id, image: downloadURL }));
-                updateDoc(doc(db, 'chatboxs', chatbox.id), {
-                  ...chatbox,
-                  updatedAt: new Date().getTime()
+        addDoc(collection(db, 'messages'), message).then((docRef) => {
+          dispatch(actionChatClearImageMessage());
+          setMessageText('');
+          // dispatch(actionGetAllMessagesChatbox(chatbox.id));
+          dispatch(actionChatAddMessage({ ...message, id: docRef.id }));
+          const metadata = {
+            contentType: 'image/*'
+          };
+          const storageRef = ref(storage, `messages/${user.id}.${new Date().getTime()}`);
+          const uploadTask = uploadBytesResumable(storageRef, imageMessages.at(0), metadata);
+          uploadTask.on(
+            'state_changed',
+            (snapshot) => {
+              switch (snapshot.state) {
+                case 'running':
+                  break;
+                default:
+                  break;
+              }
+            },
+            (error) => {
+              console.log(error);
+            },
+            () => {
+              getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                updateDoc(doc(db, 'messages', docRef.id), {
+                  ...message,
+                  contentFile: downloadURL
                 }).then(() => {
-                  dispatch(actionGetAllChatSort(user.id));
+                  dispatch(actionChatUpdateMessage({ messageId: docRef.id, image: downloadURL }));
+                  updateDoc(doc(db, 'chatboxs', chatbox.id), {
+                    updatedAt: new Date().getTime()
+                  }).then(() => {
+                    dispatch(actionGetAllChatSort(user.id));
+                  });
                 });
               });
-            });
-          }
-        );
-      });
-    } else {
-      console.log(type);
-      const message = {
-        chatboxId: chatbox.id,
-        content: messageText,
-        isRead: false,
-        type: 'text',
-        isRestore: false,
-        reaction: [],
-        senderId: user.id,
-        receiverId: chatbox.user.id,
-        createdAt: new Date().getTime()
-      };
-      addDoc(collection(db, 'messages'), message)
-        .then((docRef) => {
-          dispatch(actionChatAddMessage(message));
-          updateDoc(doc(db, 'chatboxs', chatbox.id), {
-            ...chatbox,
-            updatedAt: new Date().getTime()
-          }).then(() => {
-            setMessageText('');
-            setIsChatting(false);
-            dispatch(actionGetAllChatSort(user.id));
-          });
-        })
-        .catch((error) => {
-          console.log(error);
+            }
+          );
         });
+      } else {
+        const message = {
+          chatboxId: chatbox.id,
+          content: messageText,
+          contentFile: '',
+          isRead: false,
+          type: 'image',
+          isRestore: false,
+          reaction: [],
+          senderId: user.id,
+          receiverId: chatbox.user.id,
+          createdAt: new Date().getTime()
+        };
+        addDoc(collection(db, 'messages'), message).then((docRef) => {
+          dispatch(actionChatClearImageMessage());
+          setMessageText('');
+          // dispatch(actionGetAllMessagesChatbox(chatbox.id));
+          dispatch(actionChatAddMessage({ ...message, id: docRef.id }));
+          const metadata = {
+            contentType: 'image/*'
+          };
+          const storageRef = ref(storage, `messages/${user.id}.${new Date().getTime()}`);
+          const uploadTask = uploadBytesResumable(storageRef, imageMessages.at(0), metadata);
+          uploadTask.on(
+            'state_changed',
+            (snapshot) => {
+              switch (snapshot.state) {
+                case 'running':
+                  break;
+                default:
+                  break;
+              }
+            },
+            (error) => {
+              console.log(error);
+            },
+            () => {
+              getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                updateDoc(doc(db, 'messages', docRef.id), {
+                  ...message,
+                  contentFile: downloadURL
+                }).then(() => {
+                  dispatch(actionChatUpdateMessage({ messageId: docRef.id, image: downloadURL }));
+                  updateDoc(doc(db, 'chatboxs', chatbox.id), {
+                    updatedAt: new Date().getTime()
+                  }).then(() => {
+                    dispatch(actionGetAllChatSort(user.id));
+                    sendMessageSocket({
+                      ...message,
+                      contentFile: downloadURL,
+                      socketId: userCall.socketId
+                    });
+                  });
+                });
+              });
+            }
+          );
+        });
+      }
+    } else {
+      const userCall = usersSocket.find((user) => user.userId === chatbox.user.id);
+      if (userCall === undefined) {
+        const message = {
+          chatboxId: chatbox.id,
+          content: messageText,
+          isRead: false,
+          type: 'text',
+          isRestore: false,
+          reaction: [],
+          senderId: user.id,
+          receiverId: chatbox.user.id,
+          createdAt: new Date().getTime()
+        };
+        addDoc(collection(db, 'messages'), message)
+          .then((docRef) => {
+            dispatch(actionChatAddMessage({ ...message, id: docRef.id }));
+            updateDoc(doc(db, 'chatboxs', chatbox.id), {
+              updatedAt: new Date().getTime()
+            }).then(() => {
+              setMessageText('');
+              setIsChatting(false);
+              dispatch(actionGetAllChatSort(user.id));
+            });
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      } else {
+        const message = {
+          chatboxId: chatbox.id,
+          content: messageText,
+          isRead: false,
+          type: 'text',
+          isRestore: false,
+          reaction: [],
+          senderId: user.id,
+          receiverId: chatbox.user.id,
+          createdAt: new Date().getTime()
+        };
+        addDoc(collection(db, 'messages'), message)
+          .then((docRef) => {
+            console.log(docRef.id);
+            dispatch(actionChatAddMessage({ ...message, id: docRef.id }));
+            updateDoc(doc(db, 'chatboxs', chatbox.id), {
+              updatedAt: new Date().getTime()
+            }).then(() => {
+              setMessageText('');
+              setIsChatting(false);
+              dispatch(actionGetAllChatSort(user.id));
+              sendMessageSocket({ ...message, socketId: userCall.socketId });
+            });
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
     }
   };
   if (chatbox.id === '')

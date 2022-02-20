@@ -55,11 +55,9 @@ function HomeSidebar({ user }) {
       dispatch(actionGetAllFriendUser(user.id));
       // dispatch(actionGetAllChat(user.id));
       dispatch(actionGetAllChatSort(user.id));
+      dispatch(actionGetAllPostAllFriend(user.id));
     }
     return () => null;
-  }, [user]);
-  useEffect(() => {
-    if (user.id) dispatch(actionGetAllPostAllFriend(user.id, friendManual));
   }, [user]);
   useEffect(() => {
     if (user.id !== undefined && me !== '') {

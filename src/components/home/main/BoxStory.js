@@ -81,10 +81,20 @@ function BoxStory({ user }) {
         <SkeletonPost variant="rectangular" />
       </RootStyle>
     );
+  const handleClick = () => {
+    const data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    const newData = [
+      ...data
+        .slice(0, 4)
+        .concat([12])
+        .concat([...data.slice(5, data.length)])
+    ];
+    console.log(newData);
+  };
   return (
     <RootStyle>
       <BoxCreateStory elevation={3}>
-        <AvatarUser src={user.avatar} />
+        <AvatarUser onClick={handleClick} src={user.avatar} />
         <IconCreate sty icon="carbon:add-filled" />
         <Typography sx={{ fontWeight: 'bold', fontSize: '16px' }}>Create story</Typography>
       </BoxCreateStory>

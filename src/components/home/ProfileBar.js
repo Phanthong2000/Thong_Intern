@@ -14,10 +14,13 @@ import {
   actionUserOpenProfile,
   actionUserCloseProfile,
   actionUserCloseNotifications,
-  actionUserOpenNotifications
+  actionUserOpenNotifications,
+  actionUserOpenMessenger,
+  actionUserCloseMessenger
 } from '../../redux/actions/userAction';
 import BoxProfile from './BoxProfile';
 import BoxNotifications from './BoxNotifications';
+import BoxMessager from './BoxMessager';
 
 const RootStyle = styled(Stack)(() => ({
   display: 'flex'
@@ -37,6 +40,7 @@ ProfileBar.prototype = {
 function ProfileBar({ user }) {
   const isOpeningProfile = useSelector((state) => state.user.isOpeningProfile);
   const isOpeningNotifications = useSelector((state) => state.user.isOpeningNotifications);
+  const isMessenger = useSelector((state) => state.user.isMessenger);
   const dispatch = useDispatch();
   const testBadge = 0;
   const openProfileBox = () => {
@@ -49,9 +53,18 @@ function ProfileBar({ user }) {
     if (isOpeningNotifications) dispatch(actionUserCloseNotifications());
     else dispatch(actionUserOpenNotifications());
   };
+  const openMessenger = () => {
+    if (isMessenger) dispatch(actionUserCloseMessenger());
+    else dispatch(actionUserOpenMessenger());
+  };
   return (
     <RootStyle direction="row" spacing={3}>
-      <IconButton size="large" aria-label="show 4 new mails" color="inherit">
+      <IconButton
+        onClick={openMessenger}
+        size="large"
+        aria-label="show 4 new mails"
+        color="inherit"
+      >
         <Badge badgeContent={testBadge >= 1 ? 1 : null} color="error">
           {testBadge >= 1 ? (
             <Icon icon="uim:comment-message" style={{ color: '#30ab78' }} />
@@ -86,6 +99,7 @@ function ProfileBar({ user }) {
       )}
       {isOpeningProfile ? <BoxProfile user={user} /> : null}
       {isOpeningNotifications ? <BoxNotifications user={user} /> : null}
+      {isMessenger && <BoxMessager user={user} />}
     </RootStyle>
   );
 }

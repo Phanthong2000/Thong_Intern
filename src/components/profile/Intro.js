@@ -3,8 +3,11 @@ import PropTypes from 'prop-types';
 import { Button, Card, Divider, styled, Typography } from '@mui/material';
 import { Icon } from '@iconify/react';
 import { useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { collection, getDoc, getDocs, query, where, doc } from 'firebase/firestore';
 import { db } from '../../firebase-config';
+import { actionUserOpenEditDetail } from '../../redux/actions/userAction';
+import EditDetail from './EditDetail';
 
 const RootStyle = styled(Card)(({ theme }) => ({
   background: '#fff',
@@ -29,6 +32,8 @@ Intro.prototype = {
   user: PropTypes.object
 };
 function Intro({ user }) {
+  const dispatch = useDispatch();
+  const isEditDetail = useSelector((state) => state.user.isEditDetail);
   const Information = ({ content, information, icon }) => {
     const WrapperContent = styled('div')(() => ({
       display: 'flex',
@@ -41,7 +46,7 @@ function Intro({ user }) {
       marginLeft: '10px',
       width: '90%'
     }));
-    if (information === undefined) return null;
+    if (information === undefined || information === null) return null;
     return (
       <WrapperContent>
         <Icon fontSize={30} style={{ color: 'grey' }} icon={icon} />
@@ -57,20 +62,16 @@ function Intro({ user }) {
       <Title>Intro</Title>
       <Divider />
       <Information
-        content="Marital status"
-        information={user.maritalStatus}
+        content="Relationship"
+        information={user.relationship}
         icon="ant-design:heart-filled"
       />
       <Information content="From" information={user.hometown} icon="gis:position" />
       <Information content="Lives in" information={user.address} icon="bi:house-fill" />
       <Information content="University" information={user.university} icon="mdi:school" />
       <Information content="High school" information={user.highSchool} icon="mdi:school" />
-      <Information
-        content="Junior high school"
-        information={user.juniorHighSchool}
-        icon="mdi:school"
-      />
-      <ButtonEdit>Edit detail</ButtonEdit>
+      <ButtonEdit onClick={() => dispatch(actionUserOpenEditDetail(true))}>Edit detail</ButtonEdit>
+      {isEditDetail && <EditDetail user={user} />}
     </RootStyle>
   );
 }

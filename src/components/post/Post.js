@@ -28,6 +28,7 @@ import {
   updateDoc,
   addDoc
 } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
 import ShowMore from 'react-show-more';
 import { db } from '../../firebase-config';
 import Comment from './Comment';
@@ -79,6 +80,8 @@ function Post({ user, post }) {
   const [userPost, setUserPost] = useState({});
   const [isCommenting, setIsCommenting] = useState(false);
   const [commentByPostId, setCommentByPostId] = useState([]);
+  const usersSocket = useSelector((state) => state.user.usersSocket);
+  const navigate = useNavigate();
   const getUserPost = () => {
     getDoc(doc(db, 'users', post.userId)).then((post) => {
       setUserPost({
@@ -499,9 +502,20 @@ function Post({ user, post }) {
               {userPost.avatar === undefined ? (
                 <Skeleton sx={{ width: '40px', height: '40px' }} variant="circular" />
               ) : (
-                <Avatar src={userPost.avatar} />
+                <Avatar
+                  onClick={() => navigate(`/home/other/${userPost.id}`)}
+                  src={userPost.avatar}
+                />
               )}
-              <DotOnline icon="ci:dot-05-xl" style={userPost.isOnline ? null : { color: 'grey' }} />
+              <DotOnline
+                icon="ci:dot-05-xl"
+                style={{
+                  color:
+                    usersSocket.find((socket) => socket.userId === userPost.id) === undefined
+                      ? 'gray'
+                      : null
+                }}
+              />
             </Button>
             <Stack>
               <Box sx={{ display: 'flex', alignItems: 'center', textAlign: 'left' }}>

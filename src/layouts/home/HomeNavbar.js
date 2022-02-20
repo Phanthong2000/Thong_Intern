@@ -41,11 +41,12 @@ HomeNavbar.prototype = {
 };
 function HomeNavbar({ user }) {
   const isSearching = useSelector((state) => state.user.isSearching);
+  const isMessenger = useSelector((state) => state.user.isMessenger);
   return (
     <RootStyle>
       <Toolbar sx={{ justifyContent: 'space-between' }}>
         <Stack direction="row" sx={{ alignItems: 'center' }} spacing={3}>
-          <Logo src={logo} alt="Logo" />
+          <Logo onClick={() => window.scrollTo(0, 0)} src={logo} alt="Logo" />
           <Responsive width="mdUp">
             <MenuBar />
           </Responsive>
@@ -53,11 +54,11 @@ function HomeNavbar({ user }) {
         </Stack>
         <ProfileBar user={user} />
       </Toolbar>
-      {isSearching ? (
+      {isSearching && (
         <BoxSearch>
           <ListSearch user={user} />
         </BoxSearch>
-      ) : null}
+      )}
     </RootStyle>
   );
 }

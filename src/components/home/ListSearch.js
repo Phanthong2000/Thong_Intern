@@ -76,7 +76,7 @@ function ListSearch({ user }) {
   useEffect(() => {
     getHistorySearch();
     getAllUser();
-    return null;
+    return () => null;
   }, [user]);
   const closeSearch = () => {
     dispatch(actionUserCloseSearch());

@@ -33,7 +33,6 @@ Contact.prototype = {
   otherId: PropTypes.string
 };
 function Contact({ user, otherId }) {
-  const usersSocket = useSelector((state) => state.user.usersSocket);
   const [other, setOther] = useState({});
   const [status, setStatus] = useState('');
   const dispatch = useDispatch();

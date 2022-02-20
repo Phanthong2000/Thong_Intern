@@ -3,10 +3,11 @@ import PropTypes from 'prop-types';
 import { Box, Button, Card, Grid, Skeleton, Stack, styled, Typography } from '@mui/material';
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import { Icon } from '@iconify/react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase-config';
 import AvatarMutualFriend from './AvatarMutualFriend';
+import { actionChatGetChatbox, actionChatGetChatboxHome } from '../../redux/actions/chatAction';
 
 const RootStyle = styled(Grid)(() => ({
   padding: '10px'
@@ -84,7 +85,10 @@ function Friend({ user, friend, index }) {
   const [friendMutualUser, setFriendMutualUser] = useState([]);
   const friendManual = useSelector((state) => state.user.friendManual);
   const [quantityMutualFriend, setQuantityMutualFriend] = useState(-1);
+  const chatboxs = useSelector((state) => state.chat.chatboxs);
+  const [chatbox, setChatbox] = useState({});
   const friends = useSelector((state) => state.user.friends);
+  const dispatch = useDispatch();
   const getAllFriendsSender = async () => {
     const data1 = await getDocs(
       query(
@@ -127,6 +131,16 @@ function Friend({ user, friend, index }) {
     setQuantityMutualFriend(temp.length);
     setFriendMutualUser(temp);
   };
+  const checkExistsChatboxUserAndFriend = (friendId) => {
+    chatboxs.forEach((chatbox) => {
+      if (
+        (chatbox.user1 === user.id && chatbox.user2 === friendId) ||
+        (chatbox.user2 === user.id && chatbox.user1 === friendId)
+      ) {
+        setChatbox(chatbox);
+      }
+    });
+  };
   useEffect(() => {
     getAllFriendsSender();
     getDoc(doc(db, 'users', friend.friendId)).then((snapshot) => {
@@ -134,6 +148,7 @@ function Friend({ user, friend, index }) {
         ...snapshot.data(),
         id: snapshot.id
       });
+      checkExistsChatboxUserAndFriend(snapshot.id);
     });
     return () => null;
   }, [user]);
@@ -141,7 +156,23 @@ function Friend({ user, friend, index }) {
     navigate(`/home/other/${friend.friendId}`);
   };
   const chooseChat = () => {
-    console.log('ok');
+    if (chatbox.id === undefined) {
+      dispatch(
+        actionChatGetChatboxHome({
+          status: true,
+          user: userFriend
+        })
+      );
+      navigate('/home/app');
+    } else {
+      dispatch(
+        actionChatGetChatbox({
+          id: chatbox.id,
+          user: userFriend
+        })
+      );
+      navigate('/home/chat');
+    }
   };
   const ManualFriend = () => {
     const Mutual = styled(Typography)(() => ({

@@ -17,6 +17,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../firebase-config';
 import { actionChatDeleteMessage, actionGetAllChatSort } from '../../redux/actions/chatAction';
+import { sendReactionSocket, sendMessageSocket } from '../../utils/wssConnection';
 
 const BoxMessageUserSender = styled(Box)(() => ({
   width: '100%',
@@ -111,6 +112,8 @@ function Message({ user, message, index }) {
   const openReact = Boolean(anchorElReaction);
   const openDelete = Boolean(anchorElDelete);
   const updateMessage = useSelector((state) => state.chat.updateMessage);
+  const sendReaction = useSelector((state) => state.chat.sendReaction);
+  const usersSocket = useSelector((state) => state.user.usersSocket);
   useEffect(() => {
     if (contentRef.current !== null) {
       setHeightContentText(contentRef.current.clientHeight);
@@ -127,7 +130,7 @@ function Message({ user, message, index }) {
       setNameReactChosen(reaction.find((item) => item.userId === user.id).react);
     }
     return () => null;
-  }, [user]);
+  }, [user, sendReaction]);
   useEffect(() => {
     if (message.type === 'image') setImageMessage(message.contentFile);
     if (updateMessage.messageId === message.id) {
@@ -433,7 +436,6 @@ function Message({ user, message, index }) {
             sx={{ display: 'block', alignItems: 'center', width: '100%', justifyContent: 'end' }}
           >
             <Box
-              onClick={() => console.log(contentRef.current.clientHeight)}
               sx={{
                 display: 'flex',
                 alignItems: 'center',
