@@ -17,6 +17,7 @@ import Other from './pages/Other';
 import FriendRequests from './components/friend/FriendRequests';
 import AllFriends from './components/friend/AllFriends';
 import VideoCall from './pages/VideoCall';
+import Photo from './pages/Photo';
 
 function Router() {
   const navigate = useNavigate();
@@ -66,6 +67,7 @@ function Router() {
         { path: 'setting', element: <Setting /> },
         { path: 'other/:id', element: <Other user={user} /> },
         { path: 'profile/:id', element: <Profile user={user} /> },
+        { path: 'photo/:id', element: <Photo user={user} /> },
         {
           path: 'user-not-found',
           element: <UserNotFound />

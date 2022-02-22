@@ -1,11 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Icon } from '@iconify/react';
-import { Avatar, ListItem, ListItemButton, Stack, styled, Typography } from '@mui/material';
-import { getDoc, doc } from 'firebase/firestore';
+import {
+  Avatar,
+  ListItem,
+  ListItemButton,
+  Skeleton,
+  Stack,
+  styled,
+  Typography
+} from '@mui/material';
+import { getDoc, doc, updateDoc } from 'firebase/firestore';
 import LinesEllipsis from 'react-lines-ellipsis';
+import { useDispatch } from 'react-redux';
 import moment from 'moment';
 import { db } from '../../firebase-config';
+import { actionGetBadgeNotifications } from '../../redux/actions/userAction';
 
 const RootStyle = styled(ListItemButton)(({ theme }) => ({
   height: '100px',
@@ -20,32 +30,59 @@ Notification.prototype = {
 };
 function Notification({ notification }) {
   const [sender, setSender] = useState({});
+  const [isRead, setIsRead] = useState(notification.isRead);
+  const dispatch = useDispatch();
   const getSender = () => {
-    getDoc(doc(db, 'users', notification.senderId)).then((snapshot) => setSender(snapshot.data()));
+    if (notification.senderIds.length > 0) {
+      getDoc(doc(db, 'users', notification.senderIds.at(notification.senderIds.length - 1))).then(
+        (snapshot) => setSender(snapshot.data())
+      );
+    }
   };
   useEffect(() => {
     getSender();
+    return () => null;
   }, []);
+  const checkUsernameSent = () => {
+    if (notification.senderIds.length === 1) return `${sender.username}`;
+    if (notification.senderIds.length === 2) return `${sender.username} and 1 other`;
+    return `${sender.username} and ${notification.senderIds.length - 1} others`;
+  };
+  const readNotification = () => {
+    updateDoc(doc(db, 'notifications', notification.id), { isRead: true }).then(() => {
+      setIsRead(true);
+      dispatch(actionGetBadgeNotifications(notification.receiverId));
+    });
+  };
+  if (notification.senderIds.length <= 0) return null;
   return (
-    <RootStyle>
-      <Avatar src={sender.avatar} sx={{ width: '50px', height: '50px' }} />
+    <RootStyle onClick={readNotification}>
+      {sender.avatar === undefined ? (
+        <Skeleton variant="circular" sx={{ width: '50px', height: '50px' }} />
+      ) : (
+        <Avatar src={sender.avatar} sx={{ width: '50px', height: '50px' }} />
+      )}
       <Stack sx={{ marginLeft: '10px', width: '300px' }}>
-        <LinesEllipsis
-          text={
-            <span>
-              <b>{sender.username}</b> {notification.content}
-            </span>
-          }
-          maxLine="3"
-          ellipsis="..."
-          trimRight
-          basedOn="letters"
-        />
-        <CreatedAt sx={!notification.isRead ? { color: '#30ab78' } : null}>
-          {moment(notification.createdAt).startOf('minutes').fromNow()}
+        {sender.username === undefined ? (
+          <Skeleton variant="text" sx={{ width: '100px', height: '24px' }} />
+        ) : (
+          <LinesEllipsis
+            text={
+              <span>
+                <b>{checkUsernameSent()}</b> {notification.content}
+              </span>
+            }
+            maxLine="3"
+            ellipsis="..."
+            trimRight
+            basedOn="letters"
+          />
+        )}
+        <CreatedAt sx={!isRead ? { color: '#30ab78' } : null}>
+          {moment(notification.updatedAt).startOf('minutes').fromNow()}
         </CreatedAt>
       </Stack>
-      <Icon icon="ci:dot-04-l" fontSize={30} color="#30ab78" />
+      {!isRead && <Icon icon="ci:dot-04-l" fontSize={30} color="#30ab78" />}
     </RootStyle>
   );
 }

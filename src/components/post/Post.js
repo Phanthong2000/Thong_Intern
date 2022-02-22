@@ -39,6 +39,9 @@ import {
 } from '../../redux/actions/postAction';
 import Tag from './Tag';
 import ModalConfirmDeletePost from './ModalConfirmDeletePost';
+import { pushNotificationSocket } from '../../utils/wssConnection';
+import { actionGetContact, actionUserHoverUsername } from '../../redux/actions/userAction';
+import BoxHoverUsernamePost from '../BoxHoverUsernamePost';
 
 const RootStyle = styled(Card)(({ theme }) => ({
   marginTop: '10px',
@@ -66,7 +69,11 @@ const DotOnline = styled(Icon)(({ theme }) => ({
 const Username = styled(Typography)(() => ({
   fontWeight: 'bold',
   fontFamily: 'sans-serif',
-  fontSize: '13px'
+  fontSize: '13px',
+  cursor: 'pointer',
+  ':hover': {
+    textDecoration: 'underline'
+  }
 }));
 Post.prototype = {
   post: PropTypes.object,
@@ -74,14 +81,51 @@ Post.prototype = {
 };
 function Post({ user, post }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [anchorElUsername, setAnchorElUsername] = React.useState(null);
   const open = Boolean(anchorEl);
+  const openUS = Boolean(anchorElUsername);
   const inputCommentRef = useRef('');
   const dispatch = useDispatch();
   const [userPost, setUserPost] = useState({});
   const [isCommenting, setIsCommenting] = useState(false);
   const [commentByPostId, setCommentByPostId] = useState([]);
   const usersSocket = useSelector((state) => state.user.usersSocket);
+  const [notificationLovesByPost, setNotificationLovesByPost] = useState({});
+  const [notificationCommentsByPost, setNotificationCommentsByPost] = useState({});
+  const [lovesPost, setLovesPost] = useState(post.loves);
   const navigate = useNavigate();
+  const getNotificationsLovesByPost = () => {
+    getDocs(
+      query(
+        collection(db, 'notifications'),
+        where('postId', '==', post.id),
+        where('action', '==', 'love')
+      )
+    ).then((snapshots) => {
+      if (!snapshots.empty) {
+        setNotificationLovesByPost({
+          ...snapshots.docs.at(snapshots.size - 1).data(),
+          id: snapshots.docs.at(snapshots.size - 1).id
+        });
+      }
+    });
+  };
+  const getNotificationsCommentsPost = () => {
+    getDocs(
+      query(
+        collection(db, 'notifications'),
+        where('postId', '==', post.id),
+        where('action', '==', 'comment')
+      )
+    ).then((snapshots) => {
+      if (!snapshots.empty) {
+        setNotificationCommentsByPost({
+          ...snapshots.docs.at(snapshots.size - 1).data(),
+          id: snapshots.docs.at(snapshots.size - 1).id
+        });
+      }
+    });
+  };
   const getUserPost = () => {
     getDoc(doc(db, 'users', post.userId)).then((post) => {
       setUserPost({
@@ -151,12 +195,47 @@ function Post({ user, post }) {
       );
     return null;
   };
+  const ContentAvatar = () => {
+    const BoxAvatar = styled(Box)(() => ({
+      width: '100%',
+      height: '400px',
+      justifyContent: 'center',
+      alignItems: 'center',
+      display: 'flex',
+      backgroundImage: `url(${user.background})`,
+      backgroundSize: '100% 250px',
+      backgroundRepeat: 'no-repeat'
+    }));
+    const AvatarPost = styled(Avatar)(() => ({
+      width: '350px',
+      height: '350px',
+      border: `10px solid #fff`,
+      cursor: 'pointer'
+    }));
+    return (
+      <BoxAvatar>
+        <AvatarPost onClick={goToPhoto} src={post.contentFile} />
+      </BoxAvatar>
+    );
+  };
   const ContentImage = () => {
     const Image = styled('img')(() => ({
       width: '100%',
-      marginTop: '5px'
+      marginTop: '5px',
+      cursor: 'pointer'
     }));
-    if (post.type === 'image') return <Image src={post.contentFile} alt="post" />;
+    if (post.type === 'image')
+      return <Image onClick={goToPhoto} src={post.contentFile} alt="post" />;
+    return null;
+  };
+  const ContentCover = () => {
+    const Image = styled('img')(() => ({
+      width: '100%',
+      marginTop: '5px',
+      cursor: 'pointer'
+    }));
+    if (post.type === 'cover')
+      return <Image onClick={goToPhoto} src={post.contentFile} alt="post" />;
     return null;
   };
   const handleClose = () => {
@@ -164,6 +243,14 @@ function Post({ user, post }) {
   };
   const openOptionsPost = (event) => {
     if (user.id === userPost.id) setAnchorEl(event.currentTarget);
+  };
+  const handleCloseUsername = () => {
+    setAnchorElUsername(null);
+  };
+  const openUsername = (event) => {
+    dispatch(actionGetContact(user.id, userPost.id));
+    dispatch(actionUserHoverUsername(userPost));
+    setAnchorElUsername(event.currentTarget);
   };
   const deletePost = () => {
     dispatch(actionPostOpenConfirmDeletePost(post.id));
@@ -198,7 +285,7 @@ function Post({ user, post }) {
     const checkQuantityLove = () => {
       if (post.loves.length === 1) return `You`;
       if (post.loves.length === 2) return `You and 1 other`;
-      return `You and ${post.loves.length} others`;
+      return `You and ${post.loves.length - 1} others`;
     };
     const checkQuantityLoveDontHaveUserCurrent = () => {
       if (post.loves.length < 2) return `${post.loves.length} other`;
@@ -385,8 +472,8 @@ function Post({ user, post }) {
                 '&:focus': { backgroundColor: 'transparent' }
               }}
             >
-              <Avatar sx={{ width: '30px', height: '30px' }} src={userPost.avatar} />
-              <DotOnline icon="ci:dot-05-xl" style={userPost.isOnline ? null : { color: 'grey' }} />
+              <Avatar sx={{ width: '30px', height: '30px' }} src={user.avatar} />
+              <DotOnline icon="ci:dot-05-xl" style={user.isOnline ? null : { color: 'grey' }} />
             </Button>
           </Grid>
           <Grid item xs={10} sm={10} md={10} lg={10} xl={10}>
@@ -422,8 +509,8 @@ function Post({ user, post }) {
                 '&:focus': { backgroundColor: 'transparent' }
               }}
             >
-              <Avatar sx={{ width: '30px', height: '30px' }} src={userPost.avatar} />
-              <DotOnline icon="ci:dot-05-xl" style={userPost.isOnline ? null : { color: 'grey' }} />
+              <Avatar sx={{ width: '30px', height: '30px' }} src={user.avatar} />
+              <DotOnline icon="ci:dot-05-xl" style={user.isOnline ? null : { color: 'grey' }} />
             </Button>
           </Grid>
           <Grid item xs={10} sm={10} md={10} lg={10} xl={10}>
@@ -488,6 +575,9 @@ function Post({ user, post }) {
       </Box>
     );
   };
+  const goToPhoto = () => {
+    navigate(`/home/photo/${post.id}`);
+  };
   return (
     <RootStyle>
       <StackPost>
@@ -522,7 +612,36 @@ function Post({ user, post }) {
                 {userPost.username === undefined ? (
                   <Skeleton variant="text" sx={{ width: '100px', height: '20px' }} />
                 ) : (
-                  <Username>{userPost.username}</Username>
+                  <>
+                    <Username onMouseOver={openUsername}>{userPost.username}</Username>
+                    <Popover
+                      id="basic-menu"
+                      anchorEl={anchorElUsername}
+                      open={openUS}
+                      onClose={handleCloseUsername}
+                      anchorOrigin={{
+                        vertical: 'top',
+                        horizontal: 'center'
+                      }}
+                      transformOrigin={{
+                        vertical: 'bottom',
+                        horizontal: 'center'
+                      }}
+                    >
+                      <BoxHoverUsernamePost user={user} />
+                    </Popover>
+                  </>
+                )}
+
+                {post.type === 'avatar' && (
+                  <Typography sx={{ color: 'gray', marginLeft: '3px' }}>
+                    updated his profile picture.
+                  </Typography>
+                )}
+                {post.type === 'cover' && (
+                  <Typography sx={{ color: 'gray', marginLeft: '3px' }}>
+                    updated his cover photo.
+                  </Typography>
                 )}
                 <Tags />
               </Box>
@@ -591,7 +710,8 @@ function Post({ user, post }) {
         ) : (
           <ContentBackground />
         )}
-
+        {post.type === 'avatar' && <ContentAvatar />}
+        {post.type === 'cover' && <ContentCover />}
         <InfoContact />
         <ButtonContact />
         <Divider />

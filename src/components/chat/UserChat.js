@@ -14,7 +14,7 @@ import { Icon } from '@iconify/react';
 import moment from 'moment';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
-import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, where, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase-config';
 import {
   actionChatClearImageMessage,
@@ -110,6 +110,14 @@ function UserChat({ chatbox, user, home }) {
         );
       }
     } else {
+      if (messageLast.receiverId === user.id) {
+        updateDoc(doc(db, 'messages', messageLast.id), { isRead: true }).then(() => {
+          setMessageLast({
+            ...messageLast,
+            isRead: true
+          });
+        });
+      }
       dispatch(actionChatClearImageMessage());
       dispatch(
         actionChatGetChatbox({
@@ -210,15 +218,21 @@ function UserChat({ chatbox, user, home }) {
                       )}`
                   : `${moment(messageLast.createdAt).fromNow()}`}
               </Typography>
+              {!messageLast.isRead && messageLast.senderId !== user.id && (
+                <Icon
+                  style={{ color: 'green', width: '20px', height: '20px' }}
+                  icon="ci:dot-05-xl"
+                />
+              )}
             </Stack>
           )}
         </BoxInfo>
       </Box>
-      {showOptions ? (
+      {showOptions && (
         <IconButtonOption>
           <Icon icon="bx:bx-dots-horizontal-rounded" />
         </IconButtonOption>
-      ) : null}
+      )}
     </RootStyle>
   );
 }

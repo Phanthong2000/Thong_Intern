@@ -42,6 +42,8 @@ function ProfileBar({ user }) {
   const isOpeningNotifications = useSelector((state) => state.user.isOpeningNotifications);
   const isMessenger = useSelector((state) => state.user.isMessenger);
   const dispatch = useDispatch();
+  const notifications = useSelector((state) => state.user.notifications);
+  const badgeNotification = useSelector((state) => state.user.badgeNotification);
   const testBadge = 0;
   const openProfileBox = () => {
     dispatch(actionUserOpenProfile());
@@ -79,8 +81,8 @@ function ProfileBar({ user }) {
         aria-label="show 4 new mails"
         color="inherit"
       >
-        <Badge badgeContent={testBadge >= 1 ? 1 : null} color="error">
-          {testBadge >= 1 ? (
+        <Badge badgeContent={badgeNotification >= 1 ? badgeNotification : null} color="error">
+          {badgeNotification >= 1 ? (
             <Notifications sx={{ color: '#30ab78' }} />
           ) : (
             <NotificationsNone sx={{ color: '#30ab78' }} />

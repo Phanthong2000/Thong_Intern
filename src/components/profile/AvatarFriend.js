@@ -24,6 +24,7 @@ function AvatarFriend({ friend, index }) {
         id: snapshot.id
       });
     });
+    return () => null;
   }, [friend]);
   const goToOther = () => {
     navigate(`/home/other/${friend.friendId}`);

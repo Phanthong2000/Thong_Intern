@@ -34,6 +34,7 @@ import { db } from '../../firebase-config';
 import { actionPostOpenConfirmDeletePost, getAllPosts } from '../../redux/actions/postAction';
 import Comment from '../post/Comment';
 import Tag from '../post/Tag';
+import { pushNotificationSocket } from '../../utils/wssConnection';
 
 const RootStyle = styled(Card)(({ theme }) => ({
   marginTop: '10px',
@@ -77,7 +78,41 @@ function Post({ user, post }) {
   const [lovesPost, setLovesPost] = useState(post.loves);
   const usersSocket = useSelector((state) => state.user.usersSocket);
   const [commentByPostId, setCommentByPostId] = useState([]);
+  const [notificationLovesByPost, setNotificationLovesByPost] = useState({});
+  const [notificationCommentsByPost, setNotificationCommentsByPost] = useState({});
   const navigate = useNavigate();
+  const getNotificationsLovesByPost = () => {
+    getDocs(
+      query(
+        collection(db, 'notifications'),
+        where('postId', '==', post.id),
+        where('action', '==', 'love')
+      )
+    ).then((snapshots) => {
+      if (!snapshots.empty) {
+        setNotificationLovesByPost({
+          ...snapshots.docs.at(snapshots.size - 1).data(),
+          id: snapshots.docs.at(snapshots.size - 1).id
+        });
+      }
+    });
+  };
+  const getNotificationsCommentsPost = () => {
+    getDocs(
+      query(
+        collection(db, 'notifications'),
+        where('postId', '==', post.id),
+        where('action', '==', 'comment')
+      )
+    ).then((snapshots) => {
+      if (!snapshots.empty) {
+        setNotificationCommentsByPost({
+          ...snapshots.docs.at(snapshots.size - 1).data(),
+          id: snapshots.docs.at(snapshots.size - 1).id
+        });
+      }
+    });
+  };
   const getUserPost = () => {
     getDoc(doc(db, 'users', post.userId)).then((post) => {
       setUserPost({
@@ -105,6 +140,8 @@ function Post({ user, post }) {
   useEffect(() => {
     getUserPost();
     getCommentsByPostId();
+    getNotificationsLovesByPost();
+    getNotificationsCommentsPost();
     return () => null;
   }, []);
   const StatusPost = () => {
@@ -147,13 +184,51 @@ function Post({ user, post }) {
       );
     return null;
   };
+  const goToPhoto = () => {
+    navigate(`/home/photo/${post.id}`);
+  };
   const ContentImage = () => {
     const Image = styled('img')(() => ({
       width: '100%',
-      marginTop: '5px'
+      marginTop: '5px',
+      cursor: 'pointer'
     }));
-    if (post.type === 'image') return <Image src={post.contentFile} alt="post" />;
+    if (post.type === 'image')
+      return <Image onClick={goToPhoto} src={post.contentFile} alt="post" />;
     return null;
+  };
+  const ContentCover = () => {
+    const Image = styled('img')(() => ({
+      width: '100%',
+      marginTop: '5px',
+      cursor: 'pointer'
+    }));
+    if (post.type === 'cover')
+      return <Image onClick={goToPhoto} src={post.contentFile} alt="post" />;
+    return null;
+  };
+  const ContentAvatar = () => {
+    const BoxAvatar = styled(Box)(() => ({
+      width: '100%',
+      height: '400px',
+      justifyContent: 'center',
+      alignItems: 'center',
+      display: 'flex',
+      backgroundImage: `url(${user.background})`,
+      backgroundSize: '100% 200px',
+      backgroundRepeat: 'no-repeat'
+    }));
+    const AvatarPost = styled(Avatar)(() => ({
+      width: '350px',
+      height: '350px',
+      border: `10px solid #fff`,
+      cursor: 'pointer'
+    }));
+    return (
+      <BoxAvatar>
+        <AvatarPost onClick={goToPhoto} src={post.contentFile} />
+      </BoxAvatar>
+    );
   };
   const handleClose = () => {
     setAnchorEl(null);
@@ -194,7 +269,7 @@ function Post({ user, post }) {
     const checkQuantityLove = () => {
       if (lovesPost.length === 1) return `You`;
       if (lovesPost.length === 2) return `You and 1 other`;
-      return `You and ${lovesPost.length} others`;
+      return `You and ${lovesPost.length - 1} others`;
     };
     const checkQuantityLoveDontHaveUserCurrent = () => {
       if (lovesPost.length < 2) return `${lovesPost.length} other`;
@@ -262,7 +337,92 @@ function Post({ user, post }) {
           loves: lovesPostNew
         };
         updateDoc(doc(db, 'posts', post.id), postNew).then(() => setLovesPost(lovesPostNew));
-        setLovesPost(lovesPostNew);
+      }
+      const userSocket = usersSocket.find((user) => user.userId === userPost.id);
+      if (userSocket !== undefined) {
+        if (notificationLovesByPost.id === undefined) {
+          const notification = {
+            senderIds: [user.id],
+            receiverId: userPost.id,
+            content: 'loved your post',
+            type: 'post',
+            action: 'love',
+            postId: post.id,
+            isRead: false,
+            createdAt: new Date().getTime(),
+            updatedAt: new Date().getTime()
+          };
+          addDoc(collection(db, 'notifications'), notification).then((docRef) => {
+            pushNotificationSocket({
+              ...notification,
+              socketId: userSocket.socketId
+            });
+            getNotificationsLovesByPost();
+          });
+        } else if (notificationLovesByPost.senderIds.indexOf(user.id) >= 0) {
+          updateDoc(doc(db, 'notifications', notificationLovesByPost.id), {
+            ...notificationLovesByPost,
+            senderIds: notificationLovesByPost.senderIds.filter(
+              (notification) => notification !== user.id
+            )
+          }).then(() => {
+            pushNotificationSocket({
+              ...notificationCommentsByPost,
+              senderIds: notificationLovesByPost.senderIds.filter(
+                (notification) => notification !== user.id
+              ),
+              socketId: userSocket.socketId
+            });
+            getNotificationsLovesByPost();
+          });
+        } else {
+          updateDoc(doc(db, 'notifications', notificationLovesByPost.id), {
+            ...notificationLovesByPost,
+            isRead: false,
+            updatedAt: new Date().getTime(),
+            senderIds: [...notificationLovesByPost.senderIds, user.id]
+          }).then(() => {
+            pushNotificationSocket({
+              ...notificationCommentsByPost,
+              senderIds: [...notificationLovesByPost.senderIds, user.id],
+              socketId: userSocket.socketId
+            });
+            getNotificationsLovesByPost();
+          });
+        }
+      } else if (notificationLovesByPost.id === undefined) {
+        const notification = {
+          senderIds: [user.id],
+          receiverId: userPost.id,
+          content: 'loved your post',
+          type: 'post',
+          action: 'love',
+          postId: post.id,
+          isRead: false,
+          createdAt: new Date().getTime(),
+          updatedAt: new Date().getTime()
+        };
+        addDoc(collection(db, 'notifications'), notification).then((docRef) => {
+          getNotificationsLovesByPost();
+        });
+      } else if (notificationLovesByPost.senderIds.indexOf(user.id) >= 0) {
+        updateDoc(doc(db, 'notifications', notificationLovesByPost.id), {
+          ...notificationLovesByPost,
+          senderIds: notificationLovesByPost.senderIds.filter(
+            (notification) => notification !== user.id
+          )
+        }).then(() => {
+          getNotificationsLovesByPost();
+        });
+      } else {
+        updateDoc(doc(db, 'notifications', notificationLovesByPost.id), {
+          ...notificationLovesByPost,
+          isRead: false,
+          updatedAt: new Date().getTime(),
+          senderIds: [...notificationLovesByPost.senderIds, user.id]
+        }).then(() => {
+          getNotificationsLovesByPost();
+        });
       }
     };
     const comment = () => {
@@ -348,7 +508,75 @@ function Post({ user, post }) {
           type: 'text',
           userId: user.id
         };
-        addDoc(collection(db, 'comments'), comment).then(() => getCommentsByPostId());
+        addDoc(collection(db, 'comments'), comment).then(() => {
+          getCommentsByPostId();
+          const userSocket = usersSocket.find((user) => user.userId === userPost.id);
+          if (userSocket !== undefined) {
+            const notification = {
+              senderIds: [user.id],
+              receiverId: userPost.id,
+              content: 'commented your post',
+              type: 'post',
+              postId: post.id,
+              isRead: false,
+              action: 'comment',
+              createdAt: new Date().getTime(),
+              updatedAt: new Date().getTime()
+            };
+            if (notificationCommentsByPost.id === undefined) {
+              addDoc(collection(db, 'notifications'), notification).then((docRef) => {
+                pushNotificationSocket({
+                  ...notification,
+                  id: docRef.id,
+                  socketId: userSocket.socketId
+                });
+              });
+            } else {
+              const senderIdsNew = notificationCommentsByPost.senderIds.filter(
+                (notification) => notification !== user.id
+              );
+              updateDoc(doc(db, 'notifications', notificationCommentsByPost.id), {
+                ...notificationCommentsByPost,
+                senderIds: [...senderIdsNew, user.id],
+                isRead: false,
+                updatedAt: new Date().getTime()
+              }).then(() => {
+                pushNotificationSocket({
+                  ...notificationCommentsByPost,
+                  senderIds: [...senderIdsNew, user.id],
+                  isRead: false,
+                  updatedAt: new Date().getTime(),
+                  socketId: userSocket.socketId
+                });
+              });
+            }
+          } else {
+            const notification = {
+              senderIds: [user.id],
+              receiverId: userPost.id,
+              content: 'commented your post',
+              type: 'post',
+              postId: post.id,
+              isRead: false,
+              action: 'comment',
+              createdAt: new Date().getTime(),
+              updatedAt: new Date().getTime()
+            };
+            if (notificationCommentsByPost.id === undefined) {
+              addDoc(collection(db, 'notifications'), notification);
+            } else {
+              const senderIdsNew = notificationCommentsByPost.senderIds.filter(
+                (notification) => notification !== user.id
+              );
+              updateDoc(doc(db, 'notifications', notificationCommentsByPost.id), {
+                ...notificationCommentsByPost,
+                senderIds: [...senderIdsNew, user.id],
+                isRead: false,
+                updatedAt: new Date().getTime()
+              });
+            }
+          }
+        });
       }
       inputCommentRef.current = '';
     };
@@ -362,8 +590,8 @@ function Post({ user, post }) {
                 '&:focus': { backgroundColor: 'transparent' }
               }}
             >
-              <Avatar sx={{ width: '30px', height: '30px' }} src={userPost.avatar} />
-              <DotOnline icon="ci:dot-05-xl" style={userPost.isOnline ? null : { color: 'grey' }} />
+              <Avatar sx={{ width: '30px', height: '30px' }} src={user.avatar} />
+              <DotOnline icon="ci:dot-05-xl" style={user.isOnline ? null : { color: 'grey' }} />
             </Button>
           </Grid>
           <Grid item xs={10} sm={10} md={10} lg={10} xl={10}>
@@ -399,8 +627,8 @@ function Post({ user, post }) {
                 '&:focus': { backgroundColor: 'transparent' }
               }}
             >
-              <Avatar sx={{ width: '30px', height: '30px' }} src={userPost.avatar} />
-              <DotOnline icon="ci:dot-05-xl" style={userPost.isOnline ? null : { color: 'grey' }} />
+              <Avatar sx={{ width: '30px', height: '30px' }} src={user.avatar} />
+              <DotOnline icon="ci:dot-05-xl" style={user.isOnline ? null : { color: 'grey' }} />
             </Button>
           </Grid>
           <Grid item xs={10} sm={10} md={10} lg={10} xl={10}>
@@ -497,6 +725,16 @@ function Post({ user, post }) {
                   <Username>{userPost.username}</Username>
                 )}
                 <Tags />
+                {post.type === 'avatar' && (
+                  <Typography sx={{ color: 'gray', marginLeft: '3px' }}>
+                    updated his profile picture.
+                  </Typography>
+                )}
+                {post.type === 'cover' && (
+                  <Typography sx={{ color: 'gray', marginLeft: '3px' }}>
+                    updated his cover photo.
+                  </Typography>
+                )}
               </Box>
               <Stack sx={{ display: 'flex', alignItems: 'center' }} direction="row">
                 <DatePost />
@@ -563,7 +801,8 @@ function Post({ user, post }) {
         ) : (
           <ContentBackground />
         )}
-
+        {post.type === 'avatar' && <ContentAvatar />}
+        {post.type === 'cover' && <ContentCover />}
         <InfoContact />
         <ButtonContact />
         <Divider />

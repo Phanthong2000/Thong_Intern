@@ -46,7 +46,11 @@ function HomeNavbar({ user }) {
     <RootStyle>
       <Toolbar sx={{ justifyContent: 'space-between' }}>
         <Stack direction="row" sx={{ alignItems: 'center' }} spacing={3}>
-          <Logo onClick={() => window.scrollTo(0, 0)} src={logo} alt="Logo" />
+          <Logo
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            src={logo}
+            alt="Logo"
+          />
           <Responsive width="mdUp">
             <MenuBar />
           </Responsive>

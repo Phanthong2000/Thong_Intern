@@ -9,6 +9,8 @@ import HomeSidebar from './home/HomeSidebar';
 import { actionUserCloseSearch, actionUserCloseProfile } from '../redux/actions/userAction';
 import Responsive from '../responsive/Responsive';
 import { db } from '../firebase-config';
+import ChatBox from '../components/home/main/ChatBox';
+import BoxNewChatbox from '../components/home/main/BoxNewChatbox';
 
 const RootStyle = styled(Box)(({ theme }) => ({
   overflow: 'hidden',
@@ -26,6 +28,8 @@ function HomeLayout() {
   const navigate = useNavigate();
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
   const [user, setUser] = useState({});
+  const chatboxHome = useSelector((state) => state.chat.chatboxHome);
+  const newChatbox = useSelector((state) => state.chat.newChatbox);
   const getUser = async (userId) => {
     const data = await getDoc(doc(db, 'users', userId));
     setUser({
@@ -39,6 +43,7 @@ function HomeLayout() {
       const userId = JSON.parse(localStorage.getItem('user')).id;
       getUser(userId);
     }
+    return () => null;
   }, []);
   const closeSearch = () => {
     dispatch(actionUserCloseSearch());
@@ -58,6 +63,8 @@ function HomeLayout() {
           closeProfileBox();
         }}
       >
+        {chatboxHome.status && <ChatBox user={user} other={chatboxHome.user} />}
+        {newChatbox && <BoxNewChatbox user={user} />}
         <Outlet />
       </MainStyle>
     </RootStyle>

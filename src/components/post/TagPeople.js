@@ -75,7 +75,7 @@ function TagPeople({ user }) {
   const [suggestions, setSuggestions] = useState([]);
   useEffect(() => {
     getSuggestions();
-    return null;
+    return () => null;
   }, [user]);
   const getSuggestions = () => {
     const data = [];

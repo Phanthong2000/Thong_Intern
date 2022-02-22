@@ -32,10 +32,11 @@ const BoxEmoji = styled(Box)(() => ({
 }));
 EmojiMessage.prototype = {
   user: PropTypes.object,
-  close: PropTypes.func
+  close: PropTypes.func,
+  type: PropTypes.string
 };
 const giphy = new GiphyFetch(process.env.REACT_APP_GIPHY_KEY);
-function EmojiMessage({ user, close }) {
+function EmojiMessage({ user, close, type }) {
   const [text, setText] = useState('');
   const [emoji, setEmoji] = useState([]);
   const [quantityEmoji, setQuantityEmoji] = useState(-1);
@@ -72,7 +73,13 @@ function EmojiMessage({ user, close }) {
     return (
       <Scrollbar>
         {emoji.map((item, index) => (
-          <EmojiItem user={user} close={close} key={index} url={item.images.downsized.url} />
+          <EmojiItem
+            type={type}
+            user={user}
+            close={close}
+            key={index}
+            url={item.images.downsized.url}
+          />
         ))}
       </Scrollbar>
     );

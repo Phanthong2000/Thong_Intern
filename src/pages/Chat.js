@@ -9,6 +9,9 @@ import OptionsMessage from '../components/chat/OptionsMessage';
 import Snack from '../components/Snack';
 import BoxImageMessage from '../components/chat/BoxImageMessage';
 import BoxFileMessage from '../components/chat/BoxFileMessage';
+import BoxInfoChatgroup from '../components/chat/BoxInfoChatgroup';
+import BoxMessageChatgroup from '../components/chat/BoxMessageChatgroup';
+import OptionsMessageChatgroup from '../components/chat/OptionsMessageChatgroup';
 
 const heightScreen = window.screen.height;
 const RootStyle = styled(Stack)(({ theme }) => ({
@@ -21,6 +24,7 @@ Chat.prototype = {
 };
 function Chat({ user }) {
   const imageMessages = useSelector((state) => state.chat.imageMessages);
+  const chatbox = useSelector((state) => state.chat.chatbox);
   useEffect(() => {
     document.title = 'Chat';
     return () => null;
@@ -29,11 +33,23 @@ function Chat({ user }) {
     <RootStyle direction="row">
       <BoxUserChat user={user} />
       <Stack sx={{ width: '100%', marginRight: '20px' }}>
-        <BoxInfoUserChat user={user} />
         <BoxFileMessage />
-        <BoxMessage user={user} />
+        {chatbox.type === 'group' ? (
+          <BoxInfoChatgroup user={user} />
+        ) : (
+          <BoxInfoUserChat user={user} />
+        )}
+        {chatbox.type === 'group' ? (
+          <BoxMessageChatgroup user={user} />
+        ) : (
+          <BoxMessage user={user} />
+        )}
         {imageMessages.length !== 0 ? <BoxImageMessage user={user} /> : null}
-        <OptionsMessage user={user} />
+        {chatbox.type === 'group' ? (
+          <OptionsMessageChatgroup user={user} />
+        ) : (
+          <OptionsMessage user={user} />
+        )}
       </Stack>
       <Snack />
     </RootStyle>

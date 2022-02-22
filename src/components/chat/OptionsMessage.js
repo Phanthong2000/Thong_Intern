@@ -25,13 +25,19 @@ import {
   actionChatClearImageMessage,
   actionChatUpdateMessage,
   actionGetAllChat,
-  actionGetAllChatSort
+  actionGetAllChatSort,
+  actionChatInputting
 } from '../../redux/actions/chatAction';
 import { actionOpenSnackbar } from '../../redux/actions/postAction';
 import GifMessage from './Gif';
 import StickerMessage from './StickerMessage';
 import ReactionMessage from './ReactionMessage';
-import { sendMessageSocket, endCall } from '../../utils/wssConnection';
+import {
+  sendMessageSocket,
+  endCall,
+  inputtingSocket,
+  stopInputSocket
+} from '../../utils/wssConnection';
 
 const RootStyle = styled(Card)(({ theme }) => ({
   width: '100%',
@@ -113,7 +119,12 @@ function OptionsMessage({ user }) {
   const dispatch = useDispatch();
   useEffect(() => {
     setMessageText('');
-    return () => null;
+    return () => {
+      const userCall = usersSocket.find((user) => user.userId === chatbox.user.id);
+      if (userCall !== undefined) {
+        stopInputSocket({ socketId: userCall.socketId });
+      }
+    };
   }, [chatbox, chatboxs]);
   const inputText = (text) => {
     setMessageText(text);
@@ -143,6 +154,21 @@ function OptionsMessage({ user }) {
             type: 'error'
           })
         );
+      }
+    }
+  };
+  const focusMessage = (e) => {
+    setMessageText(e.target.value);
+    if (e.target.value !== '' && e.target.value.length === 1) {
+      const userCall = usersSocket.find((user) => user.userId === chatbox.user.id);
+      if (userCall !== undefined) {
+        inputtingSocket({ chatboxId: chatbox.id, socketId: userCall.socketId });
+      }
+    }
+    if (e.target.value === '') {
+      const userCall = usersSocket.find((user) => user.userId === chatbox.user.id);
+      if (userCall !== undefined) {
+        stopInputSocket({ socketId: userCall.socketId });
       }
     }
   };
@@ -357,7 +383,7 @@ function OptionsMessage({ user }) {
           horizontal: 'center'
         }}
       >
-        <ReactionMessage close={handleCloseSticker} user={user} />
+        <ReactionMessage type="personal" close={handleCloseSticker} user={user} />
       </Popover>
       <IconButtonOption onClick={handleClickGif}>
         <IconOption icon="mdi:file-gif-box" />
@@ -376,11 +402,12 @@ function OptionsMessage({ user }) {
           horizontal: 'center'
         }}
       >
-        <GifMessage close={handleCloseGif} user={user} />
+        <GifMessage type="personal" close={handleCloseGif} user={user} />
       </Popover>
       <BoxInput>
         <Scrollbar alwaysShowTracks>
           <InputMessage
+            onInput={focusMessage}
             onKeyDown={handleEnterSendMessage}
             value={messageText}
             onChange={(e) => inputText(e.target.value)}

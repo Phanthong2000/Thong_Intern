@@ -12,7 +12,7 @@ import {
   Skeleton
 } from '@mui/material';
 import { getDownloadURL, ref, uploadBytes, uploadBytesResumable } from 'firebase/storage';
-import { doc, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, doc, updateDoc } from 'firebase/firestore';
 import { Icon } from '@iconify/react';
 import { useDispatch, useSelector } from 'react-redux';
 import { storage, db } from '../../firebase-config';
@@ -20,7 +20,7 @@ import {
   actionUserCloseLoadingUpdateProfile,
   actionUserOpenLoadingUpdateProfile
 } from '../../redux/actions/userAction';
-import { actionOpenSnackbar } from '../../redux/actions/postAction';
+import { actionOpenSnackbar, getAllPosts } from '../../redux/actions/postAction';
 
 const RootStyle = styled(Card)(({ theme }) => ({
   background: '#fff',
@@ -154,17 +154,35 @@ function InfoMain({ user }) {
             console.log('File available at', downloadURL);
             updateDoc(doc(db, 'users', user.id), {
               background: downloadURL
-            }).then(() => {
-              setChoosing(false);
-              dispatch(actionUserCloseLoadingUpdateProfile());
-              dispatch(
-                actionOpenSnackbar({
-                  status: true,
-                  content: 'Changed your cover photo',
-                  type: 'success'
-                })
-              );
-            });
+            })
+              .then(() => {
+                setChoosing(false);
+                dispatch(actionUserCloseLoadingUpdateProfile());
+                dispatch(
+                  actionOpenSnackbar({
+                    status: true,
+                    content: 'Changed your cover photo',
+                    type: 'success'
+                  })
+                );
+              })
+              .then(() => {
+                const post = {
+                  contentText: '',
+                  contentFile: downloadURL,
+                  loves: [],
+                  shares: [],
+                  userId: user.id,
+                  status: 'public',
+                  tags: [],
+                  type: 'cover',
+                  createdAt: new Date().getTime()
+                };
+                addDoc(collection(db, 'posts'), post).then(() => {
+                  window.scrollTo(0, 0);
+                  dispatch(getAllPosts(user.id, 'desc'));
+                });
+              });
           });
         }
       );

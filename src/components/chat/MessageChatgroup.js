@@ -1,23 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Avatar,
-  Box,
-  styled,
-  Typography,
-  Skeleton,
-  IconButton,
-  Card,
-  Popover,
-  Button
-} from '@mui/material';
-import { Icon } from '@iconify/react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
+import { Avatar, Box, Button, Card, Popover, Skeleton, styled, Typography } from '@mui/material';
+import { useSelector } from 'react-redux';
+import { Icon } from '@iconify/react';
 import moment from 'moment';
-import { useDispatch, useSelector } from 'react-redux';
-import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase-config';
-import { actionChatDeleteMessage, actionGetAllChatSort } from '../../redux/actions/chatAction';
-import { sendReactionSocket, sendMessageSocket } from '../../utils/wssConnection';
 
 const BoxMessageUserSender = styled(Box)(() => ({
   width: '100%',
@@ -77,24 +65,26 @@ const ButtonOptionOther = styled(Box)(() => ({
     background: 'lightgray'
   }
 }));
-Message.prototype = {
-  message: PropTypes.object,
+MessageChatgroup.prototype = {
   user: PropTypes.object,
+  message: PropTypes.object,
   index: PropTypes.number
 };
-function Message({ user, message, index }) {
-  const chatbox = useSelector((state) => state.chat.chatbox);
+function MessageChatgroup({ user, message, index }) {
   const contentRef = useRef(null);
-  const dispatch = useDispatch();
-  const [userSent, setUserSent] = useState({});
-  const [showOptions, setShowOptions] = useState(false);
-  const [anchorElReaction, setAnchorElReaction] = React.useState(null);
-  const [anchorElDelete, setAnchorElDelete] = React.useState(null);
   const [nameReactChosen, setNameReactChosen] = useState('');
   const [imageMessage, setImageMessage] = useState('');
+  const chatbox = useSelector((state) => state.chat.chatbox);
   const [reaction, setReaction] = useState(message.reaction);
   const [isRestore, setIsRestore] = useState(message.isRestore);
+  const [showOptions, setShowOptions] = useState(false);
+  const [userSent, setUserSent] = useState({});
+  const [anchorElReaction, setAnchorElReaction] = React.useState(null);
+  const [anchorElDelete, setAnchorElDelete] = React.useState(null);
   const [heightContentText, setHeightContentText] = useState(0);
+  const openReact = Boolean(anchorElReaction);
+  const openDelete = Boolean(anchorElDelete);
+  const updateMessage = useSelector((state) => state.chat.updateMessage);
   const handleClickReaction = (event) => {
     setAnchorElReaction(event.currentTarget);
   };
@@ -109,21 +99,25 @@ function Message({ user, message, index }) {
     setAnchorElDelete(null);
     setShowOptions(false);
   };
-  const openReact = Boolean(anchorElReaction);
-  const openDelete = Boolean(anchorElDelete);
-  const updateMessage = useSelector((state) => state.chat.updateMessage);
-  const sendReaction = useSelector((state) => state.chat.sendReaction);
-  const usersSocket = useSelector((state) => state.user.usersSocket);
-  useEffect(() => {
-    if (contentRef.current !== null) {
-      setHeightContentText(contentRef.current.clientHeight);
-    }
+  const mouseEnterMessage = () => {
+    setShowOptions(true);
+  };
+  const mouseLeaveMessage = () => {
+    setShowOptions(false);
+  };
+  const getUserSent = () => {
     getDoc(doc(db, 'users', message.senderId)).then((snapshot) => {
       setUserSent({
         ...snapshot.data(),
         id: snapshot.id
       });
     });
+  };
+  useEffect(() => {
+    getUserSent();
+    if (contentRef.current !== null) {
+      setHeightContentText(contentRef.current.clientHeight);
+    }
     if (reaction.find((item) => item.userId === user.id) === undefined) {
       setNameReactChosen('');
     } else {
@@ -132,12 +126,41 @@ function Message({ user, message, index }) {
     return () => null;
   }, [user]);
   useEffect(() => {
+    getUserSent();
     if (message.type === 'image') setImageMessage(message.contentFile);
     if (updateMessage.messageId === message.id) {
       setImageMessage(updateMessage.image);
     }
     return () => null;
   }, [updateMessage]);
+
+  const BoxChooseReaction = ({ click, icon, isChosen }) => {
+    const BoxChoose = styled(Box)(() => ({
+      width: '35px',
+      height: '35px',
+      borderRadius: '50px',
+      alignItems: 'center',
+      justifyContent: 'center',
+      display: 'flex',
+      cursor: 'pointer',
+      ':hover': {
+        background: 'lightgray'
+      }
+    }));
+    return (
+      <BoxChoose sx={{ background: isChosen ? 'gray' : '#fff' }}>
+        <Icon
+          onClick={click}
+          style={{
+            width: '30px',
+            height: '30px',
+            color: icon === 'ant-design:like-filled' ? 'blue' : null
+          }}
+          icon={icon}
+        />
+      </BoxChoose>
+    );
+  };
   const BoxMessageUnsentUser = () => {
     const BoxUnsent = styled(Box)(({ theme }) => ({
       border: `1px solid lightgray`,
@@ -173,32 +196,6 @@ function Message({ user, message, index }) {
     if (react === 'cry') return <Icon icon="emojione:crying-face" />;
     if (react === 'angry') return <Icon icon="emojione:pouting-face" />;
   };
-  const BoxReactMessageOther = () => {
-    const BoxReaction = styled(Card)(({ theme }) => ({
-      background: '#fff',
-      borderRadius: '20px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '2px',
-      marginLeft: '-5px'
-    }));
-    if (reaction.length === 0) return null;
-    if (reaction.length === 1)
-      return (
-        <BoxReaction onMouseEnter={mouseEnterMessage} onMouseLeave={mouseLeaveMessage}>
-          <Reaction react={reaction.at(0).react} />
-        </BoxReaction>
-      );
-    return (
-      <BoxReaction onMouseEnter={mouseEnterMessage} onMouseLeave={mouseLeaveMessage}>
-        {reaction.map((item, index) => (
-          <Reaction react={item.react} key={index} />
-        ))}
-        <Typography>{reaction.length}</Typography>
-      </BoxReaction>
-    );
-  };
   const BoxReactMessageUser = () => {
     const BoxReaction = styled(Card)(({ theme }) => ({
       background: '#fff',
@@ -210,11 +207,11 @@ function Message({ user, message, index }) {
       marginRight: '-7px',
       zIndex: 2
     }));
-    if (reaction.length === 0) return null;
-    if (reaction.length === 1)
+    if (message.reaction.length === 0) return null;
+    if (message.reaction.length === 1)
       return (
         <BoxReaction onMouseEnter={mouseEnterMessage} onMouseLeave={mouseLeaveMessage}>
-          <Reaction react={reaction.at(0).react} />
+          <Reaction react={message.reaction.at(0).react} />
         </BoxReaction>
       );
     return (
@@ -223,183 +220,9 @@ function Message({ user, message, index }) {
           <Reaction react={item.react} key={index} />
         ))}
         <Typography sx={{ fontFamily: 'inherit', color: 'gray', fontSize: '13px' }}>
-          {reaction.length}
+          {message.reaction.length}
         </Typography>
       </BoxReaction>
-    );
-  };
-  const mouseEnterMessage = () => {
-    setShowOptions(true);
-  };
-  const mouseLeaveMessage = () => {
-    setShowOptions(false);
-  };
-  const likeMessage = () => {
-    if (nameReactChosen === 'like') {
-      const reactionNew = reaction.filter((item) => item.userId !== user.id);
-      setReaction(reactionNew);
-      setNameReactChosen('');
-      handleCloseReaction();
-      updateDoc(doc(db, 'messages', message.id), {
-        ...message,
-        reaction: reactionNew
-      });
-    } else {
-      const reactionNew = reaction.filter((item) => item.userId !== user.id);
-      setReaction([...reactionNew, { react: 'like', userId: user.id }]);
-      setNameReactChosen('like');
-      handleCloseReaction();
-      updateDoc(doc(db, 'messages', message.id), {
-        ...message,
-        reaction: [...reactionNew, { react: 'like', userId: user.id }]
-      });
-    }
-  };
-  const loveMessage = () => {
-    if (nameReactChosen === 'love') {
-      const reactionNew = reaction.filter((item) => item.userId !== user.id);
-      setReaction(reactionNew);
-      setNameReactChosen('');
-      handleCloseReaction();
-      updateDoc(doc(db, 'messages', message.id), {
-        ...message,
-        reaction: reactionNew
-      });
-    } else {
-      const reactionNew = reaction.filter((item) => item.userId !== user.id);
-      setReaction([...reactionNew, { react: 'love', userId: user.id }]);
-      setNameReactChosen('love');
-      handleCloseReaction();
-      updateDoc(doc(db, 'messages', message.id), {
-        ...message,
-        reaction: [...reactionNew, { react: 'love', userId: user.id }]
-      });
-    }
-  };
-  const smileMessage = () => {
-    if (nameReactChosen === 'smile') {
-      const reactionNew = reaction.filter((item) => item.userId !== user.id);
-      setReaction(reactionNew);
-      setNameReactChosen('');
-      handleCloseReaction();
-      updateDoc(doc(db, 'messages', message.id), {
-        ...message,
-        reaction: reactionNew
-      });
-    } else {
-      const reactionNew = reaction.filter((item) => item.userId !== user.id);
-      setReaction([...reactionNew, { react: 'smile', userId: user.id }]);
-      setNameReactChosen('smile');
-      handleCloseReaction();
-      updateDoc(doc(db, 'messages', message.id), {
-        ...message,
-        reaction: [...reactionNew, { react: 'smile', userId: user.id }]
-      });
-    }
-  };
-  const wowMessage = () => {
-    if (nameReactChosen === 'wow') {
-      const reactionNew = reaction.filter((item) => item.userId !== user.id);
-      setReaction(reactionNew);
-      setNameReactChosen('');
-      handleCloseReaction();
-      updateDoc(doc(db, 'messages', message.id), {
-        ...message,
-        reaction: reactionNew
-      });
-    } else {
-      const reactionNew = reaction.filter((item) => item.userId !== user.id);
-      setReaction([...reactionNew, { react: 'wow', userId: user.id }]);
-      setNameReactChosen('wow');
-      handleCloseReaction();
-      updateDoc(doc(db, 'messages', message.id), {
-        ...message,
-        reaction: [...reactionNew, { react: 'wow', userId: user.id }]
-      });
-    }
-  };
-  const cryMessage = () => {
-    if (nameReactChosen === 'cry') {
-      const reactionNew = reaction.filter((item) => item.userId !== user.id);
-      setReaction(reactionNew);
-      setNameReactChosen('');
-      handleCloseReaction();
-      updateDoc(doc(db, 'messages', message.id), {
-        ...message,
-        reaction: reactionNew
-      });
-    } else {
-      const reactionNew = reaction.filter((item) => item.userId !== user.id);
-      setReaction([...reactionNew, { react: 'cry', userId: user.id }]);
-      setNameReactChosen('cry');
-      handleCloseReaction();
-      updateDoc(doc(db, 'messages', message.id), {
-        ...message,
-        reaction: [...reactionNew, { react: 'cry', userId: user.id }]
-      });
-    }
-  };
-  const angryMessage = () => {
-    if (nameReactChosen === 'angry') {
-      const reactionNew = reaction.filter((item) => item.userId !== user.id);
-      setReaction(reactionNew);
-      setNameReactChosen('');
-      handleCloseReaction();
-      updateDoc(doc(db, 'messages', message.id), {
-        ...message,
-        reaction: reactionNew
-      });
-    } else {
-      const reactionNew = reaction.filter((item) => item.userId !== user.id);
-      setReaction([...reactionNew, { react: 'angry', userId: user.id }]);
-      setNameReactChosen('angry');
-      handleCloseReaction();
-      updateDoc(doc(db, 'messages', message.id), {
-        ...message,
-        reaction: [...reactionNew, { react: 'angry', userId: user.id }]
-      });
-    }
-  };
-  const unsentMessage = () => {
-    updateDoc(doc(db, 'messages', message.id), {
-      ...message,
-      isRestore: true
-    }).then(() => {
-      setIsRestore(true);
-      handleCloseDelete();
-    });
-  };
-  const deleteMessage = () => {
-    deleteDoc(doc(db, 'messages', message.id)).then(() => {
-      handleCloseDelete();
-      dispatch(actionChatDeleteMessage(index));
-    });
-  };
-  const BoxChooseReaction = ({ click, icon, isChosen }) => {
-    const BoxChoose = styled(Box)(() => ({
-      width: '35px',
-      height: '35px',
-      borderRadius: '50px',
-      alignItems: 'center',
-      justifyContent: 'center',
-      display: 'flex',
-      cursor: 'pointer',
-      ':hover': {
-        background: 'lightgray'
-      }
-    }));
-    return (
-      <BoxChoose sx={{ background: isChosen ? 'gray' : '#fff' }}>
-        <Icon
-          onClick={click}
-          style={{
-            width: '30px',
-            height: '30px',
-            color: icon === 'ant-design:like-filled' ? 'blue' : null
-          }}
-          icon={icon}
-        />
-      </BoxChoose>
     );
   };
   const BoxContentImageMessage = () => {
@@ -427,7 +250,33 @@ function Message({ user, message, index }) {
     }));
     return <ContentSticker src={message.contentFile} />;
   };
-  // if (chatbox.id !== message.chatboxId) return null;
+  const BoxReactMessageOther = () => {
+    const BoxReaction = styled(Card)(({ theme }) => ({
+      background: '#fff',
+      borderRadius: '20px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '2px',
+      marginLeft: '-5px'
+    }));
+    if (message.reaction.length === 0) return null;
+    if (message.reaction.length === 1)
+      return (
+        <BoxReaction onMouseEnter={mouseEnterMessage} onMouseLeave={mouseLeaveMessage}>
+          <Reaction react={reaction.at(0).react} />
+        </BoxReaction>
+      );
+    return (
+      <BoxReaction onMouseEnter={mouseEnterMessage} onMouseLeave={mouseLeaveMessage}>
+        {message.reaction.map((item, index) => (
+          <Reaction react={item.react} key={index} />
+        ))}
+        <Typography>{message.reaction.length}</Typography>
+      </BoxReaction>
+    );
+  };
+  if (message.chatboxId !== chatbox.id) return null;
   if (user.id === message.senderId)
     return (
       <BoxMessageUserSender>
@@ -490,31 +339,25 @@ function Message({ user, message, index }) {
                     >
                       <BoxChooseReaction
                         isChosen={nameReactChosen === 'like'}
-                        click={likeMessage}
                         icon="ant-design:like-filled"
                       />
                       <BoxChooseReaction
-                        click={loveMessage}
                         isChosen={nameReactChosen === 'love'}
                         icon="flat-color-icons:like"
                       />
                       <BoxChooseReaction
-                        click={smileMessage}
                         isChosen={nameReactChosen === 'smile'}
                         icon="emojione:grinning-squinting-face"
                       />
                       <BoxChooseReaction
-                        click={wowMessage}
                         isChosen={nameReactChosen === 'wow'}
                         icon="emojione:face-with-open-mouth"
                       />
                       <BoxChooseReaction
-                        click={cryMessage}
                         isChosen={nameReactChosen === 'cry'}
                         icon="emojione:crying-face"
                       />
                       <BoxChooseReaction
-                        click={angryMessage}
                         isChosen={nameReactChosen === 'angry'}
                         icon="emojione:pouting-face"
                       />
@@ -544,13 +387,13 @@ function Message({ user, message, index }) {
                       }}
                     >
                       <Button
-                        onClick={deleteMessage}
+                        // onClick={deleteMessage}
                         sx={{ textTransform: 'none', color: 'gray', fontSize: '15px' }}
                       >
                         Delete message
                       </Button>
                       <Button
-                        onClick={unsentMessage}
+                        // onClick={unsentMessage}
                         sx={{ textTransform: 'none', color: 'gray', fontSize: '15px' }}
                       >
                         Unsent message
@@ -609,6 +452,9 @@ function Message({ user, message, index }) {
             }}
           >
             <BoxContentMessage onMouseEnter={mouseEnterMessage} onMouseLeave={mouseLeaveMessage}>
+              <Typography sx={{ fontWeight: 'bold', fontSize: '14px' }}>
+                {userSent.username}
+              </Typography>
               <Typography>{message.content}</Typography>
               {message.type === 'image' && <BoxContentImageMessage />}
               {message.type === 'gif' && <BoxContentGifMessage />}
@@ -656,32 +502,32 @@ function Message({ user, message, index }) {
                   >
                     <BoxChooseReaction
                       isChosen={nameReactChosen === 'like'}
-                      click={likeMessage}
+                      // click={likeMessage}
                       icon="ant-design:like-filled"
                     />
                     <BoxChooseReaction
-                      click={loveMessage}
+                      // click={loveMessage}
                       isChosen={nameReactChosen === 'love'}
                       icon="flat-color-icons:like"
                     />
                     <BoxChooseReaction
-                      click={smileMessage}
+                      // click={smileMessage}
                       isChosen={nameReactChosen === 'smile'}
                       icon="emojione:grinning-squinting-face"
                     />
                     <BoxChooseReaction
-                      click={wowMessage}
+                      // click={wowMessage}
                       isChosen={nameReactChosen === 'wow'}
                       icon="emojione:face-with-open-mouth"
                     />
                     <BoxChooseReaction
-                      click={cryMessage}
+                      // click={cryMessage}
                       isChosen={nameReactChosen === 'cry'}
                       icon="emojione:crying-face"
                     />
 
                     <BoxChooseReaction
-                      click={angryMessage}
+                      // click={angryMessage}
                       isChosen={nameReactChosen === 'angry'}
                       icon="emojione:pouting-face"
                     />
@@ -701,4 +547,4 @@ function Message({ user, message, index }) {
   );
 }
 
-export default Message;
+export default MessageChatgroup;

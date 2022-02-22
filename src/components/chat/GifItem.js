@@ -15,15 +15,15 @@ const RootStyle = styled('img')(() => ({
 GifItem.prototype = {
   user: PropTypes.object,
   url: PropTypes.string,
-  close: PropTypes.func
+  close: PropTypes.func,
+  type: PropTypes.string
 };
-function GifItem({ user, url, close }) {
+function GifItem({ user, url, close, type }) {
   const chatbox = useSelector((state) => state.chat.chatbox);
   const usersSocket = useSelector((state) => state.user.usersSocket);
   const dispatch = useDispatch();
   const sendGif = () => {
-    const userCall = usersSocket.find((user) => user.userId === chatbox.user.id);
-    if (userCall === undefined) {
+    if (type === 'group') {
       const message = {
         chatboxId: chatbox.id,
         content: '',
@@ -33,7 +33,6 @@ function GifItem({ user, url, close }) {
         reaction: [],
         senderId: user.id,
         type: 'gif',
-        receiverId: chatbox.user.id,
         createdAt: new Date().getTime()
       };
       addDoc(collection(db, 'messages'), message).then((docRef) => {
@@ -52,37 +51,68 @@ function GifItem({ user, url, close }) {
         });
       });
     } else {
-      const message = {
-        chatboxId: chatbox.id,
-        content: '',
-        contentFile: url,
-        isRead: false,
-        isRestore: false,
-        reaction: [],
-        senderId: user.id,
-        type: 'gif',
-        receiverId: chatbox.user.id,
-        createdAt: new Date().getTime()
-      };
-      addDoc(collection(db, 'messages'), message).then((docRef) => {
-        close();
-        dispatch(
-          actionChatAddMessage({
-            ...message,
-            id: docRef.id
-          })
-        );
-        updateDoc(doc(db, 'chatboxs', chatbox.id), {
-          ...chatbox,
-          updatedAt: new Date().getTime()
-        }).then(() => {
-          sendMessageSocket({
-            ...message,
-            socketId: userCall.socketId
+      const userCall = usersSocket.find((user) => user.userId === chatbox.user.id);
+      if (userCall === undefined) {
+        const message = {
+          chatboxId: chatbox.id,
+          content: '',
+          contentFile: url,
+          isRead: false,
+          isRestore: false,
+          reaction: [],
+          senderId: user.id,
+          type: 'gif',
+          receiverId: chatbox.user.id,
+          createdAt: new Date().getTime()
+        };
+        addDoc(collection(db, 'messages'), message).then((docRef) => {
+          close();
+          dispatch(
+            actionChatAddMessage({
+              ...message,
+              id: docRef.id
+            })
+          );
+          updateDoc(doc(db, 'chatboxs', chatbox.id), {
+            ...chatbox,
+            updatedAt: new Date().getTime()
+          }).then(() => {
+            dispatch(actionGetAllChatSort(user.id));
           });
-          dispatch(actionGetAllChatSort(user.id));
         });
-      });
+      } else {
+        const message = {
+          chatboxId: chatbox.id,
+          content: '',
+          contentFile: url,
+          isRead: false,
+          isRestore: false,
+          reaction: [],
+          senderId: user.id,
+          type: 'gif',
+          receiverId: chatbox.user.id,
+          createdAt: new Date().getTime()
+        };
+        addDoc(collection(db, 'messages'), message).then((docRef) => {
+          close();
+          dispatch(
+            actionChatAddMessage({
+              ...message,
+              id: docRef.id
+            })
+          );
+          updateDoc(doc(db, 'chatboxs', chatbox.id), {
+            ...chatbox,
+            updatedAt: new Date().getTime()
+          }).then(() => {
+            sendMessageSocket({
+              ...message,
+              socketId: userCall.socketId
+            });
+            dispatch(actionGetAllChatSort(user.id));
+          });
+        });
+      }
     }
   };
   return <RootStyle onClick={sendGif} src={url} alt="gif" />;

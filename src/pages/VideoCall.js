@@ -44,6 +44,7 @@ function VideoCall({ user }) {
         console.log('error occured when trying to get an access to get local stream');
         console.log(err);
       });
+    return () => null;
   }, []);
   const endCallVideo = () => {
     endCall(socketId);

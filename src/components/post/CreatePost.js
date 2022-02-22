@@ -38,6 +38,7 @@ import {
   actionPostClearTags,
   getAllPosts
 } from '../../redux/actions/postAction';
+import backgrounds from '../../asset/data/backgrounds';
 
 const BoxModal = styled(Card)(({ theme }) => ({
   position: 'absolute',
@@ -102,26 +103,9 @@ function CreatePost({ user }) {
   const [background, setBackground] = useState('');
   const [textColor, setTextColor] = useState('');
   const [textColorBackground, setTextColorBackground] = useState('');
-  const [allBackground, setAllBackground] = useState([]);
   const [contentText, setContentText] = useState('');
   const [image, setImage] = useState();
   const tags = useSelector((state) => state.post.tags);
-  useEffect(() => {
-    const data = [];
-    getDocs(collection(db, 'backgrounds'))
-      .then((snapshots) => {
-        snapshots.docs.forEach((snapshots) => {
-          data.push({
-            ...snapshots.data(),
-            id: snapshots.id
-          });
-        });
-      })
-      .then(() => {
-        setAllBackground(data);
-      });
-    return null;
-  }, []);
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -317,7 +301,7 @@ function CreatePost({ user }) {
         <Grid onClick={chooseText} sx={{ padding: '1px' }} item xs={1} sm={1} md={1} lg={1} xl={1}>
           <Item />
         </Grid>
-        {allBackground.map((item, index) => {
+        {backgrounds.map((item, index) => {
           const onChooseBackground = () => {
             setTextColor(item.textColor);
             setBackground(item.url);

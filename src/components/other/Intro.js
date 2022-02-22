@@ -26,7 +26,7 @@ function Intro({ user }) {
     getDoc(doc(db, 'users', id)).then((snapshot) => {
       setOther({ ...snapshot.data(), id });
     });
-    return null;
+    return () => null;
   }, [user]);
   const Information = ({ content, information, icon }) => {
     const WrapperContent = styled('div')(() => ({
@@ -40,7 +40,7 @@ function Intro({ user }) {
       marginLeft: '10px',
       width: '90%'
     }));
-    if (information === undefined) return null;
+    if (information === undefined || information === null) return null;
     return (
       <WrapperContent>
         <Icon fontSize={30} style={{ color: 'grey' }} icon={icon} />
@@ -56,19 +56,14 @@ function Intro({ user }) {
       <Title>Intro</Title>
       <Divider />
       <Information
-        content="Marital status"
-        information={other.maritalStatus}
+        content="Relationship"
+        information={user.relationship}
         icon="ant-design:heart-filled"
       />
       <Information content="From" information={other.hometown} icon="gis:position" />
       <Information content="Lives in" information={other.address} icon="bi:house-fill" />
       <Information content="University" information={other.university} icon="mdi:school" />
       <Information content="High school" information={other.highSchool} icon="mdi:school" />
-      <Information
-        content="Junior high school"
-        information={other.juniorHighSchool}
-        icon="mdi:school"
-      />
     </RootStyle>
   );
 }

@@ -9,6 +9,7 @@ function SignUp() {
   useEffect(() => {
     window.document.title = 'Sign up';
     if (isLoggedIn) navigate('/home');
+    return () => null;
   }, []);
   return <SignUpForm />;
 }

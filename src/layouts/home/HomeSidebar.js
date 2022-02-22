@@ -10,10 +10,16 @@ import {
   actionGetAllFriendRequest,
   actionGetAllFriendUser,
   actionGetAllFriendUserManual,
+  actionGetAllNotifications,
+  actionGetBadgeNotifications,
   actionUserBroadcastSocket
 } from '../../redux/actions/userAction';
 import { actionGetAllPostAllFriend } from '../../redux/actions/postAction';
-import { actionGetAllChat, actionGetAllChatSort } from '../../redux/actions/chatAction';
+import {
+  actionGetAllChat,
+  actionGetAllChatSort,
+  actionGetChatgroupUser
+} from '../../redux/actions/chatAction';
 import { connectWithSocket, registerUser } from '../../utils/wssConnection';
 import ModalReceivingVideoCall from '../../components/video/ModalReceivingVideoCall';
 
@@ -53,9 +59,11 @@ function HomeSidebar({ user }) {
       dispatch(actionGetAllFriendRequest(user.id));
       dispatch(actionGetAllFriendUserManual(user.id));
       dispatch(actionGetAllFriendUser(user.id));
-      // dispatch(actionGetAllChat(user.id));
       dispatch(actionGetAllChatSort(user.id));
       dispatch(actionGetAllPostAllFriend(user.id));
+      dispatch(actionGetAllNotifications(user.id));
+      dispatch(actionGetBadgeNotifications(user.id));
+      dispatch(actionGetChatgroupUser(user.id));
     }
     return () => null;
   }, [user]);
@@ -63,6 +71,7 @@ function HomeSidebar({ user }) {
     if (user.id !== undefined && me !== '') {
       registerUser({ userId: user.id, socketId: me });
     }
+    return () => null;
   }, [user]);
   return (
     <RootStyle>

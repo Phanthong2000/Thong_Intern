@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { callUser } from '../../utils/wssConnection';
+import BoxInfoChatgroup from './BoxInfoChatgroup';
 
 const RootStyle = styled(Card)(({ theme }) => ({
   padding: theme.spacing(1, 1, 1),

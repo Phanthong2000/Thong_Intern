@@ -10,7 +10,11 @@ import { db } from '../firebase-config';
 import { actionTestSearch } from '../redux/actions/userAction';
 import BoxPost from '../components/home/main/BoxPost';
 import BoxContact from '../components/home/main/BoxContact';
-import { actionChatGetChatbox, actionChatGetChatboxHome } from '../redux/actions/chatAction';
+import {
+  actionChatGetChatbox,
+  actionChatGetChatboxHome,
+  actionChatGetNewChatboxHome
+} from '../redux/actions/chatAction';
 import ModalReceivingVideoCall from '../components/video/ModalReceivingVideoCall';
 import ChatBox from '../components/home/main/ChatBox';
 
@@ -32,6 +36,7 @@ function Home({ user }) {
   const modalReceiving = useSelector((state) => state.call.modalReceiving);
   const chatboxHome = useSelector((state) => state.chat.chatboxHome);
   const usersSocket = useSelector((state) => state.user.usersSocket);
+  const newChatbox = useSelector((state) => state.chat.newChatbox);
   useEffect(() => {
     if (testSearch.length > 0) {
       navigate(`/home/other/${testSearch}`);
@@ -64,13 +69,15 @@ function Home({ user }) {
       })
     );
   };
+  const onClickNewChatbox = () => {
+    dispatch(actionChatGetNewChatboxHome(!newChatbox));
+  };
   return (
     <RootStyle>
       {modalReceiving && <ModalReceivingVideoCall />}
       <div>{usersSocket.length}</div>
       <BoxPost user={user} />
       <BoxContact user={user} />
-      {chatboxHome.status && <ChatBox user={user} other={chatboxHome.user} />}
       {!chatboxHome.status && chatboxHome.user.id !== undefined && (
         <IconButton sx={{ position: 'fixed', right: 15, bottom: 130 }}>
           <Avatar
@@ -101,9 +108,24 @@ function Home({ user }) {
           </Box>
         </IconButton>
       )}
-      <IconButton sx={{ position: 'fixed', right: 20, bottom: 50, background: '#fff' }}>
-        <Icon style={{ width: '40px', height: '40px', color: '#000' }} icon="bxs:message-alt-add" />
-      </IconButton>
+      {!newChatbox ? (
+        <IconButton
+          onClick={onClickNewChatbox}
+          sx={{ position: 'fixed', right: 20, bottom: 50, background: '#fff' }}
+        >
+          <Icon
+            style={{ width: '40px', height: '40px', color: '#000' }}
+            icon="bxs:message-alt-add"
+          />
+        </IconButton>
+      ) : (
+        <IconButton
+          onClick={onClickNewChatbox}
+          sx={{ position: 'fixed', right: 20, bottom: 50, background: '#fff' }}
+        >
+          <Icon style={{ width: '40px', height: '40px', color: '#000' }} icon="bxs:message-alt-x" />
+        </IconButton>
+      )}
     </RootStyle>
   );
 }

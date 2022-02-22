@@ -31,9 +31,10 @@ const BoxSticker = styled(Box)(() => ({
 }));
 StickerMessage.prototype = {
   user: PropTypes.object,
-  close: PropTypes.func
+  close: PropTypes.func,
+  type: PropTypes.string
 };
-function StickerMessage({ user, close }) {
+function StickerMessage({ user, close, type }) {
   const [text, setText] = useState('');
   const [sticker, setSticker] = useState([]);
   const [quantitySticker, setQuantitySticker] = useState(-1);
@@ -76,13 +77,18 @@ function StickerMessage({ user, close }) {
             style={{ width: '50px', height: '50px', color: 'lightgrey' }}
             icon="eos-icons:loading"
           />
-          ;
         </Box>
       );
     return (
       <Scrollbar>
         {sticker.map((item, index) => (
-          <StickerItem user={user} close={close} key={index} url={item.images.downsized.url} />
+          <StickerItem
+            type={type}
+            user={user}
+            close={close}
+            key={index}
+            url={item.images.downsized.url}
+          />
         ))}
       </Scrollbar>
     );

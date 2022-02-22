@@ -27,7 +27,11 @@ import {
   ACTION_USER_BROADCAST_SOCKET,
   ACTION_USER_OPEN_MESSENGER,
   ACTION_USER_CLOSE_MESSENGER,
-  ACTION_USER_OPEN_EDIT_DETAIL
+  ACTION_USER_OPEN_EDIT_DETAIL,
+  ACTION_USER_ADD_FRIEND_REQUEST,
+  ACTION_USER_GET_ALL_NOTIFICATIONS,
+  ACTION_USER_GET_BADGE_NOTIFICATION,
+  ACTION_USER_HOVER_USERNAME
 } from './types';
 
 export const actionUserOpenSearch = () => ({ type: ACTION_USER_OPEN_SEARCH });
@@ -82,12 +86,28 @@ export const actionUserDeleteFriendRequest = (data) => ({
   type: ACTION_USER_DELETE_FRIEND_REQUEST,
   payload: data
 });
+export const actionUserAddFriendRequest = (data) => ({
+  type: ACTION_USER_ADD_FRIEND_REQUEST,
+  payload: data
+});
 export const actionUserGetAllFriendUserManual = (data) => ({
   type: ACTION_USER_GET_ALL_FRIEND_USER_MANUAL,
   payload: data
 });
 export const actionUserGetAllContactOnline = (data) => ({
   type: ACTION_USER_GET_ALL_CONTACT_ONLINE,
+  payload: data
+});
+export const actionUserGetAllNotifications = (data) => ({
+  type: ACTION_USER_GET_ALL_NOTIFICATIONS,
+  payload: data
+});
+export const actionUserGetBadgeNotification = (data) => ({
+  type: ACTION_USER_GET_BADGE_NOTIFICATION,
+  payload: data
+});
+export const actionUserHoverUsername = (data) => ({
+  type: ACTION_USER_HOVER_USERNAME,
   payload: data
 });
 export const actionGetContact = (userId, otherId) => async (dispatch) => {
@@ -241,6 +261,36 @@ export const actionGetAllFriendUserManual = (id) => async (dispatch) => {
     contacts.push(contact.data().senderId);
   });
   return dispatch(actionUserGetAllFriendUserManual(contacts));
+};
+export const actionGetAllNotifications = (id) => async (dispatch) => {
+  const data = await getDocs(query(collection(db, 'notifications'), where('receiverId', '==', id)));
+  if (data.empty) {
+    dispatch(actionUserGetAllNotifications([]));
+  } else {
+    const notifications = [];
+    data.docs.forEach((notification) => {
+      notifications.push({
+        ...notification.data(),
+        id: notification.id
+      });
+    });
+    const notificationsSort = notifications.sort((a, b) => b.updatedAt - a.updatedAt);
+    dispatch(actionUserGetAllNotifications(notificationsSort));
+  }
+};
+export const actionGetBadgeNotifications = (id) => async (dispatch) => {
+  const data = await getDocs(query(collection(db, 'notifications'), where('receiverId', '==', id)));
+  if (data.empty) {
+    dispatch(actionUserGetAllNotifications(0));
+  } else {
+    let count = 0;
+    data.docs.forEach((notification) => {
+      if (notification.data().senderIds.length > 0 && notification.data().isRead === false) {
+        count += 1;
+      }
+    });
+    dispatch(actionUserGetBadgeNotification(count));
+  }
 };
 
 export const actionTestSearch = (data) => ({

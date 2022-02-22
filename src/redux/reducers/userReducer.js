@@ -24,7 +24,11 @@ import {
   ACTION_USER_BROADCAST_SOCKET,
   ACTION_USER_OPEN_MESSENGER,
   ACTION_USER_CLOSE_MESSENGER,
-  ACTION_USER_OPEN_EDIT_DETAIL
+  ACTION_USER_OPEN_EDIT_DETAIL,
+  ACTION_USER_ADD_FRIEND_REQUEST,
+  ACTION_USER_GET_ALL_NOTIFICATIONS,
+  ACTION_USER_GET_BADGE_NOTIFICATION,
+  ACTION_USER_HOVER_USERNAME
 } from '../actions/types';
 
 const defaultState = {
@@ -49,7 +53,10 @@ const defaultState = {
   friendManual: [],
   testSearch: '',
   friendsOther: [],
-  usersSocket: []
+  usersSocket: [],
+  notifications: [],
+  badgeNotification: 0,
+  userHoverUsername: {}
 };
 const userReducer = (state = defaultState, action) => {
   switch (action.type) {
@@ -202,10 +209,14 @@ const userReducer = (state = defaultState, action) => {
         isLoadingFriendRequest: true
       };
     case ACTION_USER_DELETE_FRIEND_REQUEST:
-      console.log(action.payload);
       return {
         ...state,
         friendRequests: [...state.friendRequests.filter((item) => item.id !== action.payload)]
+      };
+    case ACTION_USER_ADD_FRIEND_REQUEST:
+      return {
+        ...state,
+        friendRequests: [...state.friendRequests, action.payload]
       };
     case ACTION_USER_GET_ALL_FRIEND_USER_MANUAL:
       return {
@@ -226,6 +237,21 @@ const userReducer = (state = defaultState, action) => {
       return {
         ...state,
         isEditDetail: action.payload
+      };
+    case ACTION_USER_GET_ALL_NOTIFICATIONS:
+      return {
+        ...state,
+        notifications: action.payload
+      };
+    case ACTION_USER_GET_BADGE_NOTIFICATION:
+      return {
+        ...state,
+        badgeNotification: action.payload
+      };
+    case ACTION_USER_HOVER_USERNAME:
+      return {
+        ...state,
+        userHoverUsername: action.payload
       };
     default:
       return state;

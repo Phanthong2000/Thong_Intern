@@ -122,11 +122,11 @@ function BoxMessageChatBox({ user, other }) {
   };
   useEffect(() => {
     getAllMessage();
-    console.log(addMessageChatboxHome);
     return () => null;
   }, [chatboxHome, addMessageChatboxHome]);
   useEffect(() => {
     actionGetContact(user.id, other.id);
+    return () => null;
   }, []);
   const AlwaysScrollToBottom = () => {
     const elementRef = useRef();

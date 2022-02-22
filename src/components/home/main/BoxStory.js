@@ -71,6 +71,7 @@ function BoxStory({ user }) {
   };
   useEffect(() => {
     getStories();
+    return () => null;
   }, []);
   if (quantityStory < 0)
     return (

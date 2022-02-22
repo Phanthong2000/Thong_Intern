@@ -32,10 +32,11 @@ const BoxText = styled(Box)(() => ({
 }));
 TextMessage.prototype = {
   user: PropTypes.object,
-  close: PropTypes.func
+  close: PropTypes.func,
+  type: PropTypes.string
 };
 const giphy = new GiphyFetch(process.env.REACT_APP_GIPHY_KEY);
-function TextMessage({ user, close }) {
+function TextMessage({ user, close, type }) {
   const [text, setText] = useState('');
   const [textSticker, setTextSticker] = useState([]);
   const [quantityTextSticker, setQuantityTextSticker] = useState(-1);
@@ -75,7 +76,7 @@ function TextMessage({ user, close }) {
     return (
       <Scrollbar>
         {textSticker.map((item, index) => (
-          <TextItem user={user} close={close} key={index} url={item.url} />
+          <TextItem type={type} user={user} close={close} key={index} url={item.url} />
         ))}
       </Scrollbar>
     );

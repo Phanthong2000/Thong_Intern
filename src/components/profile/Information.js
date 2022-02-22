@@ -18,7 +18,16 @@ import {
 import { Icon } from '@iconify/react';
 import { useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { collection, getDoc, getDocs, query, where, doc, updateDoc } from 'firebase/firestore';
+import {
+  collection,
+  getDoc,
+  getDocs,
+  query,
+  where,
+  doc,
+  updateDoc,
+  addDoc
+} from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes, uploadBytesResumable } from 'firebase/storage';
 import { storage, db } from '../../firebase-config';
 import {
@@ -26,7 +35,7 @@ import {
   actionUserOpenLoadingUpdateProfile,
   actionGetAllFriendUser
 } from '../../redux/actions/userAction';
-import { actionOpenSnackbar } from '../../redux/actions/postAction';
+import { actionOpenSnackbar, getAllPosts } from '../../redux/actions/postAction';
 import AvatarFriend from './AvatarFriend';
 
 const RootStyle = styled(Card)(({ theme }) => ({
@@ -131,7 +140,7 @@ function Information({ user }) {
   const friends = useSelector((state) => state.user.friends);
   useEffect(() => {
     setAvatar(user.avatar);
-    return null;
+    return () => null;
   }, [user]);
   const getTotalFriends = () => {
     if (friends.length < 2) return `${friends.length} Friend`;
@@ -222,17 +231,35 @@ function Information({ user }) {
             console.log('File available at', downloadURL);
             updateDoc(doc(db, 'users', user.id), {
               avatar: downloadURL
-            }).then(() => {
-              dispatch(actionUserCloseLoadingUpdateProfile());
-              dispatch(
-                actionOpenSnackbar({
-                  status: true,
-                  content: 'Changed your profile picture',
-                  type: 'success'
-                })
-              );
-              setAvatar(avatarNew);
-            });
+            })
+              .then(() => {
+                dispatch(actionUserCloseLoadingUpdateProfile());
+                dispatch(
+                  actionOpenSnackbar({
+                    status: true,
+                    content: 'Changed your profile picture',
+                    type: 'success'
+                  })
+                );
+                setAvatar(avatarNew);
+              })
+              .then(() => {
+                const post = {
+                  contentText: '',
+                  contentFile: downloadURL,
+                  loves: [],
+                  shares: [],
+                  userId: user.id,
+                  status: 'public',
+                  tags: [],
+                  type: 'avatar',
+                  createdAt: new Date().getTime()
+                };
+                addDoc(collection(db, 'posts'), post).then(() => {
+                  window.scrollTo(0, 0);
+                  dispatch(getAllPosts(user.id, 'desc'));
+                });
+              });
           });
         }
       );

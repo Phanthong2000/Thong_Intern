@@ -28,7 +28,7 @@ function Tag({ userId }) {
   };
   useEffect(() => {
     getUserPost();
-    return null;
+    return () => null;
   }, [userId]);
   if (userTag.username === undefined) return null;
   return (

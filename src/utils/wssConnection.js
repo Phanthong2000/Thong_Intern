@@ -4,7 +4,8 @@ import {
   actionChatAddMessage,
   actionGetAllChatSort,
   actionChatSendReaction,
-  actionChatUpdateReactionMessage
+  actionChatUpdateReactionMessage,
+  actionChatInputting
 } from '../redux/actions/chatAction';
 import {
   actionModalReceiving,
@@ -15,7 +16,13 @@ import {
   actionRemoteStream,
   actionCallEnded
 } from '../redux/actions/callAction';
-import { actionUserBroadcastSocket } from '../redux/actions/userAction';
+import {
+  actionUserAddFriendRequest,
+  actionUserBroadcastSocket,
+  actionUserDeleteFriendRequest,
+  actionGetAllNotifications,
+  actionGetBadgeNotifications
+} from '../redux/actions/userAction';
 import store from '../redux/store';
 
 let socket;
@@ -37,10 +44,32 @@ export const connectWithSocket = () => {
     console.log('receiver message', data);
     store.dispatch(actionChatAddMessage(data));
     store.dispatch(actionGetAllChatSort(data.receiverId));
+    store.dispatch(actionChatInputting(''));
   });
   socket.on('sendReaction', (data) => {
     console.log('sendReaction', data);
     store.dispatch(actionChatSendReaction());
+  });
+  socket.on('addFriend', (data) => {
+    console.log('add friend socket', data);
+    store.dispatch(actionUserAddFriendRequest(data));
+  });
+  socket.on('deleteRequestAddFriend', (data) => {
+    console.log('deleteRequestAddFriend', data);
+    store.dispatch(actionUserDeleteFriendRequest(data.id));
+  });
+  socket.on('pushNotification', (data) => {
+    console.log('push notification', data);
+    store.dispatch(actionGetAllNotifications(data.receiverId));
+    store.dispatch(actionGetBadgeNotifications(data.receiverId));
+  });
+  socket.on('inputting', (data) => {
+    console.log('inputting', data);
+    store.dispatch(actionChatInputting(data.chatboxId));
+  });
+  socket.on('stopInput', (data) => {
+    console.log('stop input');
+    store.dispatch(actionChatInputting(''));
   });
 };
 export const registerUser = (data) => {
@@ -100,6 +129,21 @@ export const sendMessageSocket = (data) => {
 };
 export const sendReactionSocket = (data) => {
   socket.emit('sendReaction', data);
+};
+export const addFriendSocket = (data) => {
+  socket.emit('addFriend', data);
+};
+export const deleteRequestAddFriendSocket = (data) => {
+  socket.emit('deleteRequestAddFriend', data);
+};
+export const pushNotificationSocket = (data) => {
+  socket.emit('pushNotification', data);
+};
+export const inputtingSocket = (data) => {
+  socket.emit('inputting', data);
+};
+export const stopInputSocket = (data) => {
+  socket.emit('stopInput', data);
 };
 export const logoutSocket = () => {
   socket.disconnect();

@@ -8,6 +8,7 @@ import { Scrollbar } from 'smooth-scrollbar-react';
 import { actionGetAllChat } from '../../redux/actions/chatAction';
 import { db } from '../../firebase-config';
 import UserChat from './UserChat';
+import Chatgroup from './Chatgroup';
 
 const RootStyle = styled(Card)(({ theme }) => ({
   width: '450px',
@@ -82,9 +83,13 @@ function BoxUserChat({ user }) {
       <BoxAllChatbox>
         {chatboxs.length >= 0 ? (
           <Scrollbar alwaysShowTracks>
-            {chatboxs.map((item, index) => (
-              <UserChat user={user} home={false} key={index} chatbox={item} />
-            ))}
+            {chatboxs.map((item, index) =>
+              item.type === 'personal' ? (
+                <UserChat user={user} home={false} key={index} chatbox={item} />
+              ) : (
+                <Chatgroup user={user} home={false} key={index} chatbox={item} />
+              )
+            )}
           </Scrollbar>
         ) : (
           <Stack direction="column">

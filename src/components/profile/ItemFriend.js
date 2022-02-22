@@ -35,6 +35,7 @@ function ItemFriend({ friend }) {
         id: snapshot.id
       });
     });
+    return () => null;
   }, [friend]);
   const goToOther = () => {
     navigate(`/home/other/${friend.friendId}`);

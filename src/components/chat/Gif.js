@@ -31,9 +31,10 @@ const BoxGif = styled(Box)(() => ({
 }));
 GifMessage.prototype = {
   user: PropTypes.object,
-  close: PropTypes.func
+  close: PropTypes.func,
+  type: PropTypes.string
 };
-function GifMessage({ user, close }) {
+function GifMessage({ user, close, type }) {
   const [text, setText] = useState('');
   const [gif, setGif] = useState([]);
   const [quantityGif, setQuantityGif] = useState(-1);
@@ -82,7 +83,13 @@ function GifMessage({ user, close }) {
     return (
       <Scrollbar>
         {gif.map((item, index) => (
-          <GifItem close={close} user={user} key={index} url={item.images.downsized.url} />
+          <GifItem
+            type={type}
+            close={close}
+            user={user}
+            key={index}
+            url={item.images.downsized.url}
+          />
         ))}
       </Scrollbar>
     );

@@ -5,6 +5,7 @@ import { Icon } from '@iconify/react';
 import { useSelector } from 'react-redux';
 import { Scrollbar } from 'smooth-scrollbar-react';
 import Contact from './Contact';
+import Chatgroup from './Chatgroup';
 
 const heightScreen = window.innerHeight;
 const RootStyle = styled(Stack)(({ theme }) => ({
@@ -43,6 +44,7 @@ function BoxContact({ user }) {
   const friendManual = useSelector((state) => state.user.friendManual);
   const [quantityFriendManual, setQuantityFriendManual] = useState(-1);
   const usersSocket = useSelector((state) => state.user.usersSocket);
+  const chatgroups = useSelector((state) => state.chat.chatgroups);
   useEffect(() => {
     setQuantityFriendManual(usersSocket.length);
     return () => null;
@@ -59,9 +61,15 @@ function BoxContact({ user }) {
       <BoxContacts>
         <Scrollbar alwaysShowTracks>
           {usersSocket.map((item, index) => (
-            <Contact user={user} key={index} otherId={item.userId}>
-              {item}
-            </Contact>
+            <Contact user={user} key={index} otherId={item.userId} />
+          ))}
+          <Typography
+            sx={{ color: 'gray', fontFamily: 'sans-serif', fontSize: '16px', fontWeight: 'bold' }}
+          >
+            Group conversations
+          </Typography>
+          {chatgroups.map((item, index) => (
+            <Chatgroup key={index} chatgroup={item} />
           ))}
         </Scrollbar>
       </BoxContacts>

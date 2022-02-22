@@ -12,7 +12,10 @@ import {
   ACTION_CHAT_GET_CHATBOX_HOME,
   ACTION_CHAT_ADD_MESSAGE_CHATBOX_HOME,
   ACTION_CHAT_SEND_REACTION,
-  ACTION_CHAT_UPDATE_REACTION_MESSAGE
+  ACTION_CHAT_UPDATE_REACTION_MESSAGE,
+  ACTION_CHAT_INPUTTING,
+  ACTION_CHAT_GET_CHATGROUP_USER,
+  ACTION_CHAT_GET_NEW_CHATBOX_HOME
 } from '../actions/types';
 
 const defaultState = {
@@ -33,7 +36,10 @@ const defaultState = {
     user: {}
   },
   addMessageChatboxHome: 0,
-  sendReaction: 0
+  sendReaction: 0,
+  inputting: '',
+  chatgroups: [],
+  newChatbox: false
 };
 
 const chatReducer = (state = defaultState, action) => {
@@ -121,6 +127,21 @@ const chatReducer = (state = defaultState, action) => {
       return {
         ...state,
         sendReaction: (state.sendReaction += 1)
+      };
+    case ACTION_CHAT_INPUTTING:
+      return {
+        ...state,
+        inputting: action.payload
+      };
+    case ACTION_CHAT_GET_CHATGROUP_USER:
+      return {
+        ...state,
+        chatgroups: action.payload
+      };
+    case ACTION_CHAT_GET_NEW_CHATBOX_HOME:
+      return {
+        ...state,
+        newChatbox: action.payload
       };
     default:
       return state;

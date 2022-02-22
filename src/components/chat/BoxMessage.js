@@ -38,6 +38,7 @@ function BoxMessage({ user }) {
   const messages = useSelector((state) => state.chat.messages);
   const [messagesState, setMessagesState] = useState([]);
   const isLoadingMessages = useSelector((state) => state.chat.isLoadingMessages);
+  const inputting = useSelector((state) => state.chat.inputting);
   const getAllMessage = () => {
     getDocs(query(collection(db, 'messages'), where('chatboxId', '==', chatbox.id))).then(
       (snapshots) => {
@@ -194,6 +195,20 @@ function BoxMessage({ user }) {
   return (
     <RootStyle>
       <ContentMessage />
+      {inputting === chatbox.id && (
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: 90,
+            display: 'flex',
+            alignItems: 'center',
+            color: 'gray'
+          }}
+        >
+          <Typography sx={{ fontSize: '13px' }}>{chatbox.user.username} inputting</Typography>
+          <Icon style={{ width: '20px', height: '20px' }} icon="eos-icons:three-dots-loading" />
+        </Box>
+      )}
     </RootStyle>
   );
 }

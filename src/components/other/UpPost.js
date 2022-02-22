@@ -77,7 +77,7 @@ function UpPost({ user }) {
     getDoc(doc(db, 'users', id)).then((snapshot) => {
       setOther({ ...snapshot.data(), id });
     });
-    return null;
+    return () => null;
   }, [user]);
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);

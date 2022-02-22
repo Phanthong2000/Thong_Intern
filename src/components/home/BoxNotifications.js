@@ -3,6 +3,7 @@ import { styled, Typography, Divider, List } from '@mui/material';
 import PropTypes from 'prop-types';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { Scrollbar } from 'smooth-scrollbar-react';
+import { useSelector } from 'react-redux';
 import { db } from '../../firebase-config';
 import Notification from './Notification';
 
@@ -31,6 +32,7 @@ BoxNotifications.prototype = {
 };
 function BoxNotifications({ user }) {
   const [notifications, setNotifications] = useState([]);
+  const allNotifications = useSelector((state) => state.user.notifications);
   const getNotifications = async (userId) => {
     const data = await getDocs(
       query(collection(db, 'notifications'), where('receiverId', '==', userId))
@@ -49,17 +51,20 @@ function BoxNotifications({ user }) {
   useEffect(() => {
     const userId = JSON.parse(localStorage.getItem('user')).id;
     getNotifications(userId);
+    return () => null;
   }, []);
   return (
     <RootStyle sx={{ boxShadow: 3 }}>
       <Title>Notifications</Title>
       <Separate />
       <List style={{ display: 'flex', maxHeight: '400px' }}>
-        <Scrollbar>
-          {notifications.map((item, index) => (
-            <Notification user={user} notification={item} key={index} />
-          ))}
-        </Scrollbar>
+        {allNotifications.length > 1 && (
+          <Scrollbar>
+            {allNotifications.map((item, index) => (
+              <Notification user={user} notification={item} key={index} />
+            ))}
+          </Scrollbar>
+        )}
       </List>
     </RootStyle>
   );

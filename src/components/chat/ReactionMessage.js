@@ -24,9 +24,10 @@ const ButtonOption = styled(Button)(({ theme }) => ({
 }));
 ReactionMessage.prototype = {
   user: PropTypes.object,
-  close: PropTypes.func
+  close: PropTypes.func,
+  type: PropTypes.string
 };
-function ReactionMessage({ user, close }) {
+function ReactionMessage({ user, close, type }) {
   const [chooseOption, setChooseOption] = useState('sticker');
   const chooseSticker = () => {
     setChooseOption('sticker');
@@ -65,9 +66,9 @@ function ReactionMessage({ user, close }) {
           </ButtonOption>
         </Grid>
       </BoxOptions>
-      {chooseOption === 'sticker' && <StickerMessage close={close} user={user} />}
-      {chooseOption === 'emoji' && <EmojiMessage close={close} user={user} />}
-      {chooseOption === 'text' && <TextMessage close={close} user={user} />}
+      {chooseOption === 'sticker' && <StickerMessage type={type} close={close} user={user} />}
+      {chooseOption === 'emoji' && <EmojiMessage type={type} close={close} user={user} />}
+      {chooseOption === 'text' && <TextMessage type={type} close={close} user={user} />}
     </RootStyle>
   );
 }

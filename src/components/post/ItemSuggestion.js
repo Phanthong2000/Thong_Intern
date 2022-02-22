@@ -39,6 +39,7 @@ function ItemSuggestion({ friend }) {
     } else {
       setAdded(false);
     }
+    return () => null;
   }, [tags]);
   const addTag = () => {
     dispatch(

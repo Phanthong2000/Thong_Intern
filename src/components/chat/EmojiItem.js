@@ -15,15 +15,15 @@ const RootStyle = styled('img')(() => ({
 EmojiItem.prototype = {
   user: PropTypes.object,
   url: PropTypes.string,
-  close: PropTypes.func
+  close: PropTypes.func,
+  type: PropTypes.string
 };
-function EmojiItem({ user, url, close }) {
+function EmojiItem({ user, url, close, type }) {
   const dispatch = useDispatch();
   const chatbox = useSelector((state) => state.chat.chatbox);
   const usersSocket = useSelector((state) => state.user.usersSocket);
   const sendEmoji = () => {
-    const userCall = usersSocket.find((user) => user.userId === chatbox.user.id);
-    if (userCall === undefined) {
+    if (type === 'group') {
       const message = {
         chatboxId: chatbox.id,
         content: '',
@@ -33,7 +33,6 @@ function EmojiItem({ user, url, close }) {
         reaction: [],
         senderId: user.id,
         type: 'sticker',
-        receiverId: chatbox.user.id,
         createdAt: new Date().getTime()
       };
       addDoc(collection(db, 'messages'), message).then((docRef) => {
@@ -47,32 +46,58 @@ function EmojiItem({ user, url, close }) {
         });
       });
     } else {
-      const message = {
-        chatboxId: chatbox.id,
-        content: '',
-        contentFile: url,
-        isRead: false,
-        isRestore: false,
-        reaction: [],
-        senderId: user.id,
-        type: 'sticker',
-        receiverId: chatbox.user.id,
-        createdAt: new Date().getTime()
-      };
-      addDoc(collection(db, 'messages'), message).then((docRef) => {
-        close();
-        dispatch(actionChatAddMessage(message));
-        updateDoc(doc(db, 'chatboxs', chatbox.id), {
-          ...chatbox,
-          updatedAt: new Date().getTime()
-        }).then(() => {
-          sendMessageSocket({
-            ...message,
-            socketId: userCall.socketId
+      const userCall = usersSocket.find((user) => user.userId === chatbox.user.id);
+      if (userCall === undefined) {
+        const message = {
+          chatboxId: chatbox.id,
+          content: '',
+          contentFile: url,
+          isRead: false,
+          isRestore: false,
+          reaction: [],
+          senderId: user.id,
+          type: 'sticker',
+          receiverId: chatbox.user.id,
+          createdAt: new Date().getTime()
+        };
+        addDoc(collection(db, 'messages'), message).then((docRef) => {
+          close();
+          dispatch(actionChatAddMessage(message));
+          updateDoc(doc(db, 'chatboxs', chatbox.id), {
+            ...chatbox,
+            updatedAt: new Date().getTime()
+          }).then(() => {
+            dispatch(actionGetAllChatSort(user.id));
           });
-          dispatch(actionGetAllChatSort(user.id));
         });
-      });
+      } else {
+        const message = {
+          chatboxId: chatbox.id,
+          content: '',
+          contentFile: url,
+          isRead: false,
+          isRestore: false,
+          reaction: [],
+          senderId: user.id,
+          type: 'sticker',
+          receiverId: chatbox.user.id,
+          createdAt: new Date().getTime()
+        };
+        addDoc(collection(db, 'messages'), message).then((docRef) => {
+          close();
+          dispatch(actionChatAddMessage(message));
+          updateDoc(doc(db, 'chatboxs', chatbox.id), {
+            ...chatbox,
+            updatedAt: new Date().getTime()
+          }).then(() => {
+            sendMessageSocket({
+              ...message,
+              socketId: userCall.socketId
+            });
+            dispatch(actionGetAllChatSort(user.id));
+          });
+        });
+      }
     }
   };
   return <RootStyle onClick={sendEmoji} src={url} alt="sticker" />;

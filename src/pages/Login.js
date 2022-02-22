@@ -9,6 +9,7 @@ function Login() {
   useEffect(() => {
     window.document.title = 'Login';
     if (isLoggedIn) navigate('/home');
+    return () => null;
   }, []);
   return <LoginForm />;
 }

@@ -36,6 +36,7 @@ import {
   actionUserDeleteFriendRequest
 } from '../../redux/actions/userAction';
 import AvatarFriend from '../profile/AvatarFriend';
+import { addFriendSocket, deleteRequestAddFriendSocket } from '../../utils/wssConnection';
 
 const RootStyle = styled(Card)(({ theme }) => ({
   width: '60%',
@@ -142,6 +143,7 @@ function Information({ user }) {
   const contact = useSelector((state) => state.user.contact);
   const dispatch = useDispatch();
   const friendsOther = useSelector((state) => state.user.friendsOther);
+  const usersSocket = useSelector((state) => state.user.usersSocket);
   useEffect(() => {
     getDoc(doc(db, 'users', id)).then((snapshot) => {
       setOther({ ...snapshot.data(), id });
@@ -178,30 +180,75 @@ function Information({ user }) {
     });
   };
   const deleteRequest = () => {
-    deleteDoc(doc(db, 'contacts', contact.id)).then(() => {
-      dispatch(
-        actionUserContactUserAndOther({
-          ...contact,
-          status: 'none'
-        })
-      );
-      handleClose();
-    });
+    const userSocket = usersSocket.find((user) => user.userId === id);
+    if (userSocket !== undefined) {
+      deleteDoc(doc(db, 'contacts', contact.id)).then(() => {
+        deleteRequestAddFriendSocket({
+          id: contact.id,
+          socketId: userSocket.socketId
+        });
+        dispatch(
+          actionUserContactUserAndOther({
+            ...contact,
+            status: 'none'
+          })
+        );
+        handleClose();
+      });
+    } else {
+      deleteDoc(doc(db, 'contacts', contact.id)).then(() => {
+        dispatch(
+          actionUserContactUserAndOther({
+            ...contact,
+            status: 'none'
+          })
+        );
+        handleClose();
+      });
+    }
   };
   const addFriend = () => {
-    addDoc(collection(db, 'contacts'), {
-      senderId: user.id,
-      receiverId: other.id,
-      status: false,
-      createdAt: new Date().getTime()
-    }).then(() => {
-      dispatch(
-        actionUserContactUserAndOther({
-          ...contact,
-          status: 'sent'
-        })
-      );
-    });
+    const userSocket = usersSocket.find((user) => user.userId === id);
+    if (userSocket !== undefined) {
+      addDoc(collection(db, 'contacts'), {
+        senderId: user.id,
+        receiverId: other.id,
+        status: false,
+        createdAt: new Date().getTime()
+      }).then((docRef) => {
+        const data = {
+          socketId: userSocket.socketId,
+          senderId: user.id,
+          receiverId: other.id,
+          status: false,
+          createdAt: new Date().getTime(),
+          id: docRef.id
+        };
+        addFriendSocket(data);
+        dispatch(
+          actionUserContactUserAndOther({
+            ...contact,
+            status: 'sent',
+            id: docRef.id
+          })
+        );
+      });
+    } else {
+      addDoc(collection(db, 'contacts'), {
+        senderId: user.id,
+        receiverId: other.id,
+        status: false,
+        createdAt: new Date().getTime()
+      }).then((docRef) => {
+        dispatch(
+          actionUserContactUserAndOther({
+            ...contact,
+            status: 'sent',
+            id: docRef.id
+          })
+        );
+      });
+    }
   };
   const BoxRespond = () => {
     const RootStyle = styled(Card)(({ theme }) => ({

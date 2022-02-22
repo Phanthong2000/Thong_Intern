@@ -8,6 +8,7 @@ import {
   Grid,
   IconButton,
   Paper,
+  Skeleton,
   Stack,
   styled,
   Typography
@@ -61,6 +62,7 @@ function Comment({ comment, user }) {
   };
   useEffect(() => {
     getUserComment();
+    return () => null;
   }, []);
   const LoveComment = () => {
     const Love = styled(Typography)(({ theme }) => ({
@@ -87,8 +89,17 @@ function Comment({ comment, user }) {
             '&:focus': { backgroundColor: 'transparent' }
           }}
         >
-          <Avatar sx={{ width: '30px', height: '30px' }} src={userComment.avatar} />
-          <DotOnline icon="ci:dot-05-xl" style={userComment.isOnline ? null : { color: 'grey' }} />
+          {userComment.avatar === undefined ? (
+            <Skeleton sx={{ width: '30px', height: '30px' }} variant="circular" />
+          ) : (
+            <>
+              <Avatar sx={{ width: '30px', height: '30px' }} src={userComment.avatar} />
+              <DotOnline
+                icon="ci:dot-05-xl"
+                style={userComment.isOnline ? null : { color: 'grey' }}
+              />
+            </>
+          )}
         </Button>
       </Grid>
       <Grid item xs={10} sm={10} md={10} lg={10} xl={10}>
@@ -97,7 +108,11 @@ function Comment({ comment, user }) {
           direction="row"
         >
           <BoxContentComment>
-            <Username>{userComment.username}</Username>
+            {userComment.username === undefined ? (
+              <Skeleton variant="text" sx={{ width: '100px', height: '20px' }} />
+            ) : (
+              <Username>{userComment.username}</Username>
+            )}
             {comment.type === 'text' ? (
               <Content>{comment.content}</Content>
             ) : (

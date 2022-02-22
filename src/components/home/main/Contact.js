@@ -75,32 +75,30 @@ function Contact({ user, otherId }) {
       })
     );
   };
-  const BoxContact = () => {
-    if (user.id === otherId) return null;
-    if (status === 'none') return null;
-    return (
-      <>
-        <IconButton disabled>
-          <Avatar sx={{ width: '40px', height: '40px' }} src={other.avatar}>
-            s
-          </Avatar>
-          <Icon
-            style={{
-              width: '40px',
-              height: '40px',
-              position: 'absolute',
-              zIndex: 99,
-              right: -7,
-              bottom: -7,
-              color: '#30ab78'
-            }}
-            icon="ci:dot-02-s"
-          />
-        </IconButton>
-        <Username>{other.username}</Username>
-      </>
-    );
-  };
+  const BoxContact = () => (
+    <>
+      <IconButton disabled>
+        <Avatar sx={{ width: '40px', height: '40px' }} src={other.avatar}>
+          s
+        </Avatar>
+        <Icon
+          style={{
+            width: '40px',
+            height: '40px',
+            position: 'absolute',
+            zIndex: 99,
+            right: -7,
+            bottom: -7,
+            color: '#30ab78'
+          }}
+          icon="ci:dot-02-s"
+        />
+      </IconButton>
+      <Username>{other.username}</Username>
+    </>
+  );
+  if (user.id === otherId) return null;
+  if (status === 'none') return null;
   if (other.id === undefined || status === '')
     return (
       <RootStyle>

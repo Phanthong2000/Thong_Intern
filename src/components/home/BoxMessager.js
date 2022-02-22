@@ -59,9 +59,10 @@ function BoxMessager({ user }) {
           </Box>
         ) : (
           <Scrollbar alwaysShowTracks>
-            {chatboxs.map((item, index) => (
-              <UserChat user={user} key={index} home chatbox={item} />
-            ))}
+            {chatboxs.map(
+              (item, index) =>
+                item.type === 'personal' && <UserChat user={user} key={index} home chatbox={item} />
+            )}
           </Scrollbar>
         )}
       </BoxChatBox>
