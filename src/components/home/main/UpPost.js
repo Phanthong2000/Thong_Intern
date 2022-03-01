@@ -62,7 +62,10 @@ function UpPost({ user }) {
               src={user.avatar}
             />
             <ButtonUpPost onClick={() => dispatch(actionPostOpenCreatePost())}>
-              What's on your mind
+              What's on your mind{' '}
+              <span role="img" aria-label="information">
+                😀
+              </span>
             </ButtonUpPost>
           </>
         ) : (

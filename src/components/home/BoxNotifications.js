@@ -50,7 +50,7 @@ function BoxNotifications({ user }) {
   };
   useEffect(() => {
     const userId = JSON.parse(localStorage.getItem('user')).id;
-    getNotifications(userId);
+    if (user.id !== undefined) getNotifications(userId);
     return () => null;
   }, []);
   return (
@@ -58,7 +58,7 @@ function BoxNotifications({ user }) {
       <Title>Notifications</Title>
       <Separate />
       <List style={{ display: 'flex', maxHeight: '400px' }}>
-        {allNotifications.length > 1 && (
+        {allNotifications.length >= 1 && (
           <Scrollbar>
             {allNotifications.map((item, index) => (
               <Notification user={user} notification={item} key={index} />

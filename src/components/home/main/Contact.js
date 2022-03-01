@@ -58,20 +58,23 @@ function Contact({ user, otherId }) {
     } else setStatus('friend');
   };
   useEffect(() => {
-    getDoc(doc(db, 'users', otherId)).then((snapshot) => {
-      setOther({
-        ...snapshot.data(),
-        id: snapshot.id
+    if (otherId !== undefined) {
+      getDoc(doc(db, 'users', otherId)).then((snapshot) => {
+        setOther({
+          ...snapshot.data(),
+          id: snapshot.id
+        });
       });
-    });
-    actionGetContact(user.id, otherId);
+      if (user.id !== undefined) actionGetContact(user.id, otherId);
+    }
     return () => null;
   }, [user]);
   const chooseUserChatboxHome = () => {
     dispatch(
       actionChatGetChatboxHome({
         status: true,
-        user: other
+        user: other,
+        chatbox: {}
       })
     );
   };

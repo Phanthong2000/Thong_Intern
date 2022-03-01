@@ -40,11 +40,14 @@ function Profile({ user }) {
   const [quantityPost, setQuantityPost] = useState(-1);
   const isLoadingUpdateProfile = useSelector((state) => state.user.isLoadingUpdateProfile);
   useEffect(() => {
-    if (user.id !== undefined) {
-      if (user.id !== id) navigate(`/home/other/${id}`);
-    }
     getDoc(doc(db, 'users', id)).then((snapshot) => {
-      document.title = `${snapshot.data().username} | Thong Intern`;
+      if (snapshot.data() === undefined) navigate('/home/user-not-found');
+      else {
+        if (user.id !== undefined) {
+          if (user.id !== id) navigate(`/home/other/${id}`);
+        }
+        document.title = `${snapshot.data().username} | Thong Intern`;
+      }
     });
     dispatch(getAllPosts(id, 'desc'));
     dispatch(

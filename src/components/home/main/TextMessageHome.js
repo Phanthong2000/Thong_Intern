@@ -34,10 +34,11 @@ TextMessage.prototype = {
   close: PropTypes.func,
   chatbox: PropTypes.object,
   exists: PropTypes.bool,
-  other: PropTypes.object
+  other: PropTypes.object,
+  chatgroup: PropTypes.object
 };
 const giphy = new GiphyFetch(process.env.REACT_APP_GIPHY_KEY);
-function TextMessage({ user, close, chatbox, exists, other }) {
+function TextMessage({ user, close, chatbox, exists, other, chatgroup }) {
   const [text, setText] = useState('');
   const [textSticker, setTextSticker] = useState([]);
   const [quantityTextSticker, setQuantityTextSticker] = useState(-1);
@@ -85,6 +86,7 @@ function TextMessage({ user, close, chatbox, exists, other }) {
             close={close}
             key={index}
             url={item.url}
+            chatgroup={chatgroup}
           />
         ))}
       </Scrollbar>

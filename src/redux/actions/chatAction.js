@@ -17,7 +17,9 @@ import {
   ACTION_CHAT_UPDATE_REACTION_MESSAGE,
   ACTION_CHAT_INPUTTING,
   ACTION_CHAT_GET_CHATGROUP_USER,
-  ACTION_CHAT_GET_NEW_CHATBOX_HOME
+  ACTION_CHAT_GET_NEW_CHATBOX_HOME,
+  ACTION_CHAT_OPTIONS_CHATBOX,
+  ACTION_CHAT_GET_ALL_BADGE_MESSAGE
 } from './types';
 
 export const actionChatGetAllChat = (data) => ({
@@ -82,6 +84,14 @@ export const actionChatGetChatgroupUser = (data) => ({
 });
 export const actionChatGetNewChatboxHome = (data) => ({
   type: ACTION_CHAT_GET_NEW_CHATBOX_HOME,
+  payload: data
+});
+export const actionChatOptionsChatbox = (data) => ({
+  type: ACTION_CHAT_OPTIONS_CHATBOX,
+  payload: data
+});
+export const actionChatGetAllBadgeMessage = (data) => ({
+  type: ACTION_CHAT_GET_ALL_BADGE_MESSAGE,
   payload: data
 });
 export const actionGetAllChatSort = (id) => async (dispatch) => {
@@ -189,4 +199,67 @@ export const actionGetChatgroupUser = (id) => async (dispatch) => {
   }
   const chatgroupSort = chatgroups.sort((a, b) => b.updatedAt - a.updatedAt);
   dispatch(actionChatGetChatgroupUser(chatgroupSort));
+};
+export const actionGetAllBadeMessage = (id) => async (dispatch) => {
+  const data1 = await getDocs(query(collection(db, 'chatboxs'), where('user1', '==', id)));
+  const data2 = await getDocs(query(collection(db, 'chatboxs'), where('user2', '==', id)));
+  const data3 = await getDocs(
+    query(collection(db, 'chatboxs'), where('members', 'array-contains', id))
+  );
+  if (data1.empty && data2.empty && data3.empty) {
+    return dispatch(actionChatGetAllBadgeMessage(0));
+  }
+  const chatboxs = [];
+  data1.docs.forEach((chatbox) => {
+    chatboxs.push({
+      ...chatbox.data(),
+      id: chatbox.id,
+      tempId: chatbox.data().user2
+    });
+  });
+  data2.docs.forEach((chatbox) => {
+    chatboxs.push({
+      ...chatbox.data(),
+      id: chatbox.id,
+      tempId: chatbox.data().user1
+    });
+  });
+  data3.docs.forEach((chatbox) => {
+    chatboxs.push({
+      ...chatbox.data(),
+      id: chatbox.id,
+      tempId: chatbox.data().userId
+    });
+  });
+  let count = 0;
+  let result = 0;
+  chatboxs.forEach((chatbox) => {
+    getDocs(query(collection(db, 'messages'), where('chatboxId', '==', chatbox.id)))
+      .then((snapshots) => {
+        if (!snapshots.empty) {
+          count += 1;
+          const temp = [];
+          snapshots.docs.forEach((message) => {
+            temp.push({
+              ...message.data(),
+              id: message.id
+            });
+          });
+          const tempSort = temp.sort((a, b) => b.createdAt - a.createdAt);
+          if (
+            !tempSort.at(0).isRead &&
+            !tempSort.at(0).isRestore &&
+            tempSort.at(0).type !== 'note' &&
+            tempSort.at(0).senderId !== id
+          ) {
+            result += 1;
+          }
+        }
+      })
+      .then(() => {
+        if (count === chatboxs.length) {
+          dispatch(actionChatGetAllBadgeMessage(result));
+        }
+      });
+  });
 };

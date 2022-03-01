@@ -12,13 +12,17 @@ import {
   actionGetAllFriendUserManual,
   actionGetAllNotifications,
   actionGetBadgeNotifications,
+  actionGetFriendsHaveStory,
+  actionGetStoryUser,
+  actionSearchAllPeople,
   actionUserBroadcastSocket
 } from '../../redux/actions/userAction';
 import { actionGetAllPostAllFriend } from '../../redux/actions/postAction';
 import {
   actionGetAllChat,
   actionGetAllChatSort,
-  actionGetChatgroupUser
+  actionGetChatgroupUser,
+  actionGetAllBadeMessage
 } from '../../redux/actions/chatAction';
 import { connectWithSocket, registerUser } from '../../utils/wssConnection';
 import ModalReceivingVideoCall from '../../components/video/ModalReceivingVideoCall';
@@ -64,6 +68,9 @@ function HomeSidebar({ user }) {
       dispatch(actionGetAllNotifications(user.id));
       dispatch(actionGetBadgeNotifications(user.id));
       dispatch(actionGetChatgroupUser(user.id));
+      dispatch(actionGetStoryUser(user.id));
+      dispatch(actionGetFriendsHaveStory(user.id));
+      dispatch(actionGetAllBadeMessage(user.id));
     }
     return () => null;
   }, [user]);

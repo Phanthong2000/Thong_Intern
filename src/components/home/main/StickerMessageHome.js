@@ -34,9 +34,10 @@ StickerMessage.prototype = {
   close: PropTypes.func,
   chatbox: PropTypes.object,
   exists: PropTypes.bool,
-  other: PropTypes.object
+  other: PropTypes.object,
+  chatgroup: PropTypes.object
 };
-function StickerMessage({ user, close, chatbox, exists, other }) {
+function StickerMessage({ user, close, chatbox, exists, other, chatgroup }) {
   const [text, setText] = useState('');
   const [sticker, setSticker] = useState([]);
   const [quantitySticker, setQuantitySticker] = useState(-1);
@@ -93,6 +94,7 @@ function StickerMessage({ user, close, chatbox, exists, other }) {
             exists={exists}
             url={item.images.downsized.url}
             chatbox={chatbox}
+            chatgroup={chatgroup}
           />
         ))}
       </Scrollbar>

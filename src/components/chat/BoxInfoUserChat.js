@@ -2,10 +2,11 @@ import React from 'react';
 import { Avatar, Box, Card, IconButton, Skeleton, styled, Typography } from '@mui/material';
 import { Icon } from '@iconify/react';
 import PropTypes from 'prop-types';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { callUser } from '../../utils/wssConnection';
 import BoxInfoChatgroup from './BoxInfoChatgroup';
+import { actionChatOptionsChatbox } from '../../redux/actions/chatAction';
 
 const RootStyle = styled(Card)(({ theme }) => ({
   padding: theme.spacing(1, 1, 1),
@@ -39,14 +40,19 @@ function BoxInfoUserChat({ user }) {
   const usersSocket = useSelector((state) => state.user.usersSocket);
   const me = useSelector((state) => state.call.me);
   const navigate = useNavigate();
+  const optionsChatbox = useSelector((state) => state.chat.optionsChatbox);
+  const dispatch = useDispatch();
   const videoCall = () => {
     navigate('/home/video-call');
+  };
+  const chooseAvatarUserChat = () => {
+    navigate(`/home/other/${chatbox.user.id}`);
   };
   return (
     <RootStyle>
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         {chatbox.id !== '' ? (
-          <IconButton>
+          <IconButton onClick={chooseAvatarUserChat}>
             <Avatar sx={{ width: '40px', height: '40px' }} src={chatbox.user.avatar} />
             <IsOnline
               icon="akar-icons:circle-fill"
@@ -89,7 +95,7 @@ function BoxInfoUserChat({ user }) {
           <ButtonOptions onClick={videoCall}>
             <Icon icon="bi:camera-video-fill" />
           </ButtonOptions>
-          <ButtonOptions>
+          <ButtonOptions onClick={() => dispatch(actionChatOptionsChatbox(!optionsChatbox))}>
             <Icon icon="entypo:info-with-circle" />
           </ButtonOptions>
         </Box>

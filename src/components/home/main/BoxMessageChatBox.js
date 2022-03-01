@@ -7,6 +7,7 @@ import { Scrollbar } from 'smooth-scrollbar-react';
 import { useSelector } from 'react-redux';
 import { db } from '../../../firebase-config';
 import Message from '../../chat/Message';
+import MessageChatgroup from '../../chat/MessageChatgroup';
 
 const RootStyle = styled(Box)(() => ({
   width: '100%',
@@ -19,9 +20,10 @@ const RootStyle = styled(Box)(() => ({
 }));
 BoxMessageChatBox.prototype = {
   user: PropTypes.object,
-  other: PropTypes.object
+  other: PropTypes.object,
+  chatbox: PropTypes.object
 };
-function BoxMessageChatBox({ user, other }) {
+function BoxMessageChatBox({ user, other, chatbox }) {
   const [allMessages, setAllMessages] = useState([]);
   const chatboxHome = useSelector((state) => state.chat.chatboxHome);
   const addMessageChatboxHome = useSelector((state) => state.chat.addMessageChatboxHome);
@@ -120,8 +122,27 @@ function BoxMessageChatBox({ user, other }) {
       );
     }
   };
+  const getAllMessageChatgroup = async () => {
+    const data = await getDocs(
+      query(collection(db, 'messages'), where('chatboxId', '==', chatbox.id))
+    );
+    if (data.empty) {
+      setAllMessages([]);
+    } else {
+      const messages = [];
+      data.docs.forEach((message) => {
+        messages.push({
+          ...message.data(),
+          id: message.id
+        });
+      });
+      const messagesSort = messages.sort((a, b) => a.createdAt - b.createdAt);
+      setAllMessages(messagesSort);
+    }
+  };
   useEffect(() => {
-    getAllMessage();
+    if (chatbox.type === 'group') getAllMessageChatgroup();
+    else getAllMessage();
     return () => null;
   }, [chatboxHome, addMessageChatboxHome]);
   useEffect(() => {
@@ -174,6 +195,15 @@ function BoxMessageChatBox({ user, other }) {
       </BoxUser>
     );
   };
+  if (chatbox.type === 'group')
+    return (
+      <RootStyle>
+        {allMessages.map((item, index) => (
+          <Message key={index} user={user} message={item} index={index} />
+        ))}
+        <AlwaysScrollToBottom />
+      </RootStyle>
+    );
   return (
     <RootStyle>
       <BoxUserEmptyMessage />

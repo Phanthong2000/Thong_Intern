@@ -35,10 +35,11 @@ EmojiMessage.prototype = {
   close: PropTypes.func,
   chatbox: PropTypes.object,
   exists: PropTypes.bool,
-  other: PropTypes.object
+  other: PropTypes.object,
+  chatgroup: PropTypes.object
 };
 const giphy = new GiphyFetch(process.env.REACT_APP_GIPHY_KEY);
-function EmojiMessage({ user, close, chatbox, exists, other }) {
+function EmojiMessage({ user, close, chatbox, exists, other, chatgroup }) {
   const [text, setText] = useState('');
   const [emoji, setEmoji] = useState([]);
   const [quantityEmoji, setQuantityEmoji] = useState(-1);
@@ -83,6 +84,7 @@ function EmojiMessage({ user, close, chatbox, exists, other }) {
             close={close}
             key={index}
             url={item.images.downsized.url}
+            chatgroup={chatgroup}
           />
         ))}
       </Scrollbar>

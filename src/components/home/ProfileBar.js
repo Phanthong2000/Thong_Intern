@@ -44,7 +44,7 @@ function ProfileBar({ user }) {
   const dispatch = useDispatch();
   const notifications = useSelector((state) => state.user.notifications);
   const badgeNotification = useSelector((state) => state.user.badgeNotification);
-  const testBadge = 0;
+  const badgeMessage = useSelector((state) => state.chat.badgeMessage);
   const openProfileBox = () => {
     dispatch(actionUserOpenProfile());
   };
@@ -67,8 +67,8 @@ function ProfileBar({ user }) {
         aria-label="show 4 new mails"
         color="inherit"
       >
-        <Badge badgeContent={testBadge >= 1 ? 1 : null} color="error">
-          {testBadge >= 1 ? (
+        <Badge badgeContent={badgeMessage >= 1 ? badgeMessage : null} color="error">
+          {badgeMessage >= 1 ? (
             <Icon icon="uim:comment-message" style={{ color: '#30ab78' }} />
           ) : (
             <Icon icon="uil:comment-message" style={{ color: '#30ab78' }} />

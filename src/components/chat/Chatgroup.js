@@ -11,7 +11,8 @@ import {
   actionChatGetChatbox,
   actionChatGetChatboxHome,
   actionChatClearImageMessage,
-  actionGetAllMessagesChatbox
+  actionGetAllMessagesChatbox,
+  actionGetAllBadeMessage
 } from '../../redux/actions/chatAction';
 import { actionUserCloseMessenger } from '../../redux/actions/userAction';
 
@@ -36,8 +37,10 @@ Chatgroup.prototype = {
 };
 function Chatgroup({ user, chatbox, home }) {
   const chatboxs = useSelector((state) => state.chat.chatboxs);
+  const chatboxChosen = useSelector((state) => state.chat.chatbox);
   const [messageLast, setMessageLast] = useState({});
   const dispatch = useDispatch();
+  const badgeMessage = useSelector((state) => state.chat.badgeMessage);
   const { pathname } = useLocation();
   const getMessagesByChatbox = () => {
     const allMessages = [];
@@ -61,23 +64,38 @@ function Chatgroup({ user, chatbox, home }) {
   useEffect(() => {
     getMessagesByChatbox();
     return () => null;
-  }, [chatboxs]);
+  }, [chatboxs, badgeMessage]);
   const chooseUserChat = () => {
     if (home) {
       if (pathname === '/home/chat') {
+        updateDoc(doc(db, 'messages', messageLast.id), { isRead: true }).then(() => {
+          setMessageLast({
+            ...messageLast,
+            isRead: true
+          });
+        });
+        dispatch(actionGetAllBadeMessage(user.id));
         dispatch(actionUserCloseMessenger());
         dispatch(
           actionChatGetChatbox({
-            id: chatbox.id,
-            user
+            ...chatbox,
+            type: 'group'
           })
         );
       } else {
+        updateDoc(doc(db, 'messages', messageLast.id), { isRead: true }).then(() => {
+          setMessageLast({
+            ...messageLast,
+            isRead: true
+          });
+        });
+        dispatch(actionGetAllBadeMessage(user.id));
         dispatch(actionUserCloseMessenger());
         dispatch(
           actionChatGetChatboxHome({
             status: true,
-            user
+            user: {},
+            chatbox
           })
         );
       }
@@ -90,6 +108,7 @@ function Chatgroup({ user, chatbox, home }) {
           });
         });
       }
+      dispatch(actionGetAllBadeMessage(user.id));
       dispatch(actionChatClearImageMessage());
       dispatch(
         actionChatGetChatbox({
@@ -120,6 +139,10 @@ function Chatgroup({ user, chatbox, home }) {
       if (messageLast.senderId === user.id) return `You: sent a sticker`;
       return `Sent a sticker`;
     }
+    if (messageLast.type === 'note') {
+      if (messageLast.senderId === user.id) return `You: sent a note`;
+      return `Sent a note`;
+    }
     if (messageLast.senderId === user.id) return `You: sent a image`;
     return `Sent a image`;
   };
@@ -145,9 +168,13 @@ function Chatgroup({ user, chatbox, home }) {
       </Box>
     </Box>
   );
+  const checkUserChosen = () => {
+    if (chatbox.id === chatboxChosen.id) return '#ddfc92';
+    return '#fff';
+  };
   if (messageLast.id === undefined) return <BoxSkeleton />;
   return (
-    <RootStyle onClick={chooseUserChat}>
+    <RootStyle sx={{ background: checkUserChosen() }} onClick={chooseUserChat}>
       <Box sx={{ display: 'flex' }}>
         <Avatar src={chatbox.avatar} />
         <BoxInfo>

@@ -232,6 +232,34 @@ function OptionsMessageChatgroup({ user }) {
         });
     }
   };
+  const sendIconLike = () => {
+    const message = {
+      chatboxId: chatbox.id,
+      content: '',
+      contentFile:
+        'https://media1.giphy.com/media/pzmePzAZ2iXJKcXAdl/giphy.gif?cid=87370c27o2nk0z4njien0dxyrzsfjss3k1ei8ngfoiojien6&rid=giphy.gif&ct=s',
+      isRead: false,
+      isRestore: false,
+      reaction: [],
+      senderId: user.id,
+      type: 'sticker',
+      createdAt: new Date().getTime()
+    };
+    addDoc(collection(db, 'messages'), message).then((docRef) => {
+      dispatch(
+        actionChatAddMessage({
+          ...message,
+          id: docRef.id
+        })
+      );
+      updateDoc(doc(db, 'chatboxs', chatbox.id), {
+        ...chatbox,
+        updatedAt: new Date().getTime()
+      }).then(() => {
+        dispatch(actionGetAllChatSort(user.id));
+      });
+    });
+  };
   return (
     <RootStyle>
       <IconButtonOption>
@@ -294,12 +322,12 @@ function OptionsMessageChatgroup({ user }) {
         </IconButtonOption>
       </BoxInput>
       {!isChatting && imageMessages.length === 0 ? (
-        <IconButtonOption>
+        <IconButtonOption onClick={sendIconLike}>
           <IconOption icon="fontisto:like" />
         </IconButtonOption>
       ) : (
-        <IconButtonOption>
-          <IconOption onClick={sendMessage} icon="teenyicons:send-solid" />
+        <IconButtonOption onClick={sendMessage}>
+          <IconOption icon="teenyicons:send-solid" />
         </IconButtonOption>
       )}
       <input

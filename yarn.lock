@@ -10313,6 +10313,11 @@ react-helmet-async@^1.1.2:
     react-fast-compare "^3.2.0"
     shallowequal "^1.1.0"
 
+react-insta-stories@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/react-insta-stories/-/react-insta-stories-2.3.0.tgz#f2d0aeca7eca8f1f7a13486e573758a460de20da"
+  integrity sha512-1609XYXFPKvaoEGoHSJqdqd75pGhBv9iaX3vY2vJRaVFWVBYb8D2ax1S7iBTvqadEM34o7bbrp0g6hN4hDK44w==
+
 react-is@^16.13.1, react-is@^16.7.0, react-is@^16.8.1:
   version "16.13.1"
   resolved "https://registry.npmjs.org/react-is/-/react-is-16.13.1.tgz"

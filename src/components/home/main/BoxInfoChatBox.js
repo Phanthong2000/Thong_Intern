@@ -2,6 +2,7 @@ import React from 'react';
 import { Avatar, Box, Card, IconButton, Stack, styled, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 import { Icon } from '@iconify/react';
+import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { actionChatGetChatboxHome } from '../../../redux/actions/chatAction';
 
@@ -40,12 +41,14 @@ const IconOption = styled(Icon)(() => ({
 }));
 BoxInfoChatBox.prototype = {
   user: PropTypes.object,
-  other: PropTypes.object
+  other: PropTypes.object,
+  chatbox: PropTypes.object
 };
-function BoxInfoChatBox({ user, other }) {
+function BoxInfoChatBox({ user, other, chatbox }) {
   const dispatch = useDispatch();
   const usersSocket = useSelector((state) => state.user.usersSocket);
   const chatboxHome = useSelector((state) => state.chat.chatboxHome);
+  const navigate = useNavigate();
   const hiddenChatboxHome = () => {
     dispatch(
       actionChatGetChatboxHome({
@@ -62,11 +65,47 @@ function BoxInfoChatBox({ user, other }) {
       })
     );
   };
+  const chooseAvatarUserChat = () => {
+    navigate(`/home/other/${other.id}`);
+  };
+  const quantityMember = () => {
+    if (chatbox.members.length === 0) return null;
+    if (chatbox.members.length === 1) return `1 member`;
+    return `${chatbox.members.length} members`;
+  };
+  if (chatbox.type === 'group')
+    return (
+      <RootStyle elevation={1}>
+        <Stack sx={{ justifyContent: 'space-between' }} direction="row">
+          <BoxInfo>
+            <Avatar src={chatbox.avatar} />
+            <Box sx={{ justifyContent: 'center', marginLeft: '10px' }}>
+              <Typography sx={{ fontWeight: 'bold', fontSize: '16px' }}>{chatbox.name}</Typography>
+              <Typography sx={{ color: 'gray', fontSize: '14px' }}>{quantityMember()}</Typography>
+            </Box>
+          </BoxInfo>
+          <BoxOption>
+            <ButtonOptions>
+              <IconOption icon="fluent:call-48-filled" />
+            </ButtonOptions>
+            <ButtonOptions>
+              <IconOption icon="bi:camera-video-fill" />
+            </ButtonOptions>
+            <ButtonOptions>
+              <IconOption onClick={hiddenChatboxHome} icon="bx:minus" />
+            </ButtonOptions>
+            <ButtonOptions onClick={closeChatboxHome}>
+              <IconOption icon="eva:close-fill" />
+            </ButtonOptions>
+          </BoxOption>
+        </Stack>
+      </RootStyle>
+    );
   return (
     <RootStyle elevation={1}>
       <Stack sx={{ justifyContent: 'space-between' }} direction="row">
-        <BoxInfo>
-          <IconButton sx={{ width: '50px', height: '50px' }} disabled>
+        <BoxInfo onClick={chooseAvatarUserChat}>
+          <IconButton disabled sx={{ width: '50px', height: '50px' }}>
             <Avatar src={other.avatar} />
             <IsOnline
               icon="akar-icons:circle-fill"

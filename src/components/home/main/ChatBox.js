@@ -18,15 +18,16 @@ const RootStyle = styled(Card)(() => ({
 }));
 ChatBox.prototype = {
   user: PropTypes.object,
-  other: PropTypes.object
+  other: PropTypes.object,
+  chatbox: PropTypes.object
 };
-function ChatBox({ user, other }) {
+function ChatBox({ user, other, chatbox }) {
   const newChatbox = useSelector((state) => state.chat.newChatbox);
   return (
     <RootStyle sx={{ right: newChatbox ? 500 : 100 }}>
-      <BoxInfoChatBox user={user} other={other} />
-      <BoxMessageChatBox user={user} other={other} />
-      <BoxOptionChatBox user={user} other={other} />
+      <BoxInfoChatBox user={user} other={other} chatbox={chatbox} />
+      <BoxMessageChatBox user={user} chatbox={chatbox} other={other} />
+      <BoxOptionChatBox user={user} chatgroup={chatbox} other={other} />
     </RootStyle>
   );
 }

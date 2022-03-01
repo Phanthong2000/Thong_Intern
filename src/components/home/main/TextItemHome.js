@@ -21,14 +21,37 @@ TextItem.prototype = {
   close: PropTypes.func,
   chatbox: PropTypes.object,
   exists: PropTypes.bool,
-  other: PropTypes.object
+  other: PropTypes.object,
+  chatgroup: PropTypes.object
 };
-function TextItem({ user, url, close, chatbox, exists, other }) {
+function TextItem({ user, url, close, chatbox, exists, other, chatgroup }) {
   const dispatch = useDispatch();
   const sendText = () => {
-    if (exists) {
+    if (chatgroup.type === 'group') {
       const message = {
-        chatboxId: chatbox.id,
+        chatboxId: chatgroup.id,
+        content: '',
+        contentFile: url,
+        isRead: false,
+        isRestore: false,
+        reaction: [],
+        senderId: user.id,
+        type: 'sticker',
+        createdAt: new Date().getTime()
+      };
+      addDoc(collection(db, 'messages'), message).then((docRef) => {
+        dispatch(actionChatAddMessage(message));
+        updateDoc(doc(db, 'chatboxs', chatgroup.id), {
+          updatedAt: new Date().getTime()
+        }).then(() => {
+          close();
+          dispatch(actionChatAddMessageChatboxHome());
+          dispatch(actionGetAllChatSort(user.id));
+        });
+      });
+    } else if (exists) {
+      const message = {
+        chathamId: chatbox.id,
         content: '',
         contentFile: url,
         isRead: false,
@@ -46,6 +69,7 @@ function TextItem({ user, url, close, chatbox, exists, other }) {
         }).then(() => {
           close();
           dispatch(actionChatAddMessageChatboxHome());
+          dispatch(actionGetAllChatSort(user.id));
         });
       });
     } else {
@@ -72,6 +96,7 @@ function TextItem({ user, url, close, chatbox, exists, other }) {
         addDoc(collection(db, 'messages'), message).then(() => {
           close();
           dispatch(actionChatAddMessageChatboxHome());
+          dispatch(actionGetAllChatSort(user.id));
         });
       });
     }

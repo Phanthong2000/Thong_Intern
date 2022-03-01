@@ -10,9 +10,9 @@ import {
   Typography
 } from '@mui/material';
 import { Icon } from '@iconify/react';
-import { doc, getDoc } from 'firebase/firestore';
-import { NavLink } from 'react-router-dom';
-import { db } from '../../firebase-config';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { actionUserCloseSearch } from '../../redux/actions/userAction';
 
 const RootStyle = styled(ListItemButton)(() => ({
   display: 'flex',
@@ -23,9 +23,15 @@ ItemSearchText.prototype = {
   search: PropTypes.object
 };
 function ItemSearchText({ search }) {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const chooseSearch = () => {
+    dispatch(actionUserCloseSearch());
+    navigate(`/home/search/all-people/${search.content}`);
+  };
   return (
     <ListItem>
-      <RootStyle>
+      <RootStyle onClick={chooseSearch}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Icon style={{ width: '25px', height: '25px' }} icon="ic:outline-access-time" />
           <Typography sx={{ marginLeft: '10px' }}>{search.content}</Typography>

@@ -31,7 +31,15 @@ import {
   ACTION_USER_ADD_FRIEND_REQUEST,
   ACTION_USER_GET_ALL_NOTIFICATIONS,
   ACTION_USER_GET_BADGE_NOTIFICATION,
-  ACTION_USER_HOVER_USERNAME
+  ACTION_USER_HOVER_USERNAME,
+  ACTION_USER_SEARCH_ALL_FRIEND,
+  ACTION_USER_SEARCH_ALL_PEOPLE,
+  ACTION_USER_SEARCH_ALL_REQUESTS,
+  ACTION_USER_SEARCH_ALL_SENT,
+  ACTION_USER_SEARCH_OTHERS,
+  ACTION_USER_GET_ALL_STORY_USER,
+  ACTION_USER_GET_STORY_USER,
+  ACTION_USER_GET_FRIENDS_HAVE_STORY
 } from './types';
 
 export const actionUserOpenSearch = () => ({ type: ACTION_USER_OPEN_SEARCH });
@@ -108,6 +116,38 @@ export const actionUserGetBadgeNotification = (data) => ({
 });
 export const actionUserHoverUsername = (data) => ({
   type: ACTION_USER_HOVER_USERNAME,
+  payload: data
+});
+export const actionUserSearchAllFriend = (data) => ({
+  type: ACTION_USER_SEARCH_ALL_FRIEND,
+  payload: data
+});
+export const actionUserSearchAllPeople = (data) => ({
+  type: ACTION_USER_SEARCH_ALL_PEOPLE,
+  payload: data
+});
+export const actionUserSearchAllSent = (data) => ({
+  type: ACTION_USER_SEARCH_ALL_SENT,
+  payload: data
+});
+export const actionUserSearchAllRequests = (data) => ({
+  type: ACTION_USER_SEARCH_ALL_REQUESTS,
+  payload: data
+});
+export const actionUserSearchOthers = (data) => ({
+  type: ACTION_USER_SEARCH_OTHERS,
+  payload: data
+});
+export const actionUserGetAllStoryUser = (data) => ({
+  type: ACTION_USER_GET_ALL_STORY_USER,
+  payload: data
+});
+export const actionUserGetStoryUser = (data) => ({
+  type: ACTION_USER_GET_STORY_USER,
+  payload: data
+});
+export const actionUserGetFriendsHaveStory = (data) => ({
+  type: ACTION_USER_GET_FRIENDS_HAVE_STORY,
   payload: data
 });
 export const actionGetContact = (userId, otherId) => async (dispatch) => {
@@ -278,6 +318,155 @@ export const actionGetAllNotifications = (id) => async (dispatch) => {
     dispatch(actionUserGetAllNotifications(notificationsSort));
   }
 };
+export const actionGetUserSearch = (name) => async (dispatch) => {
+  const data = await getDocs(collection(db, 'users'));
+  const users = [];
+  if (!data.empty) {
+    data.docs.forEach((user) => {
+      if (user.data().username.toLowerCase().includes(name)) {
+        console.log(user.data());
+        users.push({
+          userId: user.id,
+          createdAt: new Date().getTime(),
+          content: user.id,
+          type: 'user'
+        });
+      }
+    });
+  }
+  const usersSort = users.sort((a, b) => b.createdAt - a.createdAt);
+  dispatch(actionGetUserSearch(usersSort));
+};
+export const actionSearchAllPeople = (name, id) => async (dispatch) => {
+  const data = await getDocs(collection(db, 'users'));
+  const users = [];
+  if (!data.empty) {
+    data.docs.forEach((user) => {
+      if (user.data().username.toLowerCase().includes(name.toLowerCase())) {
+        users.push({
+          ...user.data(),
+          id: user.id
+        });
+      }
+    });
+  }
+  const userFilter = users.filter((item) => item.id !== id);
+  const usersSort = userFilter.sort((a, b) => b.createdAt - a.createdAt);
+  dispatch(actionUserSearchAllPeople(usersSort));
+};
+export const actionSearchAllFriends = (name, id) => async (dispatch) => {
+  const data1 = await getDocs(
+    query(collection(db, 'contacts'), where('senderId', '==', id), where('status', '==', true))
+  );
+  const data2 = await getDocs(
+    query(collection(db, 'contacts'), where('receiverId', '==', id), where('status', '==', true))
+  );
+  if (data1.empty && data2.empty) {
+    return dispatch(actionUserSearchAllFriend([]));
+  }
+  const contacts = [];
+  data1.docs.forEach((contact) => {
+    contacts.push({
+      friendId: contact.data().receiverId,
+      id: contact.id,
+      createdAt: contact.data().createdAt
+    });
+  });
+  data2.docs.forEach((contact) => {
+    contacts.push({
+      friendId: contact.data().senderId,
+      id: contact.id,
+      createdAt: contact.data().createdAt
+    });
+  });
+  const users = [];
+  let count = 0;
+  contacts.forEach((contact) => {
+    getDoc(doc(db, 'users', contact.friendId))
+      .then((snapshot) => {
+        users.push({
+          ...snapshot.data(),
+          id: snapshot.id
+        });
+      })
+      .then(() => {
+        count += 1;
+        if (count === contacts.length) {
+          const userSearch = [];
+          users.forEach((user) => {
+            if (user.username.toLowerCase().includes(name.toLowerCase())) {
+              userSearch.push(user);
+            }
+          });
+          dispatch(actionUserSearchAllFriend(userSearch));
+        }
+      });
+  });
+};
+export const actionSearchAllSent = (name, id) => async (dispatch) => {
+  const data = await getDocs(
+    query(collection(db, 'contacts'), where('senderId', '==', id), where('status', '==', false))
+  );
+  if (data.empty) {
+    dispatch(actionUserSearchAllSent([]));
+  } else {
+    const users = [];
+    let count = 0;
+    data.docs.forEach((contact) => {
+      getDoc(doc(db, 'users', contact.data().receiverId))
+        .then((snapshot) => {
+          users.push({
+            ...snapshot.data(),
+            id: snapshot.id
+          });
+        })
+        .then(() => {
+          count += 1;
+          if (count === data.size) {
+            const userSearch = [];
+            users.forEach((user) => {
+              if (user.username.toLowerCase().includes(name.toLowerCase())) {
+                userSearch.push(user);
+              }
+            });
+            dispatch(actionUserSearchAllSent(userSearch));
+          }
+        });
+    });
+  }
+};
+export const actionSearchAllFriendRequests = (name, id) => async (dispatch) => {
+  const data = await getDocs(
+    query(collection(db, 'contacts'), where('receiverId', '==', id), where('status', '==', false))
+  );
+  if (data.empty) {
+    dispatch(actionUserSearchAllRequests([]));
+  } else {
+    const users = [];
+    let count = 0;
+    data.docs.forEach((contact) => {
+      getDoc(doc(db, 'users', contact.data().senderId))
+        .then((snapshot) => {
+          users.push({
+            ...snapshot.data(),
+            id: snapshot.id
+          });
+        })
+        .then(() => {
+          count += 1;
+          if (count === data.size) {
+            const userSearch = [];
+            users.forEach((user) => {
+              if (user.username.toLowerCase().includes(name.toLowerCase())) {
+                userSearch.push(user);
+              }
+            });
+            dispatch(actionUserSearchAllRequests(userSearch));
+          }
+        });
+    });
+  }
+};
 export const actionGetBadgeNotifications = (id) => async (dispatch) => {
   const data = await getDocs(query(collection(db, 'notifications'), where('receiverId', '==', id)));
   if (data.empty) {
@@ -292,7 +481,68 @@ export const actionGetBadgeNotifications = (id) => async (dispatch) => {
     dispatch(actionUserGetBadgeNotification(count));
   }
 };
+export const actionGetStoryUser = (id) => async (dispatch) => {
+  const data = await getDocs(query(collection(db, 'stories'), where('userId', '==', id)));
+  if (data.empty) {
+    dispatch(actionUserGetStoryUser([]));
+  } else {
+    const stories = [];
+    data.docs.forEach((story) => {
+      if (new Date().getTime() - story.data().createdAt < 86400000) {
+        stories.push({
+          ...story.data(),
+          id: story.id
+        });
+      }
+    });
+    const storiesSort = stories.sort((a, b) => a.createdAt - b.createdAt);
+    dispatch(actionUserGetStoryUser(storiesSort));
+  }
+};
 
+export const actionGetFriendsHaveStory = (id) => async (dispatch) => {
+  const data1 = await getDocs(
+    query(collection(db, 'contacts'), where('senderId', '==', id), where('status', '==', true))
+  );
+  const data2 = await getDocs(
+    query(collection(db, 'contacts'), where('receiverId', '==', id), where('status', '==', true))
+  );
+  if (data1.empty && data2.empty) {
+    return dispatch(actionUserGetFriendsHaveStory([]));
+  }
+  const contacts = [];
+  data1.docs.forEach((contact) => {
+    contacts.push({
+      friendId: contact.data().receiverId,
+      id: contact.id,
+      createdAt: contact.data().createdAt
+    });
+  });
+  data2.docs.forEach((contact) => {
+    contacts.push({
+      friendId: contact.data().senderId,
+      id: contact.id,
+      createdAt: contact.data().createdAt
+    });
+  });
+  const contactsStory = [];
+  contacts.forEach((contact) => {
+    getDocs(query(collection(db, 'stories'), where('userId', '==', contact.friendId))).then(
+      (snapshots) => {
+        if (!snapshots.empty) {
+          snapshots.docs.forEach((snapshot) => {
+            if (new Date().getTime() - snapshot.data().createdAt < 86400000) {
+              if (!contactsStory.includes(contact.friendId)) {
+                contactsStory.push(contact.friendId);
+              }
+            }
+          });
+        }
+      }
+    );
+  });
+  dispatch(actionUserGetFriendsHaveStory(contactsStory));
+};
 export const actionTestSearch = (data) => ({
   type: TEST_SEARCH,
   payload: data

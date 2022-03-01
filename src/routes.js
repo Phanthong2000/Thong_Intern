@@ -18,6 +18,15 @@ import FriendRequests from './components/friend/FriendRequests';
 import AllFriends from './components/friend/AllFriends';
 import VideoCall from './pages/VideoCall';
 import Photo from './pages/Photo';
+import Search from './pages/Search';
+import AllPeople from './components/search/AllPeople';
+import AllSent from './components/search/AllSent';
+import AllRequests from './components/search/AllRequests';
+import AllFriendsSearch from './components/search/AllFriends';
+import Story from './pages/Story';
+import CreateStory from './components/story/CreateStory';
+import ProfileSetting from './components/setting/ProfileSetting';
+import PasswordSetting from './components/setting/PasswordSetting';
 
 function Router() {
   const navigate = useNavigate();
@@ -36,6 +45,7 @@ function Router() {
       const userId = JSON.parse(localStorage.getItem('user')).id;
       getUser(userId);
     }
+    return () => null;
   }, []);
   return useRoutes([
     { path: '/', element: <Navigate to="/login" /> },
@@ -64,10 +74,34 @@ function Router() {
             { element: <Navigate to="/home/friends/friend-requests" /> }
           ]
         },
-        { path: 'setting', element: <Setting /> },
+        {
+          path: 'setting',
+          element: <Setting user={user} />,
+          children: [
+            { path: 'profile-setting', element: <ProfileSetting user={user} /> },
+            { path: 'password-setting', element: <PasswordSetting user={user} /> },
+            { element: <Navigate to="/home/setting/profile-setting" /> }
+          ]
+        },
         { path: 'other/:id', element: <Other user={user} /> },
         { path: 'profile/:id', element: <Profile user={user} /> },
         { path: 'photo/:id', element: <Photo user={user} /> },
+        {
+          path: 'search',
+          element: <Search user={user} />,
+          children: [
+            { path: 'all-people/:name', element: <AllPeople user={user} /> },
+            { path: 'all-friends/:name', element: <AllFriendsSearch user={user} /> },
+            { path: 'all-sent/:name', element: <AllSent user={user} /> },
+            { path: 'all-requests/:name', element: <AllRequests user={user} /> },
+            { element: <Navigate to="/home/search/all-people/:name" /> }
+          ]
+        },
+        {
+          path: 'stories',
+          element: <Story user={user} />
+        },
+        { path: 'create-story', element: <CreateStory user={user} /> },
         {
           path: 'user-not-found',
           element: <UserNotFound />

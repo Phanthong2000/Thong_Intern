@@ -428,6 +428,28 @@ function Message({ user, message, index }) {
     return <ContentSticker src={message.contentFile} />;
   };
   // if (chatbox.id !== message.chatboxId) return null;
+  if (message.type === 'note')
+    return (
+      <Box sx={{ width: '100%', justifyContent: 'center', marginBottom: '10px', display: 'flex' }}>
+        <Box
+          sx={{
+            background: '#fff',
+            border: `2px solid #30ab78`,
+            padding: `5px`,
+            borderRadius: '10px',
+            display: 'flex'
+          }}
+        >
+          <Avatar sx={{ width: '25px', height: '25px' }} src={userSent.avatar} />
+          <Box sx={{ marginLeft: '5px' }}>
+            <Typography sx={{ color: 'gray' }}>{message.content}</Typography>
+            <Typography sx={{ color: 'gray', fontSize: '12px' }}>
+              {moment(message.createdAt).format('LLL')}
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
+    );
   if (user.id === message.senderId)
     return (
       <BoxMessageUserSender>

@@ -27,9 +27,10 @@ ReactionMessage.prototype = {
   close: PropTypes.func,
   chatbox: PropTypes.object,
   exists: PropTypes.bool,
-  other: PropTypes.object
+  other: PropTypes.object,
+  chatgroup: PropTypes.object
 };
-function ReactionMessage({ user, close, chatbox, exists, other }) {
+function ReactionMessage({ user, close, chatbox, exists, other, chatgroup }) {
   const [chooseOption, setChooseOption] = useState('sticker');
   const chooseSticker = () => {
     setChooseOption('sticker');
@@ -75,6 +76,7 @@ function ReactionMessage({ user, close, chatbox, exists, other }) {
           chatbox={chatbox}
           close={close}
           user={user}
+          chatgroup={chatgroup}
         />
       )}
       {chooseOption === 'emoji' && (
@@ -84,6 +86,7 @@ function ReactionMessage({ user, close, chatbox, exists, other }) {
           chatbox={chatbox}
           close={close}
           user={user}
+          chatgroup={chatgroup}
         />
       )}
       {chooseOption === 'text' && (
@@ -93,6 +96,7 @@ function ReactionMessage({ user, close, chatbox, exists, other }) {
           chatbox={chatbox}
           close={close}
           user={user}
+          chatgroup={chatgroup}
         />
       )}
     </RootStyle>

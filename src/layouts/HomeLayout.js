@@ -63,7 +63,9 @@ function HomeLayout() {
           closeProfileBox();
         }}
       >
-        {chatboxHome.status && <ChatBox user={user} other={chatboxHome.user} />}
+        {chatboxHome.status && (
+          <ChatBox user={user} other={chatboxHome.user} chatbox={chatboxHome.chatbox} />
+        )}
         {newChatbox && <BoxNewChatbox user={user} />}
         <Outlet />
       </MainStyle>

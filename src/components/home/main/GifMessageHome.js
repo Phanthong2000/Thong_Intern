@@ -34,9 +34,10 @@ GifMessage.prototype = {
   close: PropTypes.func,
   chatbox: PropTypes.object,
   exists: PropTypes.bool,
-  other: PropTypes.object
+  other: PropTypes.object,
+  chatgroup: PropTypes.object
 };
-function GifMessage({ user, close, chatbox, exists, other }) {
+function GifMessage({ user, close, chatbox, exists, other, chatgroup }) {
   const [text, setText] = useState('');
   const [gif, setGif] = useState([]);
   const [quantityGif, setQuantityGif] = useState(-1);
@@ -93,6 +94,7 @@ function GifMessage({ user, close, chatbox, exists, other }) {
             chatbox={chatbox}
             other={other}
             url={item.images.downsized.url}
+            chatgroup={chatgroup}
           />
         ))}
       </Scrollbar>

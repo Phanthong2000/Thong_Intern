@@ -1,8 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Avatar, Box, Card, IconButton, styled, Typography } from '@mui/material';
 import { Icon } from '@iconify/react';
+import { actionChatOptionsChatbox } from '../../redux/actions/chatAction';
 
 const RootStyle = styled(Card)(({ theme }) => ({
   padding: theme.spacing(1, 1, 1),
@@ -25,6 +26,8 @@ BoxInfoChatgroup.prototype = {
 };
 function BoxInfoChatgroup({ user }) {
   const chatbox = useSelector((state) => state.chat.chatbox);
+  const optionsChatbox = useSelector((state) => state.chat.optionsChatbox);
+  const dispatch = useDispatch();
   const checkQuantityMemberChatgroup = () => {
     if (chatbox.members >= 0) return `${chatbox.members.length} member`;
     return `${chatbox.members.length} members`;
@@ -49,7 +52,7 @@ function BoxInfoChatgroup({ user }) {
         <ButtonOptions>
           <Icon icon="bi:camera-video-fill" />
         </ButtonOptions>
-        <ButtonOptions>
+        <ButtonOptions onClick={() => dispatch(actionChatOptionsChatbox(!optionsChatbox))}>
           <Icon icon="entypo:info-with-circle" />
         </ButtonOptions>
       </Box>

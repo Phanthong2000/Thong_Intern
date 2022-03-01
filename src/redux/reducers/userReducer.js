@@ -28,7 +28,15 @@ import {
   ACTION_USER_ADD_FRIEND_REQUEST,
   ACTION_USER_GET_ALL_NOTIFICATIONS,
   ACTION_USER_GET_BADGE_NOTIFICATION,
-  ACTION_USER_HOVER_USERNAME
+  ACTION_USER_HOVER_USERNAME,
+  ACTION_USER_SEARCH_ALL_FRIEND,
+  ACTION_USER_SEARCH_ALL_PEOPLE,
+  ACTION_USER_SEARCH_ALL_REQUESTS,
+  ACTION_USER_SEARCH_ALL_SENT,
+  ACTION_USER_SEARCH_OTHERS,
+  ACTION_USER_GET_ALL_STORY_USER,
+  ACTION_USER_GET_STORY_USER,
+  ACTION_USER_GET_FRIENDS_HAVE_STORY
 } from '../actions/types';
 
 const defaultState = {
@@ -56,7 +64,18 @@ const defaultState = {
   usersSocket: [],
   notifications: [],
   badgeNotification: 0,
-  userHoverUsername: {}
+  userHoverUsername: {},
+  searchAllPeople: [],
+  searchAllFriends: [],
+  searchAllSent: [],
+  searchAllRequests: [],
+  searchOthers: [],
+  allStories: {
+    user: '',
+    stories: []
+  },
+  stories: [],
+  friendsHaveStory: []
 };
 const userReducer = (state = defaultState, action) => {
   switch (action.type) {
@@ -252,6 +271,46 @@ const userReducer = (state = defaultState, action) => {
       return {
         ...state,
         userHoverUsername: action.payload
+      };
+    case ACTION_USER_SEARCH_ALL_PEOPLE:
+      return {
+        ...state,
+        searchAllPeople: action.payload
+      };
+    case ACTION_USER_SEARCH_ALL_FRIEND:
+      return {
+        ...state,
+        searchAllFriends: action.payload
+      };
+    case ACTION_USER_SEARCH_ALL_SENT:
+      return {
+        ...state,
+        searchAllSent: action.payload
+      };
+    case ACTION_USER_SEARCH_ALL_REQUESTS:
+      return {
+        ...state,
+        searchAllRequests: action.payload
+      };
+    case ACTION_USER_SEARCH_OTHERS:
+      return {
+        ...state,
+        searchOthers: action.payload
+      };
+    case ACTION_USER_GET_ALL_STORY_USER:
+      return {
+        ...state,
+        allStories: action.payload
+      };
+    case ACTION_USER_GET_STORY_USER:
+      return {
+        ...state,
+        stories: action.payload
+      };
+    case ACTION_USER_GET_FRIENDS_HAVE_STORY:
+      return {
+        ...state,
+        friendsHaveStory: action.payload
       };
     default:
       return state;

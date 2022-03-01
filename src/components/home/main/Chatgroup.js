@@ -1,6 +1,8 @@
 import React from 'react';
 import { Avatar, Button, Skeleton, styled, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
+import { useDispatch } from 'react-redux';
+import { actionChatGetChatboxHome } from '../../../redux/actions/chatAction';
 
 const RootStyle = styled(Button)(({ theme }) => ({
   display: 'flex',
@@ -27,8 +29,18 @@ Chatgroup.prototype = {
   chatgroup: PropTypes.object
 };
 function Chatgroup({ chatgroup }) {
+  const dispatch = useDispatch();
+  const chooseContactChatgroup = () => {
+    dispatch(
+      actionChatGetChatboxHome({
+        status: true,
+        user: {},
+        chatbox: chatgroup
+      })
+    );
+  };
   return (
-    <RootStyle>
+    <RootStyle onClick={chooseContactChatgroup}>
       <Avatar sx={{ width: '40px', height: '40px' }} src={chatgroup.avatar} />
       <Username>{chatgroup.name}</Username>
     </RootStyle>

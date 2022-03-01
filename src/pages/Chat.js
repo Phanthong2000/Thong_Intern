@@ -12,6 +12,7 @@ import BoxFileMessage from '../components/chat/BoxFileMessage';
 import BoxInfoChatgroup from '../components/chat/BoxInfoChatgroup';
 import BoxMessageChatgroup from '../components/chat/BoxMessageChatgroup';
 import OptionsMessageChatgroup from '../components/chat/OptionsMessageChatgroup';
+import BoxOptionsChatbox from '../components/chat/BoxOptionsChatbox';
 
 const heightScreen = window.screen.height;
 const RootStyle = styled(Stack)(({ theme }) => ({
@@ -25,6 +26,7 @@ Chat.prototype = {
 function Chat({ user }) {
   const imageMessages = useSelector((state) => state.chat.imageMessages);
   const chatbox = useSelector((state) => state.chat.chatbox);
+  const optionsChatbox = useSelector((state) => state.chat.optionsChatbox);
   useEffect(() => {
     document.title = 'Chat';
     return () => null;
@@ -51,6 +53,7 @@ function Chat({ user }) {
           <OptionsMessage user={user} />
         )}
       </Stack>
+      {optionsChatbox && chatbox.type === 'group' && <BoxOptionsChatbox user={user} />}
       <Snack />
     </RootStyle>
   );

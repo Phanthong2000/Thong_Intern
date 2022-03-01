@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Card, Skeleton, styled } from '@mui/material';
+import { keyframes } from '@emotion/react';
 import { useDispatch, useSelector } from 'react-redux';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../firebase-config';
@@ -62,6 +63,17 @@ function BoxMessageChatgroup({ user }) {
       </Box>
     );
   };
+  const gradient = keyframes`
+  0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+  `;
   const AlwaysScrollToBottom = () => {
     const elementRef = useRef();
     const ScrollTo = styled('div')(() => ({
@@ -83,7 +95,17 @@ function BoxMessageChatgroup({ user }) {
       </RootStyle>
     );
   return (
-    <RootStyle>
+    <RootStyle
+      sx={
+        chatbox.background === ''
+          ? { background: '#fff' }
+          : {
+              background: chatbox.background,
+              animation: `${gradient} 15s ease infinite`,
+              backgroundSize: `400% 400%`
+            }
+      }
+    >
       <Box
         sx={{
           display: 'block',

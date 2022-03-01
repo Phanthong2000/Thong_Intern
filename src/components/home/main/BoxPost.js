@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react';
 import { Box, Stack, styled } from '@mui/material';
 import PropTypes from 'prop-types';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import BoxStory from './BoxStory';
 import UpPost from './UpPost';
 import Post from '../../post/Post';
+import { actionGetFriendsHaveStory } from '../../../redux/actions/userAction';
 
 const RootStyle = styled(Stack)(({ theme }) => ({
   width: '100%',

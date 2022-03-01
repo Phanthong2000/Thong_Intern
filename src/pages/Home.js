@@ -17,6 +17,7 @@ import {
 } from '../redux/actions/chatAction';
 import ModalReceivingVideoCall from '../components/video/ModalReceivingVideoCall';
 import ChatBox from '../components/home/main/ChatBox';
+import Snack from '../components/Snack';
 
 const RootStyle = styled(Box)(({ theme }) => ({
   width: '100%',
@@ -37,6 +38,7 @@ function Home({ user }) {
   const chatboxHome = useSelector((state) => state.chat.chatboxHome);
   const usersSocket = useSelector((state) => state.user.usersSocket);
   const newChatbox = useSelector((state) => state.chat.newChatbox);
+  const searchAllPeople = useSelector((state) => state.user.searchAllPeople);
   useEffect(() => {
     if (testSearch.length > 0) {
       navigate(`/home/other/${testSearch}`);
@@ -65,7 +67,8 @@ function Home({ user }) {
     dispatch(
       actionChatGetChatboxHome({
         status: true,
-        user: chatboxHome.user
+        user: chatboxHome.user,
+        chatbox: chatboxHome
       })
     );
   };
@@ -126,6 +129,7 @@ function Home({ user }) {
           <Icon style={{ width: '40px', height: '40px', color: '#000' }} icon="bxs:message-alt-x" />
         </IconButton>
       )}
+      <Snack />
     </RootStyle>
   );
 }

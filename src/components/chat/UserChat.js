@@ -19,7 +19,8 @@ import { db } from '../../firebase-config';
 import {
   actionChatClearImageMessage,
   actionChatGetChatbox,
-  actionChatGetChatboxHome
+  actionChatGetChatboxHome,
+  actionGetAllBadeMessage
 } from '../../redux/actions/chatAction';
 import { actionUserCloseMessenger } from '../../redux/actions/userAction';
 
@@ -57,6 +58,7 @@ function UserChat({ chatbox, user, home }) {
   const chatboxChosen = useSelector((state) => state.chat.chatbox);
   const [isLoadingUserChat, setIsLoadingUserChat] = useState(false);
   const [messageLast, setMessageLast] = useState({});
+  const badgeMessage = useSelector((state) => state.chat.badgeMessage);
   const dispatch = useDispatch();
   const getUserChat = () => {
     getDoc(doc(db, 'users', chatbox.tempId)).then((snapshot) => {
@@ -89,10 +91,17 @@ function UserChat({ chatbox, user, home }) {
     getMessagesByChatbox();
     getUserChat();
     return () => null;
-  }, [chatboxs]);
+  }, [chatboxs, badgeMessage]);
   const chooseUserChat = () => {
     if (home) {
       if (pathname === '/home/chat') {
+        updateDoc(doc(db, 'messages', messageLast.id), { isRead: true }).then(() => {
+          setMessageLast({
+            ...messageLast,
+            isRead: true
+          });
+          dispatch(actionGetAllBadeMessage(user.id));
+        });
         dispatch(actionUserCloseMessenger());
         dispatch(
           actionChatGetChatbox({
@@ -101,11 +110,19 @@ function UserChat({ chatbox, user, home }) {
           })
         );
       } else {
+        updateDoc(doc(db, 'messages', messageLast.id), { isRead: true }).then(() => {
+          setMessageLast({
+            ...messageLast,
+            isRead: true
+          });
+          dispatch(actionGetAllBadeMessage(user.id));
+        });
         dispatch(actionUserCloseMessenger());
         dispatch(
           actionChatGetChatboxHome({
             status: true,
-            user: userChat
+            user: userChat,
+            chatbox: {}
           })
         );
       }
@@ -116,6 +133,7 @@ function UserChat({ chatbox, user, home }) {
             ...messageLast,
             isRead: true
           });
+          dispatch(actionGetAllBadeMessage(user.id));
         });
       }
       dispatch(actionChatClearImageMessage());
@@ -176,6 +194,10 @@ function UserChat({ chatbox, user, home }) {
     if (messageLast.type === 'sticker') {
       if (messageLast.senderId === user.id) return `You: sent a sticker`;
       return `Sent a sticker`;
+    }
+    if (messageLast.type === 'note') {
+      if (messageLast.senderId === user.id) return `You: sent a note`;
+      return `Sent a note`;
     }
     if (messageLast.senderId === user.id) return `You: sent a image`;
     return `Sent a image`;

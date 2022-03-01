@@ -8,7 +8,10 @@ import { useSelector, useDispatch } from 'react-redux';
 import ReactionMessageHome from './ReactionMessageHome';
 import GifMessageHome from './GifMessageHome';
 import { db } from '../../../firebase-config';
-import { actionChatAddMessageChatboxHome } from '../../../redux/actions/chatAction';
+import {
+  actionChatAddMessageChatboxHome,
+  actionGetAllChatSort
+} from '../../../redux/actions/chatAction';
 
 const RootStyle = styled(Box)(() => ({
   width: '100%',
@@ -51,9 +54,10 @@ const InputMessage = styled(InputBase)(() => ({
 }));
 BoxOptionChatBox.prototype = {
   user: PropTypes.object,
-  other: PropTypes.object
+  other: PropTypes.object,
+  chatgroup: PropTypes.object
 };
-function BoxOptionChatBox({ user, other }) {
+function BoxOptionChatBox({ user, other, chatgroup }) {
   const fileRef = useRef(null);
   const dispatch = useDispatch();
   const [chatbox, setChatbox] = useState({});
@@ -127,63 +131,33 @@ function BoxOptionChatBox({ user, other }) {
     }
   };
   const sendMessage = () => {
-    // if (type === 'image') {
-    //   const message = {
-    //     chatboxId: chatbox.id,
-    //     content: messageText,
-    //     contentFile: '',
-    //     isRead: false,
-    //     type: 'image',
-    //     isRestore: false,
-    //     reaction: [],
-    //     senderId: user.id,
-    //     receiverId: chatbox.user.id,
-    //     createdAt: new Date().getTime()
-    //   };
-    //   addDoc(collection(db, 'messages'), message).then((docRef) => {
-    //     dispatch(actionChatClearImageMessage());
-    //     setMessageText('');
-    //     dispatch(actionGetAllMessagesChatbox(chatbox.id));
-    //     const metadata = {
-    //       contentType: 'image/*'
-    //     };
-    //     const storageRef = ref(storage, `messages/${user.id}.${new Date().getTime()}`);
-    //     const uploadTask = uploadBytesResumable(storageRef, imageMessages.at(0), metadata);
-    //     uploadTask.on(
-    //       'state_changed',
-    //       (snapshot) => {
-    //         switch (snapshot.state) {
-    //           case 'running':
-    //             break;
-    //           default:
-    //             break;
-    //         }
-    //       },
-    //       (error) => {
-    //         console.log(error);
-    //       },
-    //       () => {
-    //         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-    //           updateDoc(doc(db, 'messages', docRef.id), {
-    //             ...message,
-    //             contentFile: downloadURL
-    //           }).then(() => {
-    //             dispatch(actionChatUpdateMessage({ messageId: docRef.id, image: downloadURL }));
-    //             updateDoc(doc(db, 'chatboxs', chatbox.id), {
-    //               ...chatbox,
-    //               updatedAt: new Date().getTime()
-    //             }).then(() => {
-    //               dispatch(actionGetAllChatSort(user.id));
-    //             });
-    //           });
-    //         });
-    //       }
-    //     );
-    //   });
-    // }
-    // else {
-    console.log('exists', isExistsChatbox);
-    if (!isExistsChatbox) {
+    if (chatgroup.type === 'group') {
+      const message = {
+        chatboxId: chatgroup.id,
+        content: messageText,
+        isRead: false,
+        type: 'text',
+        isRestore: false,
+        reaction: [],
+        senderId: user.id,
+        createdAt: new Date().getTime()
+      };
+      addDoc(collection(db, 'messages'), message)
+        .then((docRef) => {
+          console.log(docRef.id);
+          updateDoc(doc(db, 'chatboxs', chatgroup.id), {
+            updatedAt: new Date().getTime()
+          }).then(() => {
+            setMessageText('');
+            setIsChatting(false);
+            dispatch(actionChatAddMessageChatboxHome());
+            dispatch(actionGetAllChatSort(user.id));
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } else if (!isExistsChatbox) {
       const chatbox = {
         user1: user.id,
         user2: other.id,
@@ -206,6 +180,8 @@ function BoxOptionChatBox({ user, other }) {
         addDoc(collection(db, 'messages'), message).then((docRef) => {
           setMessageText('');
           setIsChatting(false);
+          dispatch(actionChatAddMessageChatboxHome());
+          dispatch(actionGetAllChatSort(user.id));
         });
       });
     } else {
@@ -229,6 +205,7 @@ function BoxOptionChatBox({ user, other }) {
             setMessageText('');
             setIsChatting(false);
             dispatch(actionChatAddMessageChatboxHome());
+            dispatch(actionGetAllChatSort(user.id));
           });
         })
         .catch((error) => {
@@ -267,6 +244,7 @@ function BoxOptionChatBox({ user, other }) {
           chatbox={chatbox}
           other={other}
           user={user}
+          chatgroup={chatgroup}
         />
       </Popover>
       <IconButtonOption onClick={handleClickGif}>
@@ -292,6 +270,7 @@ function BoxOptionChatBox({ user, other }) {
           chatbox={chatbox}
           other={other}
           user={user}
+          chatgroup={chatgroup}
         />
       </Popover>
       <BoxInput>

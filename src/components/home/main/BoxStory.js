@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Card, Skeleton, styled, Typography } from '@mui/material';
 import { Icon } from '@iconify/react';
-import { collection, getDocs } from 'firebase/firestore';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../../firebase-config';
 import Story from './Story';
 
@@ -11,7 +13,6 @@ const RootStyle = styled(Box)(({ theme }) => ({
   height: '200px',
   marginTop: '20px',
   display: 'flex',
-  justifyContent: 'space-between',
   [theme.breakpoints.down('md')]: {
     width: '100%',
     justifyContent: 'space-around'
@@ -49,58 +50,40 @@ BoxStory.prototype = {
   user: PropTypes.object
 };
 function BoxStory({ user }) {
-  const [stories, setStories] = useState([]);
+  const navigate = useNavigate();
+  const storiesUser = useSelector((state) => state.user.stories);
+  const friends = useSelector((state) => state.user.friends);
+  const [storyLastUser, setStoryLastUser] = useState({});
   const [quantityStory, setQuantityStory] = useState(-1);
-  const getStories = () => {
-    getDocs(collection(db, 'stories')).then((snapshots) => {
-      if (snapshots.empty) {
-        setQuantityStory(0);
-      } else {
-        const stories = [];
-        snapshots.docs.forEach((story) => {
-          stories.push({
-            ...story.data(),
-            id: story.id
-          });
-        });
-        const storiesSort = stories.sort((a, b) => b.createdAt - a.createdAt);
-        setStories(storiesSort);
-        setQuantityStory(storiesSort.length);
-      }
-    });
+  const friendsHaveStory = useSelector((state) => state.user.friendsHaveStory);
+  const goToCreateStory = () => {
+    navigate('/home/create-story');
   };
-  useEffect(() => {
-    getStories();
-    return () => null;
-  }, []);
-  if (quantityStory < 0)
-    return (
-      <RootStyle>
-        <SkeletonPost variant="rectangular" />
-        <SkeletonPost variant="rectangular" />
-        <SkeletonPost variant="rectangular" />
-        <SkeletonPost variant="rectangular" />
-      </RootStyle>
-    );
-  const handleClick = () => {
-    const data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-    const newData = [
-      ...data
-        .slice(0, 4)
-        .concat([12])
-        .concat([...data.slice(5, data.length)])
-    ];
-    console.log(newData);
-  };
+  // useEffect(() => {
+  //   setQuantityStory(friendsHaveStory.length);
+  //   return () => null;
+  // }, [friendsHaveStory]);
+  // if (friends.length <= 0)
+  //   return (
+  //     <RootStyle>
+  //       <BoxCreateStory onClick={goToCreateStory} elevation={3}>
+  //         <AvatarUser src={user.avatar} />
+  //         <IconCreate sty icon="carbon:add-filled" />
+  //         <Typography sx={{ fontWeight: 'bold', fontSize: '16px' }}>Create story</Typography>
+  //       </BoxCreateStory>
+  //     </RootStyle>
+  //   );
+  // if (friendsHaveStory.length === 0) return null;
   return (
     <RootStyle>
-      <BoxCreateStory elevation={3}>
-        <AvatarUser onClick={handleClick} src={user.avatar} />
-        <IconCreate sty icon="carbon:add-filled" />
+      <BoxCreateStory onClick={goToCreateStory} elevation={3}>
+        <AvatarUser src={user.avatar} />
+        <IconCreate icon="carbon:add-filled" />
         <Typography sx={{ fontWeight: 'bold', fontSize: '16px' }}>Create story</Typography>
       </BoxCreateStory>
-      {stories.map((item, index) => (
-        <Story user={user} story={item} key={index} />
+      {storiesUser.length > 0 && <Story user={user} other={user.id} />}
+      {friendsHaveStory.map((item, index) => (
+        <Story user={user} other={item} index={index} key={index} />
       ))}
     </RootStyle>
   );

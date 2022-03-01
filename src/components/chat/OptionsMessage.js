@@ -346,6 +346,70 @@ function OptionsMessage({ user }) {
       }
     }
   };
+  const sendIconLike = () => {
+    const userCall = usersSocket.find((user) => user.userId === chatbox.user.id);
+    if (userCall === undefined) {
+      const message = {
+        chatboxId: chatbox.id,
+        content: '',
+        contentFile:
+          'https://media1.giphy.com/media/pzmePzAZ2iXJKcXAdl/giphy.gif?cid=87370c27o2nk0z4njien0dxyrzsfjss3k1ei8ngfoiojien6&rid=giphy.gif&ct=s',
+        isRead: false,
+        isRestore: false,
+        reaction: [],
+        senderId: user.id,
+        type: 'sticker',
+        receiverId: chatbox.user.id,
+        createdAt: new Date().getTime()
+      };
+      addDoc(collection(db, 'messages'), message).then((docRef) => {
+        dispatch(
+          actionChatAddMessage({
+            ...message,
+            id: docRef.id
+          })
+        );
+        updateDoc(doc(db, 'chatboxs', chatbox.id), {
+          ...chatbox,
+          updatedAt: new Date().getTime()
+        }).then(() => {
+          dispatch(actionGetAllChatSort(user.id));
+        });
+      });
+    } else {
+      const message = {
+        chatboxId: chatbox.id,
+        content: '',
+        contentFile:
+          'https://media1.giphy.com/media/pzmePzAZ2iXJKcXAdl/giphy.gif?cid=87370c27o2nk0z4njien0dxyrzsfjss3k1ei8ngfoiojien6&rid=giphy.gif&ct=s',
+        isRead: false,
+        isRestore: false,
+        reaction: [],
+        senderId: user.id,
+        type: 'sticker',
+        receiverId: chatbox.user.id,
+        createdAt: new Date().getTime()
+      };
+      addDoc(collection(db, 'messages'), message).then((docRef) => {
+        dispatch(
+          actionChatAddMessage({
+            ...message,
+            id: docRef.id
+          })
+        );
+        updateDoc(doc(db, 'chatboxs', chatbox.id), {
+          ...chatbox,
+          updatedAt: new Date().getTime()
+        }).then(() => {
+          sendMessageSocket({
+            ...message,
+            socketId: userCall.socketId
+          });
+          dispatch(actionGetAllChatSort(user.id));
+        });
+      });
+    }
+  };
   if (chatbox.id === '')
     return (
       <RootStyle>
@@ -421,7 +485,7 @@ function OptionsMessage({ user }) {
         </IconButtonOption>
       </BoxInput>
       {!isChatting && imageMessages.length === 0 ? (
-        <IconButtonOption>
+        <IconButtonOption onClick={sendIconLike}>
           <IconOption icon="fontisto:like" />
         </IconButtonOption>
       ) : (

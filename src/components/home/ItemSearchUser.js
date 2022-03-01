@@ -6,6 +6,7 @@ import {
   IconButton,
   ListItem,
   ListItemButton,
+  Skeleton,
   Stack,
   styled,
   Typography
@@ -76,7 +77,7 @@ function ItemSearchUser({ search }) {
       });
     });
     getContact(search.userId, search.content);
-    return null;
+    return () => null;
   }, []);
   const chooseSearch = () => {
     dispatch(actionGetContact(search.userId, search.content));
@@ -88,11 +89,23 @@ function ItemSearchUser({ search }) {
     dispatch(actionUserCloseSearch());
     dispatch(actionUserGetUserSearch([]));
   };
+  if (userBySearch.avatar === undefined)
+    return (
+      <RootStyle>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Skeleton sx={{ width: '40px', height: '40px' }} variant="circular" />
+          <Stack sx={{ marginLeft: '10px' }}>
+            <Skeleton variant="text" sx={{ width: '100px', height: '20px' }} />
+            <Skeleton variant="text" sx={{ width: '50px', height: '16px' }} />
+          </Stack>
+        </Box>
+      </RootStyle>
+    );
   return (
     <ListItem>
       <RootStyle onClick={chooseSearch}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Avatar src={userBySearch.avatar} />
+          <Avatar sx={{ width: '40px', height: '40px' }} src={userBySearch.avatar} />
           <Stack sx={{ marginLeft: '10px' }}>
             <Typography sx={{ fontWeight: 'bold', fontFamily: 'inherit' }}>
               {userBySearch.username}

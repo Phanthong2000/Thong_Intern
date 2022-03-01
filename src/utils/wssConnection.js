@@ -5,7 +5,8 @@ import {
   actionGetAllChatSort,
   actionChatSendReaction,
   actionChatUpdateReactionMessage,
-  actionChatInputting
+  actionChatInputting,
+  actionGetAllBadeMessage
 } from '../redux/actions/chatAction';
 import {
   actionModalReceiving,
@@ -45,6 +46,7 @@ export const connectWithSocket = () => {
     store.dispatch(actionChatAddMessage(data));
     store.dispatch(actionGetAllChatSort(data.receiverId));
     store.dispatch(actionChatInputting(''));
+    store.dispatch(actionGetAllBadeMessage(data.receiverId));
   });
   socket.on('sendReaction', (data) => {
     console.log('sendReaction', data);

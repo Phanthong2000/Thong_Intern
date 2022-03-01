@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   Box,
   Button,
@@ -68,6 +68,7 @@ TagPeople.prototype = {
   user: PropTypes.object
 };
 function TagPeople({ user }) {
+  const searchRef = useRef();
   const dispatch = useDispatch();
   const tags = useSelector((state) => state.post.tags);
   const isOpenTagPeople = useSelector((state) => state.post.isOpenTagPeople);
@@ -89,6 +90,20 @@ function TagPeople({ user }) {
       });
     });
   };
+  const searchTag = (text) => {
+    searchRef.current = text;
+    if (text) {
+      const data = [];
+      suggestions.forEach((userSearch) => {
+        if (userSearch.username.toLowerCase().includes(searchRef.current.toLowerCase())) {
+          data.push(userSearch);
+        }
+      });
+      setSuggestions(data);
+    } else {
+      getSuggestions();
+    }
+  };
   return (
     <Modal open={isOpenTagPeople} onClose={() => dispatch(actionPostCloseTagPeople())}>
       <BoxModal>
@@ -107,7 +122,11 @@ function TagPeople({ user }) {
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <BoxSearch>
             <Icon style={{ width: '20px', height: '20px', color: 'grey' }} icon="fe:search" />
-            <InputSearch placeholder="Search for friends" />
+            <InputSearch
+              onChange={(e) => searchTag(e.target.value)}
+              ref={searchRef}
+              placeholder="Search for friends"
+            />
           </BoxSearch>
           <ButtonDone onClick={() => dispatch(actionPostCloseTagPeople())}>Done</ButtonDone>
         </Box>

@@ -3,7 +3,17 @@ import React from 'react';
 import { Card, Divider, styled, Typography, TextField, Stack, Button } from '@mui/material';
 import { useFormik, Form, FormikProvider } from 'formik';
 import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
-import { getDocs, collection, query, where, updateDoc, doc } from 'firebase/firestore';
+import {
+  getDocs,
+  collection,
+  query,
+  where,
+  updateDoc,
+  doc,
+  getDoc,
+  addDoc,
+  setDoc
+} from 'firebase/firestore';
 import { Link, useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebase-config';
 import HeaderAuth from '../layouts/HeaderAuth';
@@ -155,6 +165,7 @@ function LoginForm() {
       };
       console.log(user);
       localStorage.setItem('user', JSON.stringify(user));
+      window.location.reload();
     }
   };
   const { errors, touched, values, handleSubmit, getFieldProps } = formik;
@@ -165,16 +176,40 @@ function LoginForm() {
         const { user } = result;
         // console.log('user', user);
         const userLogin = {
-          id: user.uid,
           username: user.displayName,
           phone: user.phoneNumber === null ? '' : user.phoneNumber,
           email: user.email,
           avatar: user.photoURL,
           background:
             'https://tophinhanhdep.com/wp-content/uploads/2021/10/1920X1080-HD-Nature-Wallpapers.jpg',
+          isOnline: true,
           createdAt: Date.parse(user.metadata.creationTime)
         };
-        console.log(userLogin);
+        getDoc(doc(db, 'users', user.uid))
+          .then((snapshot) => {
+            if (snapshot.data() !== undefined) {
+              localStorage.setItem(
+                'user',
+                JSON.stringify({
+                  ...userLogin,
+                  id: user.uid
+                })
+              );
+              window.location.reload();
+            } else {
+              setDoc(doc(db, 'users', user.uid), userLogin).then(() => {
+                localStorage.setItem(
+                  'user',
+                  JSON.stringify({
+                    ...userLogin,
+                    id: user.uid
+                  })
+                );
+                window.location.reload();
+              });
+            }
+          })
+          .catch((err) => console.log(err));
         // localStorage.setItem('user', userLogin);
       })
       .catch((err) => {

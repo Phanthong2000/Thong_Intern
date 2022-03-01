@@ -6,7 +6,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { db } from '../../../firebase-config';
 import {
   actionChatAddMessage,
-  actionChatAddMessageChatboxHome
+  actionChatAddMessageChatboxHome,
+  actionGetAllChatSort
 } from '../../../redux/actions/chatAction';
 
 const RootStyle = styled('img')(() => ({
@@ -20,12 +21,35 @@ EmojiItem.prototype = {
   chatbox: PropTypes.object,
   exists: PropTypes.bool,
   other: PropTypes.object,
-  url: PropTypes.string
+  url: PropTypes.string,
+  chatgroup: PropTypes.object
 };
-function EmojiItem({ user, close, chatbox, exists, other, url }) {
+function EmojiItem({ user, close, chatbox, exists, other, url, chatgroup }) {
   const dispatch = useDispatch();
   const sendEmoji = () => {
-    if (exists) {
+    if (chatgroup.type === 'group') {
+      const message = {
+        chatboxId: chatgroup.id,
+        content: '',
+        contentFile: url,
+        isRead: false,
+        isRestore: false,
+        reaction: [],
+        senderId: user.id,
+        type: 'sticker',
+        createdAt: new Date().getTime()
+      };
+      addDoc(collection(db, 'messages'), message).then((docRef) => {
+        dispatch(actionChatAddMessage(message));
+        updateDoc(doc(db, 'chatboxs', chatgroup.id), {
+          updatedAt: new Date().getTime()
+        }).then(() => {
+          close();
+          dispatch(actionChatAddMessageChatboxHome());
+          dispatch(actionGetAllChatSort(user.id));
+        });
+      });
+    } else if (exists) {
       const message = {
         chatboxId: chatbox.id,
         content: '',
@@ -45,6 +69,7 @@ function EmojiItem({ user, close, chatbox, exists, other, url }) {
         }).then(() => {
           close();
           dispatch(actionChatAddMessageChatboxHome());
+          dispatch(actionGetAllChatSort(user.id));
         });
       });
     } else {
@@ -71,6 +96,7 @@ function EmojiItem({ user, close, chatbox, exists, other, url }) {
         addDoc(collection(db, 'messages'), message).then(() => {
           close();
           dispatch(actionChatAddMessageChatboxHome());
+          dispatch(actionGetAllChatSort(user.id));
         });
       });
     }

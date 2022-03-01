@@ -11,18 +11,23 @@ import {
   styled,
   Typography
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Icon } from '@iconify/react';
 import { Scrollbar } from 'smooth-scrollbar-react';
-import { collection, getDocs, query } from 'firebase/firestore';
+import { collection, getDocs, query, addDoc } from 'firebase/firestore';
 import { useDispatch, useSelector } from 'react-redux';
-import { actionChatGetNewChatboxHome } from '../../../redux/actions/chatAction';
+import {
+  actionChatGetChatboxHome,
+  actionChatGetNewChatboxHome,
+  actionGetAllChatSort,
+  actionGetChatgroupUser
+} from '../../../redux/actions/chatAction';
 import { db } from '../../../firebase-config';
 
 const RootStyle = styled(Card)(() => ({
   width: '350px',
-  height: '450px',
+  height: '500px',
   maxHeight: '600px',
   position: 'fixed',
   bottom: 0,
@@ -53,6 +58,7 @@ BoxNewChatbox.prototype = {
   user: PropTypes.object
 };
 function BoxNewChatbox({ user }) {
+  const inputRef = useRef();
   const [usersChoose, setUserChoose] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
   const newChatbox = useSelector((state) => state.chat.newChatbox);
@@ -79,6 +85,59 @@ function BoxNewChatbox({ user }) {
   }, []);
   const closeNewMessage = () => {
     dispatch(actionChatGetNewChatboxHome(!newChatbox));
+  };
+  const searchUser = (text) => {
+    inputRef.current = text;
+    if (text) {
+      const data = [];
+      allUsers.forEach((userSearch) => {
+        if (userSearch.username.toLowerCase().includes(inputRef.current.toLowerCase())) {
+          data.push(userSearch);
+        }
+      });
+      setAllUsers(data);
+    } else {
+      getAllUsers();
+    }
+  };
+  const createChatbox = () => {
+    if (usersChoose.length === 1) {
+      dispatch(actionChatGetChatboxHome({ status: true, user: usersChoose.at(0), chatbox: {} }));
+      dispatch(actionChatGetNewChatboxHome(false));
+    }
+    if (usersChoose.length > 1) {
+      const members = [];
+      usersChoose.forEach((item) => {
+        members.push(item.id);
+      });
+      const chatgroup = {
+        name: 'No name',
+        avatar: 'https://viettourist.com/resources/images/Blog-Khachdoan/teamb1.png',
+        type: 'group',
+        background: '',
+        userId: user.id,
+        members: [...members, user.id],
+        createdAt: new Date().getTime(),
+        updatedAt: new Date().getTime()
+      };
+      addDoc(collection(db, 'chatboxs'), chatgroup).then((docRef) => {
+        const message = {
+          content: `${user.username} created group`,
+          type: 'note',
+          senderId: user.id,
+          chatboxId: docRef.id,
+          isRead: false,
+          isRestore: false,
+          reaction: [],
+          createdAt: new Date().getTime()
+        };
+        addDoc(collection(db, 'messages'), message).then(() => {
+          dispatch(actionGetAllChatSort(user.id));
+          dispatch(actionChatGetNewChatboxHome(false));
+          dispatch(actionGetChatgroupUser(user.id));
+        });
+      });
+    }
   };
   const UserSearch = ({ userSearch }) => {
     const User = styled(Button)(({ theme }) => ({
@@ -174,7 +233,12 @@ function BoxNewChatbox({ user }) {
         </Box>
         <Stack direction="row" sx={{ alignItems: 'center' }}>
           <Typography>Search: </Typography>
-          <InputBase sx={{ marginLeft: '5px' }} autoFocus />
+          <InputBase
+            ref={inputRef}
+            onChange={(e) => searchUser(e.target.value)}
+            sx={{ marginLeft: '5px' }}
+            autoFocus
+          />
         </Stack>
         <Divider />
         <Box sx={{ display: 'flex', maxHeight: '250px', height: '250px' }}>
@@ -187,7 +251,7 @@ function BoxNewChatbox({ user }) {
         <Box
           sx={{ width: '100%', justifyContent: 'center', alignItems: 'center', display: 'flex' }}
         >
-          <ButtonCreate>Create</ButtonCreate>
+          <ButtonCreate onClick={createChatbox}>Create</ButtonCreate>
         </Box>
       </Box>
     </RootStyle>

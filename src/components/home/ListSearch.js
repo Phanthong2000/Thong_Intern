@@ -8,15 +8,25 @@ import {
   IconButton,
   Divider,
   ListItemText,
-  Typography
+  Typography,
+  Box
 } from '@mui/material';
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import { AccessTime, KeyboardBackspace, Close } from '@mui/icons-material';
 import PropTypes from 'prop-types';
 import { Icon } from '@iconify/react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { Scrollbar } from 'smooth-scrollbar-react';
 import { db } from '../../firebase-config';
-import { actionUserCloseSearch, actionUserGetUserSearch } from '../../redux/actions/userAction';
+import {
+  actionSearchAllFriendRequests,
+  actionSearchAllFriends,
+  actionSearchAllPeople,
+  actionSearchAllSent,
+  actionUserCloseSearch,
+  actionUserGetUserSearch
+} from '../../redux/actions/userAction';
 import ItemSearchUser from './ItemSearchUser';
 import ItemSearchText from './ItemSearchText';
 
@@ -27,7 +37,7 @@ const RootStyle = styled(List)(({ theme }) => ({
   paddingBottom: '20px',
   borderBottomLeftRadius: '20px',
   borderBottomRightRadius: '20px',
-  maxHeight: '650px'
+  maxHeight: '750px'
 }));
 const SearchField = styled(InputBase)(({ theme }) => ({
   marginLeft: '10px',
@@ -41,10 +51,11 @@ ListSearch.prototype = {
 function ListSearch({ user }) {
   const inputCommentRef = useRef('');
   const [searchAllUser, setSearchAllUser] = useState([]);
-  const [historySearch, setHistorySearch] = useState([]);
-  const [isSearch, setSearch] = useState(false);
+  const [search, setSearch] = useState([]);
+  const [isSearch, setIsSearch] = useState(false);
   const dispatch = useDispatch();
-  const search = useSelector((state) => state.user.search);
+  const navigate = useNavigate();
+  const searchAllPeople = useSelector((state) => state.user.searchAllPeople);
   const getHistorySearch = async () => {
     const data = await getDocs(query(collection(db, 'searchs'), where('userId', '==', user.id)));
     if (!data.empty) {
@@ -56,8 +67,7 @@ function ListSearch({ user }) {
         });
       });
       const searchSort = searchs.sort((a, b) => b.createdAt - a.createdAt);
-      setHistorySearch(searchs);
-      dispatch(actionUserGetUserSearch(searchSort));
+      setSearch(searchSort);
     }
   };
   const getAllUser = async () => {
@@ -81,28 +91,33 @@ function ListSearch({ user }) {
   const closeSearch = () => {
     dispatch(actionUserCloseSearch());
   };
+  const chooseSearchForText = () => {
+    dispatch(actionSearchAllPeople(inputCommentRef.current, user.id));
+    dispatch(actionSearchAllFriends(inputCommentRef.current, user.id));
+    dispatch(actionSearchAllSent(inputCommentRef.current, user.id));
+    dispatch(actionSearchAllFriendRequests(inputCommentRef.current, user.id));
+    dispatch(actionUserCloseSearch());
+    navigate(`/home/search/all-people/${inputCommentRef.current}`);
+  };
   const inputSearch = (e) => {
     inputCommentRef.current = e.target.value;
     if (inputCommentRef.current) {
-      const newDataAllUser = searchAllUser.filter((item) => {
-        const itemData = item.username ? item.username.toUpperCase() : ''.toUpperCase();
-        const textData = inputCommentRef.current.toUpperCase();
-        return itemData.indexOf(textData) > -1;
+      const data = [];
+      searchAllUser.forEach((userSearch) => {
+        if (userSearch.username.toLowerCase().includes(inputCommentRef.current.toLowerCase())) {
+          data.push({
+            userId: user.id,
+            createdAt: new Date().getTime(),
+            content: userSearch.id,
+            type: 'user'
+          });
+        }
       });
-      const filterData = [];
-      newDataAllUser.forEach((data) => {
-        filterData.push({
-          userId: user.id,
-          createdAt: new Date().getTime(),
-          content: data.id,
-          type: 'user'
-        });
-      });
-      dispatch(actionUserGetUserSearch(filterData));
-      setSearch(true);
+      setSearch(data);
+      setIsSearch(true);
     } else {
       getHistorySearch();
-      setSearch(false);
+      setIsSearch(false);
     }
   };
   return (
@@ -118,19 +133,24 @@ function ListSearch({ user }) {
         />
       </ListItem>
       <Divider sx={{ width: '80%', marginLeft: '10%' }} />
-      {search.length === 0 ? (
-        <ListItem sx={{ textAlign: 'center' }}>
-          <ListItemText>Not found history search</ListItemText>
-        </ListItem>
-      ) : (
-        search.map((item, index) => {
-          if (item.type === 'user') return <ItemSearchUser key={index} search={item} />;
-          return <ItemSearchText key={index} search={item} />;
-        })
-      )}
-      {isSearch ? (
+      <Box sx={{ maxHeight: '600px', display: 'flex' }}>
+        <Scrollbar alwaysShowTracks>
+          {search.length === 0 ? (
+            <ListItem sx={{ textAlign: 'center' }}>
+              <ListItemText>Not found history search</ListItemText>
+            </ListItem>
+          ) : (
+            search.map((item, index) => {
+              if (item.type === 'user') return <ItemSearchUser key={index} search={item} />;
+              return <ItemSearchText key={index} search={item} />;
+            })
+          )}
+        </Scrollbar>
+      </Box>
+
+      {isSearch && (
         <ListItem sx={{ maxWidth: '400px' }}>
-          <ListItemButton>
+          <ListItemButton onClick={chooseSearchForText}>
             <Icon
               icon="ion:search-circle"
               style={{ width: '40px', height: '40px', color: '#30ab78' }}
@@ -140,7 +160,7 @@ function ListSearch({ user }) {
             </Typography>
           </ListItemButton>
         </ListItem>
-      ) : null}
+      )}
     </RootStyle>
   );
 }

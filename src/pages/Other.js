@@ -41,13 +41,17 @@ function Other({ user }) {
   const dispatch = useDispatch();
   useEffect(() => {
     getDoc(doc(db, 'users', id)).then((snapshot) => {
-      setOther({
-        ...snapshot.data(),
-        id
-      });
-      document.title = `${snapshot.data().username} | Thong Intern`;
+      if (snapshot.data() === undefined) {
+        navigate('/home/user-not-found');
+      } else {
+        if (id === user.id) navigate(`/home/profile/${user.id}`);
+        setOther({
+          ...snapshot.data(),
+          id
+        });
+        document.title = `${snapshot.data().username} | Thong Intern`;
+      }
     });
-    if (id === user.id) navigate(`/home/profile/${user.id}`);
     dispatch(getAllPostsOther(id, 'desc'));
     dispatch(actionGetAllFriendOther(id));
     dispatch(
@@ -68,6 +72,7 @@ function Other({ user }) {
       </>
     );
   };
+  if (other.id === undefined) return null;
   return (
     <RootStyle>
       <BackgroundImage user={user} />

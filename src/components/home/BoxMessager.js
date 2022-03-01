@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import { Scrollbar } from 'smooth-scrollbar-react';
 import { useSelector } from 'react-redux';
 import UserChat from '../chat/UserChat';
+import Chatgroup from '../chat/Chatgroup';
 
 const RootStyle = styled(Card)(() => ({
   width: '400px',
@@ -59,9 +60,12 @@ function BoxMessager({ user }) {
           </Box>
         ) : (
           <Scrollbar alwaysShowTracks>
-            {chatboxs.map(
-              (item, index) =>
-                item.type === 'personal' && <UserChat user={user} key={index} home chatbox={item} />
+            {chatboxs.map((item, index) =>
+              item.type === 'personal' ? (
+                <UserChat user={user} key={index} home chatbox={item} />
+              ) : (
+                <Chatgroup user={user} key={index} home chatbox={item} />
+              )
             )}
           </Scrollbar>
         )}

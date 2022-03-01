@@ -21,12 +21,35 @@ GifItem.prototype = {
   close: PropTypes.func,
   chatbox: PropTypes.object,
   exists: PropTypes.bool,
-  other: PropTypes.object
+  other: PropTypes.object,
+  chatgroup: PropTypes.object
 };
-function GifItem({ user, other, url, close, chatbox, exists }) {
+function GifItem({ user, other, url, close, chatbox, exists, chatgroup }) {
   const dispatch = useDispatch();
   const sendGif = () => {
-    if (exists) {
+    if (chatgroup.type === 'group') {
+      const message = {
+        chatboxId: chatgroup.id,
+        content: '',
+        contentFile: url,
+        isRead: false,
+        isRestore: false,
+        reaction: [],
+        senderId: user.id,
+        type: 'gif',
+        createdAt: new Date().getTime()
+      };
+      addDoc(collection(db, 'messages'), message).then((docRef) => {
+        dispatch(actionChatAddMessage(message));
+        updateDoc(doc(db, 'chatboxs', chatgroup.id), {
+          updatedAt: new Date().getTime()
+        }).then(() => {
+          close();
+          dispatch(actionChatAddMessageChatboxHome());
+          dispatch(actionGetAllChatSort(user.id));
+        });
+      });
+    } else if (exists) {
       const message = {
         chatboxId: chatbox.id,
         content: '',
@@ -46,6 +69,7 @@ function GifItem({ user, other, url, close, chatbox, exists }) {
         }).then(() => {
           close();
           dispatch(actionChatAddMessageChatboxHome());
+          dispatch(actionGetAllChatSort(user.id));
         });
       });
     } else {
@@ -72,6 +96,7 @@ function GifItem({ user, other, url, close, chatbox, exists }) {
         addDoc(collection(db, 'messages'), message).then(() => {
           close();
           dispatch(actionChatAddMessageChatboxHome());
+          dispatch(actionGetAllChatSort(user.id));
         });
       });
     }
