@@ -14,8 +14,8 @@ const RootStyle = styled(Box)(({ theme }) => ({
   marginTop: '20px',
   display: 'flex',
   [theme.breakpoints.down('md')]: {
-    width: '100%',
-    justifyContent: 'space-around'
+    width: '100%'
+    // justifyContent: 'space-around'
   }
 }));
 const BoxCreateStory = styled(Card)(({ theme }) => ({
@@ -52,9 +52,7 @@ BoxStory.prototype = {
 function BoxStory({ user }) {
   const navigate = useNavigate();
   const storiesUser = useSelector((state) => state.user.stories);
-  const friends = useSelector((state) => state.user.friends);
-  const [storyLastUser, setStoryLastUser] = useState({});
-  const [quantityStory, setQuantityStory] = useState(-1);
+  const tokenMessaging = useSelector((state) => state.user.tokenMessaging);
   const friendsHaveStory = useSelector((state) => state.user.friendsHaveStory);
   const goToCreateStory = () => {
     navigate('/home/create-story');

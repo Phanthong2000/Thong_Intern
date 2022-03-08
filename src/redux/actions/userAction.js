@@ -39,7 +39,9 @@ import {
   ACTION_USER_SEARCH_OTHERS,
   ACTION_USER_GET_ALL_STORY_USER,
   ACTION_USER_GET_STORY_USER,
-  ACTION_USER_GET_FRIENDS_HAVE_STORY
+  ACTION_USER_GET_FRIENDS_HAVE_STORY,
+  ACTION_USER_GET_TOKEN_MESSAGING,
+  ACTION_USER_DELETE_FRIEND_USER
 } from './types';
 
 export const actionUserOpenSearch = () => ({ type: ACTION_USER_OPEN_SEARCH });
@@ -70,6 +72,10 @@ export const actionUserContactUserAndOther = (data) => ({
 });
 export const actionUserGetAllFriendUser = (data) => ({
   type: ACTION_USER_GET_ALL_FRIEND_USER,
+  payload: data
+});
+export const actionUserDeleteFriend = (data) => ({
+  type: ACTION_USER_DELETE_FRIEND_USER,
   payload: data
 });
 export const actionUserGetAllFriendOther = (data) => ({
@@ -148,6 +154,10 @@ export const actionUserGetStoryUser = (data) => ({
 });
 export const actionUserGetFriendsHaveStory = (data) => ({
   type: ACTION_USER_GET_FRIENDS_HAVE_STORY,
+  payload: data
+});
+export const actionUserGetTokenMessaging = (data) => ({
+  type: ACTION_USER_GET_TOKEN_MESSAGING,
   payload: data
 });
 export const actionGetContact = (userId, otherId) => async (dispatch) => {

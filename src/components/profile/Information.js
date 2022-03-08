@@ -405,7 +405,7 @@ function Information({ user }) {
           {user.id === undefined ? (
             <SkeletonAvatar variant="circular" />
           ) : (
-            <AvatarImage onClick={() => console.log(ref.current.clientWidth)} src={avatar} />
+            <AvatarImage src={avatar} />
           )}
           <AvatarButton
             onClick={() => {

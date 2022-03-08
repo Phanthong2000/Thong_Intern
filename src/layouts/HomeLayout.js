@@ -3,12 +3,13 @@ import { styled, Box, List, ListItem, IconButton } from '@mui/material';
 import { Search } from '@mui/icons-material';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import toast, { Toaster } from 'react-hot-toast';
 import { doc, getDoc } from 'firebase/firestore';
 import HomeNavbar from './home/HomeNavbar';
 import HomeSidebar from './home/HomeSidebar';
 import { actionUserCloseSearch, actionUserCloseProfile } from '../redux/actions/userAction';
 import Responsive from '../responsive/Responsive';
-import { db } from '../firebase-config';
+import { db, onMessageListener } from '../firebase-config';
 import ChatBox from '../components/home/main/ChatBox';
 import BoxNewChatbox from '../components/home/main/BoxNewChatbox';
 
@@ -26,6 +27,7 @@ const MainStyle = styled('div')(({ theme }) => ({
 function HomeLayout() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [notification, setNotification] = useState({ title: '', body: '' });
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
   const [user, setUser] = useState({});
   const chatboxHome = useSelector((state) => state.chat.chatboxHome);
@@ -37,6 +39,17 @@ function HomeLayout() {
       id: data.id
     });
   };
+  const notify = () => toast.success(<ToastDisplay />);
+  const ToastDisplay = () => (
+    <div>
+      <p>
+        <b>{notification.title}</b>
+      </p>
+      <p>
+        <b>{notification.body}</b>
+      </p>
+    </div>
+  );
   useEffect(() => {
     if (!isLoggedIn) navigate('/login');
     if (localStorage.getItem('user') !== null) {
@@ -45,12 +58,19 @@ function HomeLayout() {
     }
     return () => null;
   }, []);
+  useEffect(() => {
+    if (notification.title !== '') notify();
+    return () => null;
+  }, [notification]);
   const closeSearch = () => {
     dispatch(actionUserCloseSearch());
   };
   const closeProfileBox = () => {
     dispatch(actionUserCloseProfile());
   };
+  onMessageListener().then((payload) => {
+    setNotification(payload.notification);
+  });
   return (
     <RootStyle>
       <Responsive width="mdDown">
@@ -67,6 +87,7 @@ function HomeLayout() {
           <ChatBox user={user} other={chatboxHome.user} chatbox={chatboxHome.chatbox} />
         )}
         {newChatbox && <BoxNewChatbox user={user} />}
+        <Toaster />
         <Outlet />
       </MainStyle>
     </RootStyle>

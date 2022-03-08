@@ -64,7 +64,7 @@ function BoxOptionsChatbox({ user }) {
   const [openModalLeaveGroup, setOpenModalLeaveGroup] = useState(false);
   const [openModalDeleteGroup, setOpenModalDeleteGroup] = useState(false);
   useEffect(() => {
-    console.log('cc');
+    console.log('');
     return () => dispatch(actionChatOptionsChatbox(false));
   }, []);
   const ButtonOption = ({ name, icon, click }) => {

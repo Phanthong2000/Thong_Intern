@@ -4,6 +4,8 @@ import PropTypes from 'prop-types';
 import { Icon } from '@iconify/react';
 import { useSelector } from 'react-redux';
 import { Scrollbar } from 'smooth-scrollbar-react';
+import { getMessaging } from 'firebase/messaging';
+import {} from '../../../firebase-config';
 import Contact from './Contact';
 import Chatgroup from './Chatgroup';
 
@@ -84,7 +86,30 @@ function BoxContact({ user }) {
           Contacts
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <ButtonOption>
+          <ButtonOption
+            onClick={() => {
+              const topic = 'highScores';
+
+              const message = {
+                data: {
+                  score: '850',
+                  time: '2:45'
+                },
+                topic
+              };
+
+              // Send a message to devices subscribed to the provided topic.
+              getMessaging()
+                .send(message)
+                .then((response) => {
+                  // Response is a message ID string.
+                  console.log('Successfully sent message:', response);
+                })
+                .catch((error) => {
+                  console.log('Error sending message:', error);
+                });
+            }}
+          >
             <Icon
               style={{ width: '20px', height: '20px', color: 'gray' }}
               icon="bxs:message-square-add"

@@ -628,7 +628,15 @@ function Post({ user, post }) {
               }}
             >
               <Avatar sx={{ width: '30px', height: '30px' }} src={user.avatar} />
-              <DotOnline icon="ci:dot-05-xl" style={user.isOnline ? null : { color: 'grey' }} />
+              <DotOnline
+                icon="ci:dot-05-xl"
+                style={{
+                  color:
+                    usersSocket.find((socket) => socket.userId === userPost.id) === undefined
+                      ? 'gray'
+                      : null
+                }}
+              />
             </Button>
           </Grid>
           <Grid item xs={10} sm={10} md={10} lg={10} xl={10}>
@@ -689,7 +697,7 @@ function Post({ user, post }) {
     );
   };
   return (
-    <RootStyle>
+    <RootStyle data-aos="zoom-in">
       <StackPost>
         <BoxInfoUserPost>
           <Stack direction="row" sx={{ alignItems: 'center' }}>

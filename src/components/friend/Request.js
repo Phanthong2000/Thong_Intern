@@ -154,7 +154,6 @@ function Request({ user, contact, index }) {
     navigate(`/home/other/${userSent.id}`);
   };
   const confirmRequest = () => {
-    console.log(contact.id);
     updateDoc(doc(db, 'contacts', contact.id), {
       status: true
     })
@@ -165,7 +164,6 @@ function Request({ user, contact, index }) {
       .catch((error) => console.log(error));
   };
   const deleteRequest = () => {
-    console.log(contact.id);
     deleteDoc(doc(db, 'contacts', contact.id)).then(() => {
       dispatch(actionUserDeleteFriendRequest(contact.id));
     });

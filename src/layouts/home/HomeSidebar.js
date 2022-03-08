@@ -1,8 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { styled, Box, Stack, IconButton } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { io } from 'socket.io-client';
+import Aos from 'aos';
+import toast, { Toaster } from 'react-hot-toast';
+import { getToken, getMessaging } from 'firebase/messaging';
+import 'aos/dist/aos.css';
 import sidebarConfig from './SidebarConfig';
 import MenuItem from '../../components/home/MenuItem';
 import SettingItem from '../../components/home/SettingItem';
@@ -15,7 +19,8 @@ import {
   actionGetFriendsHaveStory,
   actionGetStoryUser,
   actionSearchAllPeople,
-  actionUserBroadcastSocket
+  actionUserBroadcastSocket,
+  actionUserGetTokenMessaging
 } from '../../redux/actions/userAction';
 import { actionGetAllPostAllFriend } from '../../redux/actions/postAction';
 import {
@@ -24,8 +29,10 @@ import {
   actionGetChatgroupUser,
   actionGetAllBadeMessage
 } from '../../redux/actions/chatAction';
-import { connectWithSocket, registerUser } from '../../utils/wssConnection';
+import { registerUser } from '../../utils/wssConnection';
 import ModalReceivingVideoCall from '../../components/video/ModalReceivingVideoCall';
+
+import { messaging, onMessageListener } from '../../firebase-config';
 
 const RootStyle = styled(Box)(({ theme }) => ({
   width: '80px',
@@ -54,12 +61,11 @@ HomeSidebar.prototype = {
 // const socket = io('http://localhost:5000');
 function HomeSidebar({ user }) {
   const dispatch = useDispatch();
-  const friendRequests = useSelector((state) => state.user.friendRequests);
-  const isLoadingFriendRequest = useSelector((state) => state.user.isLoadingFriendRequest);
-  const friendManual = useSelector((state) => state.user.friendManual);
+  const tokenMessaging = useSelector((state) => state.user.tokenMessaging);
   const me = useSelector((state) => state.call.me);
   useEffect(() => {
     if (user.id !== undefined) {
+      Aos.init({ duration: 1000 });
       dispatch(actionGetAllFriendRequest(user.id));
       dispatch(actionGetAllFriendUserManual(user.id));
       dispatch(actionGetAllFriendUser(user.id));
@@ -71,6 +77,34 @@ function HomeSidebar({ user }) {
       dispatch(actionGetStoryUser(user.id));
       dispatch(actionGetFriendsHaveStory(user.id));
       dispatch(actionGetAllBadeMessage(user.id));
+      if (tokenMessaging === '') {
+        Notification.requestPermission().then((permission) => {
+          if (permission === 'granted') {
+            getToken(messaging, { vapidKey: process.env.PUBLIC_VAPID_KEY })
+              .then((currentToken) => {
+                if (currentToken) {
+                  dispatch(actionUserGetTokenMessaging(currentToken));
+                  // getMessaging()
+                  //   .subscribeToTopic(currentToken, 'test')
+                  //   .then((response) => {
+                  //     console.log('Successfully subscribed to topic:', response);
+                  //   })
+                  //   .catch((error) => {
+                  //     console.log('Error subscribing to topic:', error);
+                  //   });
+                  console.log(currentToken);
+                } else {
+                  console.log(
+                    'No registration token available. Request permission to generate one.'
+                  );
+                }
+              })
+              .catch((err) => {
+                console.log('An error occurred while retrieving token. ', err);
+              });
+          }
+        });
+      }
     }
     return () => null;
   }, [user]);
@@ -82,6 +116,7 @@ function HomeSidebar({ user }) {
   }, [user]);
   return (
     <RootStyle>
+      <Toaster />
       <SpaceTop />
       <MenuBox>
         {sidebarConfig.map((item, index) => (

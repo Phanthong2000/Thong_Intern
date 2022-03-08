@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Button, Card, Grid, Skeleton, Stack, styled, Typography } from '@mui/material';
-import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import { Icon } from '@iconify/react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase-config';
 import AvatarMutualFriend from './AvatarMutualFriend';
 import { actionChatGetChatbox, actionChatGetChatboxHome } from '../../redux/actions/chatAction';
+import { actionUserDeleteFriend } from '../../redux/actions/userAction';
 
 const RootStyle = styled(Grid)(() => ({
   padding: '10px'
@@ -151,7 +152,7 @@ function Friend({ user, friend, index }) {
       checkExistsChatboxUserAndFriend(snapshot.id);
     });
     return () => null;
-  }, [user]);
+  }, [user, friends]);
   const chooseFriend = () => {
     navigate(`/home/other/${friend.friendId}`);
   };
@@ -160,7 +161,8 @@ function Friend({ user, friend, index }) {
       dispatch(
         actionChatGetChatboxHome({
           status: true,
-          user: userFriend
+          user: userFriend,
+          chatbox: {}
         })
       );
       navigate('/home/app');
@@ -172,6 +174,34 @@ function Friend({ user, friend, index }) {
         })
       );
       navigate('/home/chat');
+    }
+  };
+  const unFriend = async () => {
+    const data1 = await getDocs(
+      query(
+        collection(db, 'contacts'),
+        where('senderId', '==', user.id),
+        where('receiverId', '==', friend.friendId),
+        where('status', '==', true)
+      )
+    );
+    const data2 = await getDocs(
+      query(
+        collection(db, 'contacts'),
+        where('senderId', '==', friend.friendId),
+        where('receiverId', '==', user.id),
+        where('status', '==', true)
+      )
+    );
+    if (!data1.empty) {
+      deleteDoc(doc(db, 'contacts', data1.docs.at(0).id)).then(() => {
+        dispatch(actionUserDeleteFriend(index));
+      });
+    }
+    if (!data2.empty) {
+      deleteDoc(doc(db, 'contacts', data2.docs.at(0).id)).then(() => {
+        dispatch(actionUserDeleteFriend(index));
+      });
     }
   };
   const ManualFriend = () => {
@@ -215,7 +245,9 @@ function Friend({ user, friend, index }) {
           <ButtonMessage onClick={chooseChat} startIcon={<Icon icon="bi:chat-left-fill" />}>
             Chat
           </ButtonMessage>
-          <ButtonDelete startIcon={<Icon icon="bx:bxs-user-x" />}>Unfriend</ButtonDelete>
+          <ButtonDelete onClick={unFriend} startIcon={<Icon icon="bx:bxs-user-x" />}>
+            Unfriend
+          </ButtonDelete>
         </WrapperInfo>
       </Wrapper>
     </RootStyle>

@@ -2,7 +2,7 @@ const backgroundStory = [
   {
     id: 1,
     contentFile:
-      'https://scontent.fsgn13-2.fna.fbcdn.net/v/t39.16376-6/58262940_285817512345690_8722691640277336064_n.jpg?_nc_cat=1&ccb=1-5&_nc_sid=a86453&_nc_ohc=4mUay9b2l7AAX_wWXQP&_nc_ht=scontent.fsgn13-2.fna&oh=00_AT_ClN_6RxAn47_58KyFqpRJCzPtFZ0eFRzR6OpBeB376A&oe=621E5BCB',
+      'https://scontent.fsgn13-1.fna.fbcdn.net/v/t39.16376-6/58262940_285817512345690_8722691640277336064_n.jpg?_nc_cat=1&ccb=1-5&_nc_sid=a86453&_nc_ohc=Uh4E9gyMXOAAX-oJhwu&_nc_ht=scontent.fsgn13-1.fna&oh=00_AT-DUIsHAnDnPVrXMXiyHWzhExUFVE5JiWHQ3vRFaXY6mA&oe=622C338B',
     textColor: 'white'
   },
   {

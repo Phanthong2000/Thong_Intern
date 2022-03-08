@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { actionChatGetChatbox } from '../redux/actions/chatAction';
+import Snack from '../components/Snack';
 
 const heightScreen = window.innerHeight;
 const RootStyle = styled(Box)(({ theme }) => ({
@@ -109,6 +110,7 @@ function Setting({ user }) {
       </SettingsSidebar>
       <BoxOutletSettings>
         <Outlet />
+        <Snack />
       </BoxOutletSettings>
     </RootStyle>
   );
