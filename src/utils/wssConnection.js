@@ -28,7 +28,7 @@ import store from '../redux/store';
 
 let socket;
 export const connectWithSocket = () => {
-  socket = io('http://localhost:5000');
+  socket = io('https://thongintern.herokuapp.com/');
   socket.on('broadcast', (data) => {
     store.dispatch(actionUserBroadcastSocket(data));
   });
