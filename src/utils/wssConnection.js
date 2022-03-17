@@ -28,7 +28,7 @@ import store from '../redux/store';
 
 let socket;
 export const connectWithSocket = () => {
-  socket = io('http://localhost:3000/');
+  socket = io('http://10.0.12.148:3000/');
   socket.on('broadcast', (data) => {
     store.dispatch(actionUserBroadcastSocket(data));
   });

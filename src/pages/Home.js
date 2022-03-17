@@ -7,7 +7,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { io } from 'socket.io-client';
 import { Icon } from '@iconify/react';
 import { getToken } from 'firebase/messaging';
-import { db, messaging } from '../firebase-config';
+import { db } from '../firebase-config';
 import { actionTestSearch } from '../redux/actions/userAction';
 import BoxPost from '../components/home/main/BoxPost';
 import BoxContact from '../components/home/main/BoxContact';
