@@ -118,7 +118,7 @@ function MessageChatgroup({ user, message, index }) {
     });
   };
   useEffect(() => {
-    getUserSent();
+    // getUserSent();
     if (contentRef.current !== null) {
       setHeightContentText(contentRef.current.clientHeight);
     }
