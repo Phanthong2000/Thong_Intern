@@ -9,7 +9,7 @@ import HomeNavbar from './home/HomeNavbar';
 import HomeSidebar from './home/HomeSidebar';
 import { actionUserCloseSearch, actionUserCloseProfile } from '../redux/actions/userAction';
 import Responsive from '../responsive/Responsive';
-import { db, onMessageListener } from '../firebase-config';
+import { db } from '../firebase-config';
 import ChatBox from '../components/home/main/ChatBox';
 import BoxNewChatbox from '../components/home/main/BoxNewChatbox';
 
@@ -68,9 +68,9 @@ function HomeLayout() {
   const closeProfileBox = () => {
     dispatch(actionUserCloseProfile());
   };
-  onMessageListener().then((payload) => {
-    setNotification(payload.notification);
-  });
+  // onMessageListener().then((payload) => {
+  //   setNotification(payload.notification);
+  // });
   return (
     <RootStyle>
       <Responsive width="mdDown">
