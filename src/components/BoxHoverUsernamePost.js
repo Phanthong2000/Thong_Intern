@@ -14,6 +14,7 @@ import { Icon } from '@iconify/react';
 import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { collection, getDocs, query, where } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase-config';
 import { actionGetContact, actionUserContactUserAndOther } from '../redux/actions/userAction';
 
@@ -71,6 +72,7 @@ function BoxHoverUsernamePost({ user }) {
   const dispatch = useDispatch();
   const [friendMutualUser, setFriendMutualUser] = useState([]);
   const [quantityMutualFriend, setQuantityMutualFriend] = useState(-1);
+  const navigate = useNavigate();
   const getAllFriendsSender = async () => {
     const data1 = await getDocs(
       query(
@@ -119,6 +121,9 @@ function BoxHoverUsernamePost({ user }) {
       dispatch(actionUserContactUserAndOther({ id: '', status: '' }));
     };
   }, []);
+  const addStory = () => {
+    navigate('/home/create-story');
+  };
   const ManualFriend = () => {
     if (quantityMutualFriend === 1)
       return (
@@ -224,7 +229,9 @@ function BoxHoverUsernamePost({ user }) {
           </Box>
         ) : (
           <Box sx={{ width: '100%', justifyContent: 'space-between', display: 'flex' }}>
-            <ButtonChat startIcon={<Icon icon="carbon:add-filled" />}>Add to story</ButtonChat>
+            <ButtonChat onClick={addStory} startIcon={<Icon icon="carbon:add-filled" />}>
+              Add to story
+            </ButtonChat>
             <ButtonEditProfile startIcon={<Icon icon="entypo:edit" />}>
               Edit profile
             </ButtonEditProfile>

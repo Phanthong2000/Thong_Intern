@@ -12,7 +12,8 @@ import {
   actionChatGetChatboxHome,
   actionChatClearImageMessage,
   actionGetAllMessagesChatbox,
-  actionGetAllBadeMessage
+  actionGetAllBadeMessage,
+  actionChatReplyMessage
 } from '../../redux/actions/chatAction';
 import { actionUserCloseMessenger } from '../../redux/actions/userAction';
 
@@ -117,6 +118,7 @@ function Chatgroup({ user, chatbox, home }) {
         })
       );
     }
+    dispatch(actionChatReplyMessage({}));
   };
   const checkContentMessage = () => {
     if (messageLast.isRestore) {

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { AppBar, Stack, styled, Toolbar, Box } from '@mui/material';
 import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
+import { useLocation, useNavigate } from 'react-router-dom';
 import MenuBar from '../../components/home/MenuBar';
 import ProfileBar from '../../components/home/ProfileBar';
 import SearchBar from '../../components/home/SearchBar';
@@ -42,15 +43,20 @@ HomeNavbar.prototype = {
 function HomeNavbar({ user }) {
   const isSearching = useSelector((state) => state.user.isSearching);
   const isMessenger = useSelector((state) => state.user.isMessenger);
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const chooseLogo = () => {
+    if (pathname === '/home/app') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      navigate('/home/app');
+    }
+  };
   return (
     <RootStyle>
       <Toolbar sx={{ justifyContent: 'space-between' }}>
         <Stack direction="row" sx={{ alignItems: 'center' }} spacing={3}>
-          <Logo
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            src={logo}
-            alt="Logo"
-          />
+          <Logo onClick={chooseLogo} src={logo} alt="Logo" />
           <Responsive width="mdUp">
             <MenuBar />
           </Responsive>

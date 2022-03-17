@@ -19,7 +19,8 @@ import {
   ACTION_CHAT_GET_CHATGROUP_USER,
   ACTION_CHAT_GET_NEW_CHATBOX_HOME,
   ACTION_CHAT_OPTIONS_CHATBOX,
-  ACTION_CHAT_GET_ALL_BADGE_MESSAGE
+  ACTION_CHAT_GET_ALL_BADGE_MESSAGE,
+  ACTION_CHAT_REPLY_MESSAGE
 } from './types';
 
 export const actionChatGetAllChat = (data) => ({
@@ -92,6 +93,10 @@ export const actionChatOptionsChatbox = (data) => ({
 });
 export const actionChatGetAllBadgeMessage = (data) => ({
   type: ACTION_CHAT_GET_ALL_BADGE_MESSAGE,
+  payload: data
+});
+export const actionChatReplyMessage = (data) => ({
+  type: ACTION_CHAT_REPLY_MESSAGE,
   payload: data
 });
 export const actionGetAllChatSort = (id) => async (dispatch) => {

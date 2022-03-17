@@ -6,7 +6,9 @@ import { Icon } from '@iconify/react';
 import moment from 'moment';
 import { deleteDoc, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase-config';
-import { actionChatDeleteMessage } from '../../redux/actions/chatAction';
+import { actionChatDeleteMessage, actionChatReplyMessage } from '../../redux/actions/chatAction';
+import ReplyOther from './ReplyOther';
+import Reply from './Reply';
 
 const BoxMessageUserSender = styled(Box)(() => ({
   width: '100%',
@@ -469,7 +471,7 @@ function MessageChatgroup({ user, message, index }) {
                       icon="system-uicons:trash"
                     />
                   </ButtonOptionUser>
-                  <ButtonOptionUser>
+                  <ButtonOptionUser onClick={() => dispatch(actionChatReplyMessage(message))}>
                     <Icon
                       style={{ color: 'gray', width: '18px', height: '18px' }}
                       icon="bxs:share"
@@ -585,6 +587,7 @@ function MessageChatgroup({ user, message, index }) {
                   marginLeft: '0px'
                 }}
               >
+                {message.type === 'reply' && <Reply user={user} message={message} />}
                 <Typography ref={contentRef}>{message.content}</Typography>
                 {message.type === 'image' && <BoxContentImageMessage />}
                 {message.type === 'gif' && <BoxContentGifMessage />}
@@ -627,6 +630,7 @@ function MessageChatgroup({ user, message, index }) {
               <Typography sx={{ fontWeight: 'bold', fontSize: '14px' }}>
                 {userSent.username}
               </Typography>
+              {message.type === 'reply' && <ReplyOther user={user} message={message} />}
               <Typography>{message.content}</Typography>
               {message.type === 'image' && <BoxContentImageMessage />}
               {message.type === 'gif' && <BoxContentGifMessage />}
@@ -641,7 +645,7 @@ function MessageChatgroup({ user, message, index }) {
                     icon="carbon:face-add"
                   />
                 </ButtonOptionOther>
-                <ButtonOptionOther>
+                <ButtonOptionOther onClick={() => dispatch(actionChatReplyMessage(message))}>
                   <Icon style={{ color: 'gray', width: '18px', height: '18px' }} icon="bxs:share" />
                 </ButtonOptionOther>
                 <ButtonOptionOther>

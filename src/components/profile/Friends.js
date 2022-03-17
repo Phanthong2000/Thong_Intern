@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Button, Card, Grid, Stack, styled, Typography } from '@mui/material';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { doc, getDoc } from 'firebase/firestore';
 import { actionGetAllFriendUser } from '../../redux/actions/userAction';
@@ -32,6 +32,7 @@ Friends.prototype = {
 };
 function Friends({ user }) {
   const friends = useSelector((state) => state.user.friends);
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const getQuantityFriend = () => {
     if (friends.length === 1) return `1 friend`;
@@ -44,7 +45,9 @@ function Friends({ user }) {
         sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
       >
         <Title>Friends</Title>
-        <ButtonSeeAllFriends>See all friends</ButtonSeeAllFriends>
+        <ButtonSeeAllFriends onClick={() => navigate('/home/friends/all-friends')}>
+          See all friends
+        </ButtonSeeAllFriends>
       </Stack>
       {friends.length > 0 ? (
         <Box>

@@ -242,7 +242,8 @@ function SignUpForm() {
           email: values.email,
           password: values.password,
           phone: '',
-          avatar: 'https://huyhoanhotel.com/wp-content/uploads/2016/05/765-default-avatar.png',
+          avatar:
+            'https://media.istockphoto.com/photos/businessman-silhouette-as-avatar-or-default-profile-picture-picture-id476085198?k=20&m=476085198&s=170667a&w=0&h=FXkT-N6vISLOCUefa9MyQg0pH-6loMX9zBZjgLK458c=',
           background:
             'https://tophinhanhdep.com/wp-content/uploads/2021/10/1920X1080-HD-Nature-Wallpapers.jpg',
           isOnline: false,

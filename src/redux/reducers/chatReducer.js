@@ -17,7 +17,8 @@ import {
   ACTION_CHAT_GET_CHATGROUP_USER,
   ACTION_CHAT_GET_NEW_CHATBOX_HOME,
   ACTION_CHAT_OPTIONS_CHATBOX,
-  ACTION_CHAT_GET_ALL_BADGE_MESSAGE
+  ACTION_CHAT_GET_ALL_BADGE_MESSAGE,
+  ACTION_CHAT_REPLY_MESSAGE
 } from '../actions/types';
 
 const defaultState = {
@@ -43,7 +44,8 @@ const defaultState = {
   chatgroups: [],
   newChatbox: false,
   optionsChatbox: true,
-  badgeMessage: 0
+  badgeMessage: 0,
+  reply: {}
 };
 
 const chatReducer = (state = defaultState, action) => {
@@ -156,6 +158,11 @@ const chatReducer = (state = defaultState, action) => {
       return {
         ...state,
         badgeMessage: action.payload
+      };
+    case ACTION_CHAT_REPLY_MESSAGE:
+      return {
+        ...state,
+        reply: action.payload
       };
     default:
       return state;

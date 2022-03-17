@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Stack, styled, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import BoxUserChat from '../components/chat/BoxUserChat';
 import BoxMessage from '../components/chat/BoxMessage';
 import BoxInfoUserChat from '../components/chat/BoxInfoUserChat';
@@ -13,6 +13,8 @@ import BoxInfoChatgroup from '../components/chat/BoxInfoChatgroup';
 import BoxMessageChatgroup from '../components/chat/BoxMessageChatgroup';
 import OptionsMessageChatgroup from '../components/chat/OptionsMessageChatgroup';
 import BoxOptionsChatbox from '../components/chat/BoxOptionsChatbox';
+import BoxReply from '../components/chat/BoxReply';
+import { actionChatReplyMessage } from '../redux/actions/chatAction';
 
 const heightScreen = window.screen.height;
 const RootStyle = styled(Stack)(({ theme }) => ({
@@ -27,9 +29,13 @@ function Chat({ user }) {
   const imageMessages = useSelector((state) => state.chat.imageMessages);
   const chatbox = useSelector((state) => state.chat.chatbox);
   const optionsChatbox = useSelector((state) => state.chat.optionsChatbox);
+  const reply = useSelector((state) => state.chat.reply);
+  const dispatch = useDispatch();
   useEffect(() => {
     document.title = 'Chat';
-    return () => null;
+    return () => {
+      dispatch(actionChatReplyMessage({}));
+    };
   }, [user]);
   return (
     <RootStyle direction="row">
@@ -46,7 +52,8 @@ function Chat({ user }) {
         ) : (
           <BoxMessage user={user} />
         )}
-        {imageMessages.length !== 0 ? <BoxImageMessage user={user} /> : null}
+        {imageMessages.length !== 0 && <BoxImageMessage user={user} />}
+        {reply.id !== undefined && <BoxReply user={user} />}
         {chatbox.type === 'group' ? (
           <OptionsMessageChatgroup user={user} />
         ) : (

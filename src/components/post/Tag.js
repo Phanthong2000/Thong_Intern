@@ -33,7 +33,6 @@ function Tag({ userId }) {
   if (userTag.username === undefined) return null;
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', marginLeft: '3px' }}>
-      <Typography>is with</Typography>
       <Username> {userTag.username}</Username>;
     </Box>
   );

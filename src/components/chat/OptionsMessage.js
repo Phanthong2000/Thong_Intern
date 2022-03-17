@@ -26,7 +26,8 @@ import {
   actionChatUpdateMessage,
   actionGetAllChat,
   actionGetAllChatSort,
-  actionChatInputting
+  actionChatInputting,
+  actionChatReplyMessage
 } from '../../redux/actions/chatAction';
 import { actionOpenSnackbar } from '../../redux/actions/postAction';
 import GifMessage from './Gif';
@@ -117,6 +118,7 @@ function OptionsMessage({ user }) {
   const openGif = Boolean(anchorElGif);
   const openGSticker = Boolean(anchorElSticker);
   const dispatch = useDispatch();
+  const reply = useSelector((state) => state.chat.reply);
   useEffect(() => {
     setMessageText('');
     return () => {
@@ -173,7 +175,31 @@ function OptionsMessage({ user }) {
     }
   };
   const sendMessage = () => {
-    if (type === 'image' && imageMessages.length > 0) {
+    if (reply.id !== undefined) {
+      const message = {
+        chatboxId: chatbox.id,
+        content: messageText,
+        isRead: false,
+        type: 'reply',
+        isRestore: false,
+        messageReply: reply.id,
+        reaction: [],
+        senderId: user.id,
+        receiverId: chatbox.user.id,
+        createdAt: new Date().getTime()
+      };
+      addDoc(collection(db, 'messages'), message).then((docRef) => {
+        dispatch(actionChatAddMessage({ ...message, id: docRef.id }));
+        updateDoc(doc(db, 'chatboxs', chatbox.id), {
+          updatedAt: new Date().getTime()
+        }).then((snapshot) => {
+          dispatch(actionChatReplyMessage({}));
+          setMessageText('');
+          setIsChatting(false);
+          dispatch(actionGetAllChatSort(user.id));
+        });
+      });
+    } else if (type === 'image' && imageMessages.length > 0) {
       const userCall = usersSocket.find((user) => user.userId === chatbox.user.id);
       if (userCall === undefined) {
         const message = {

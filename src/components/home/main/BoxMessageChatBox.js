@@ -26,6 +26,7 @@ BoxMessageChatBox.prototype = {
 function BoxMessageChatBox({ user, other, chatbox }) {
   const [allMessages, setAllMessages] = useState([]);
   const chatboxHome = useSelector((state) => state.chat.chatboxHome);
+  const reply = useSelector((state) => state.chat.reply);
   const addMessageChatboxHome = useSelector((state) => state.chat.addMessageChatboxHome);
   const [status, setStatus] = useState('');
   const actionGetContact = async (userId, otherId) => {
@@ -197,7 +198,7 @@ function BoxMessageChatBox({ user, other, chatbox }) {
   };
   if (chatbox.type === 'group')
     return (
-      <RootStyle>
+      <RootStyle sx={reply.id === undefined && { height: '430px', maxHeight: '430px' }}>
         {allMessages.map((item, index) => (
           <Message key={index} user={user} message={item} index={index} />
         ))}
@@ -205,7 +206,7 @@ function BoxMessageChatBox({ user, other, chatbox }) {
       </RootStyle>
     );
   return (
-    <RootStyle>
+    <RootStyle sx={reply.id === undefined && { height: '430px', maxHeight: '430px' }}>
       <BoxUserEmptyMessage />
       {allMessages.map((item, index) => (
         <Message key={index} user={user} message={item} index={index} />

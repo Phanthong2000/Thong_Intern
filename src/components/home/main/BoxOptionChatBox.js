@@ -10,6 +10,7 @@ import GifMessageHome from './GifMessageHome';
 import { db } from '../../../firebase-config';
 import {
   actionChatAddMessageChatboxHome,
+  actionChatReplyMessage,
   actionGetAllChatSort
 } from '../../../redux/actions/chatAction';
 
@@ -68,6 +69,7 @@ function BoxOptionChatBox({ user, other, chatgroup }) {
   const [isExistsChatbox, setIsExistsChatbox] = useState(false);
   const [anchorElGif, setAnchorElGif] = React.useState(null);
   const [anchorElSticker, setAnchorElSticker] = React.useState(null);
+  const reply = useSelector((state) => state.chat.reply);
   const handleClickGif = (event) => {
     setAnchorElGif(event.currentTarget);
   };
@@ -132,31 +134,56 @@ function BoxOptionChatBox({ user, other, chatgroup }) {
   };
   const sendMessage = () => {
     if (chatgroup.type === 'group') {
-      const message = {
-        chatboxId: chatgroup.id,
-        content: messageText,
-        isRead: false,
-        type: 'text',
-        isRestore: false,
-        reaction: [],
-        senderId: user.id,
-        createdAt: new Date().getTime()
-      };
-      addDoc(collection(db, 'messages'), message)
-        .then((docRef) => {
-          console.log(docRef.id);
+      if (reply.id !== undefined) {
+        const message = {
+          chatboxId: chatgroup.id,
+          content: messageText,
+          isRead: false,
+          type: 'reply',
+          isRestore: false,
+          messageReply: reply.id,
+          reaction: [],
+          senderId: user.id,
+          createdAt: new Date().getTime()
+        };
+        addDoc(collection(db, 'messages'), message).then((docRef) => {
+          dispatch(actionChatAddMessageChatboxHome());
           updateDoc(doc(db, 'chatboxs', chatgroup.id), {
             updatedAt: new Date().getTime()
-          }).then(() => {
+          }).then((snapshot) => {
+            dispatch(actionChatReplyMessage({}));
             setMessageText('');
             setIsChatting(false);
-            dispatch(actionChatAddMessageChatboxHome());
             dispatch(actionGetAllChatSort(user.id));
           });
-        })
-        .catch((error) => {
-          console.log(error);
         });
+      } else {
+        const message = {
+          chatboxId: chatgroup.id,
+          content: messageText,
+          isRead: false,
+          type: 'text',
+          isRestore: false,
+          reaction: [],
+          senderId: user.id,
+          createdAt: new Date().getTime()
+        };
+        addDoc(collection(db, 'messages'), message)
+          .then((docRef) => {
+            console.log(docRef.id);
+            updateDoc(doc(db, 'chatboxs', chatgroup.id), {
+              updatedAt: new Date().getTime()
+            }).then(() => {
+              setMessageText('');
+              setIsChatting(false);
+              dispatch(actionChatAddMessageChatboxHome());
+              dispatch(actionGetAllChatSort(user.id));
+            });
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
     } else if (!isExistsChatbox) {
       const chatbox = {
         user1: user.id,
@@ -181,6 +208,30 @@ function BoxOptionChatBox({ user, other, chatgroup }) {
           setMessageText('');
           setIsChatting(false);
           dispatch(actionChatAddMessageChatboxHome());
+          dispatch(actionGetAllChatSort(user.id));
+        });
+      });
+    } else if (reply.id !== undefined) {
+      const message = {
+        chatboxId: chatbox.id,
+        content: messageText,
+        isRead: false,
+        type: 'reply',
+        isRestore: false,
+        messageReply: reply.id,
+        reaction: [],
+        senderId: user.id,
+        receiverId: chatboxHome.user.id,
+        createdAt: new Date().getTime()
+      };
+      addDoc(collection(db, 'messages'), message).then((docRef) => {
+        dispatch(actionChatAddMessageChatboxHome());
+        updateDoc(doc(db, 'chatboxs', chatbox.id), {
+          updatedAt: new Date().getTime()
+        }).then((snapshot) => {
+          dispatch(actionChatReplyMessage({}));
+          setMessageText('');
+          setIsChatting(false);
           dispatch(actionGetAllChatSort(user.id));
         });
       });

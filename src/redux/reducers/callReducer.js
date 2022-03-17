@@ -56,12 +56,12 @@ const callReducer = (state = defaultState, action) => {
         stream: action.payload
       };
     case REMOTE_STREAM:
+      console.log('remote', action.payload);
       return {
         ...state,
         remoteStream: action.payload
       };
     case CONNECTION:
-      console.log('connection', action.payload);
       return {
         ...state,
         connection: action.payload

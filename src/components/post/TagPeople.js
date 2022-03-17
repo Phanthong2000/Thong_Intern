@@ -74,6 +74,7 @@ function TagPeople({ user }) {
   const isOpenTagPeople = useSelector((state) => state.post.isOpenTagPeople);
   const friends = useSelector((state) => state.user.friends);
   const [suggestions, setSuggestions] = useState([]);
+  const [search, setSearch] = useState([]);
   useEffect(() => {
     getSuggestions();
     return () => null;
@@ -86,7 +87,10 @@ function TagPeople({ user }) {
           ...snapshot.data(),
           id: snapshot.id
         });
-        if (data.length === friends.length) setSuggestions(data);
+        if (data.length === friends.length) {
+          setSuggestions(data);
+          setSearch(data);
+        }
       });
     });
   };
@@ -99,7 +103,7 @@ function TagPeople({ user }) {
           data.push(userSearch);
         }
       });
-      setSuggestions(data);
+      setSearch(data);
     } else {
       getSuggestions();
     }
@@ -141,7 +145,7 @@ function TagPeople({ user }) {
         <BoxSuggestion>
           <Scrollbar alwaysShowTracks>
             <Typography sx={{ color: 'gray', fontSize: '14px' }}>SUGGESTIONS</Typography>
-            {suggestions.map((item, index) => (
+            {search.map((item, index) => (
               <ItemSuggestion key={index} friend={item} />
             ))}
           </Scrollbar>

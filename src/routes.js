@@ -27,6 +27,7 @@ import Story from './pages/Story';
 import CreateStory from './components/story/CreateStory';
 import ProfileSetting from './components/setting/ProfileSetting';
 import PasswordSetting from './components/setting/PasswordSetting';
+import ForgotPassword from './pages/ForgotPassword';
 
 function Router() {
   const navigate = useNavigate();
@@ -107,15 +108,19 @@ function Router() {
           element: <UserNotFound />
         }
       ]
+    },
+    {
+      path: '/forgot-password',
+      element: <ForgotPassword />
+    },
+    {
+      path: '/error',
+      element: <Error />
+    },
+    {
+      path: '/*',
+      element: <Navigate to="/error" />
     }
-    // {
-    //   path: '/error',
-    //   element: <Error />
-    // },
-    // {
-    //   path: '/*',
-    //   element: <Navigate to="/error" />
-    // }
   ]);
 }
 

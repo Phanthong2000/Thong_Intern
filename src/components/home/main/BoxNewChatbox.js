@@ -61,6 +61,7 @@ function BoxNewChatbox({ user }) {
   const inputRef = useRef();
   const [usersChoose, setUserChoose] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
+  const [usersSearch, setUsersSearch] = useState([]);
   const newChatbox = useSelector((state) => state.chat.newChatbox);
   const dispatch = useDispatch();
   const usersSocket = useSelector((state) => state.user.usersSocket);
@@ -78,6 +79,7 @@ function BoxNewChatbox({ user }) {
       });
     }
     setAllUsers(users);
+    setUsersSearch(users);
   };
   useEffect(() => {
     getAllUsers();
@@ -95,7 +97,7 @@ function BoxNewChatbox({ user }) {
           data.push(userSearch);
         }
       });
-      setAllUsers(data);
+      setUsersSearch(data);
     } else {
       getAllUsers();
     }
@@ -243,7 +245,7 @@ function BoxNewChatbox({ user }) {
         <Divider />
         <Box sx={{ display: 'flex', maxHeight: '250px', height: '250px' }}>
           <Scrollbar alwaysShowTracks>
-            {allUsers.map((item, index) => (
+            {usersSearch.map((item, index) => (
               <UserSearch key={index} userSearch={item} />
             ))}
           </Scrollbar>

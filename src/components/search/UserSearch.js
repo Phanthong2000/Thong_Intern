@@ -23,6 +23,7 @@ UserSearch.prototype = {
 };
 function UserSearch({ user, searchId }) {
   const friendManual = useSelector((state) => state.user.friendManual);
+  const searchAllPeople = useSelector((state) => state.user.searchAllPeople);
   const [userSearch, setUserSearch] = useState({});
   const [quantityMutualFriend, setQuantityMutualFriend] = useState(-1);
   const [status, setStatus] = useState('');
@@ -114,7 +115,7 @@ function UserSearch({ user, searchId }) {
       getUserById(searchId);
     }
     return () => null;
-  }, [user, friendManual]);
+  }, [user, friendManual, searchAllPeople]);
   const BoxMutualFriend = () => {
     if (quantityMutualFriend < 0)
       return <Skeleton variant="text" sx={{ width: '100px', height: '15px' }} />;

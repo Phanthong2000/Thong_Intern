@@ -23,6 +23,7 @@ import { addDoc, collection, deleteDoc, doc, updateDoc } from 'firebase/firestor
 import { Icon } from '@iconify/react';
 import { useDispatch, useSelector } from 'react-redux';
 import { keyframes } from '@emotion/react';
+import { Scrollbar } from 'smooth-scrollbar-react';
 import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 import {
   actionChatGetChatbox,
@@ -35,9 +36,10 @@ import { actionOpenSnackbar } from '../../redux/actions/postAction';
 import backgroundChatbox from '../../asset/data/backgroundChatbox';
 import Member from './Member';
 
+const heightScreen = window.innerHeight - 1;
 const RootStyle = styled(Card)(({ theme }) => ({
   width: '450px',
-  maxHeight: '100%',
+  maxHeight: `${heightScreen}px`,
   background: '#fff',
   marginRight: '10px',
   marginTop: '10px',
@@ -427,10 +429,13 @@ function BoxOptionsChatbox({ user }) {
     }
   };
   const leaveGroup = () => {
+    const memberNew = chatbox.members.filter((member) => member !== user.id);
     const chatgroupNew = {
       ...chatbox,
-      members: chatbox.members.filter((member) => member !== user.id),
-      updatedAt: new Date().getTime()
+      members: memberNew,
+      updatedAt: new Date().getTime(),
+      userId: memberNew.at(0),
+      tempId: memberNew.at(0)
     };
     updateDoc(doc(db, 'chatboxs', chatbox.id), chatgroupNew).then(() => {
       const message = {
@@ -456,84 +461,95 @@ function BoxOptionsChatbox({ user }) {
   if (chatbox.type === 'group')
     return (
       <RootStyle>
-        <Stack sx={{ width: '100%', alignItems: 'center' }}>
-          {loadingUpdatePhoto ? (
-            <IconButton sx={{ width: '100px', height: '100px', margin: '50px 0px 0px 10px' }}>
-              <Icon sx={{ width: '100px', height: '100px' }} icon="eos-icons:loading" />
-            </IconButton>
-          ) : (
-            <AvatarChat src={chatbox.avatar} />
-          )}
-          <Typography
-            sx={{
-              fontWeight: 'bold',
-              fontFamily: 'inherit',
-              fontSize: '18px',
-              marginBottom: '10px'
-            }}
-          >
-            {chatbox.name}
-          </Typography>
-          <ButtonOption
-            click={() => setOpenModalChangeName(true)}
-            name="Change chat name"
-            icon="bytesize:edit"
-          />
-          <ButtonOption
-            click={() => fileRef.current.click()}
-            name="Change photo"
-            icon="ion:image-outline"
-          />
-          <ButtonOption
-            click={() => setOpenModalChangeBackground(true)}
-            name="Change background"
-            icon="foundation:background-color"
-          />
-          <Accordion sx={{ width: '100%', boxShadow: 0 }}>
-            <AccordionSummary
-              aria-controls="panel1d-content"
-              id="panel1d-header"
-              expandIcon={<ExpandMore />}
+        <Stack
+          sx={{
+            width: '100%',
+            alignItems: 'center',
+            maxHeight: `${heightScreen}px`,
+            display: 'flex'
+          }}
+        >
+          <Scrollbar>
+            {loadingUpdatePhoto ? (
+              <IconButton sx={{ width: '100px', height: '100px', margin: '50px 0px 0px 10px' }}>
+                <Icon sx={{ width: '100px', height: '100px' }} icon="eos-icons:loading" />
+              </IconButton>
+            ) : (
+              <AvatarChat src={chatbox.avatar} />
+            )}
+            <Typography
+              sx={{
+                fontWeight: 'bold',
+                fontFamily: 'inherit',
+                fontSize: '18px',
+                marginBottom: '10px'
+              }}
             >
-              <Typography sx={{ fontFamily: 'inherit', fontSize: '18px', marginLeft: '10px' }}>
-                Members
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              {chatbox.members.map((item, index) => (
-                <Member user={user} key={index} memberId={item} userId={chatbox.userId} />
-              ))}
-              <Button
-                sx={{
-                  color: '#000',
-                  textTransform: 'none',
-                  width: '100%',
-                  justifyContent: 'start',
-                  marginTop: '5px'
-                }}
-              >
-                <Icon
-                  style={{ width: '30px', height: '30px', color: 'gray' }}
-                  icon="bi:plus-circle-fill"
-                />
-                <Typography sx={{ marginLeft: '10px', fontWeight: 'bold' }}>Add people</Typography>
-              </Button>
-            </AccordionDetails>
-          </Accordion>
-
-          <ButtonOption
-            click={() => setOpenModalLeaveGroup(true)}
-            name="Leave group"
-            icon="tabler:logout"
-          />
-          {user.id === chatbox.userId && (
+              {chatbox.name}
+            </Typography>
             <ButtonOption
-              click={() => setOpenModalDeleteGroup(true)}
-              name="Delete group"
-              icon="fluent:delete-16-regular"
+              click={() => setOpenModalChangeName(true)}
+              name="Change chat name"
+              icon="bytesize:edit"
             />
-          )}
+            <ButtonOption
+              click={() => fileRef.current.click()}
+              name="Change photo"
+              icon="ion:image-outline"
+            />
+            <ButtonOption
+              click={() => setOpenModalChangeBackground(true)}
+              name="Change background"
+              icon="foundation:background-color"
+            />
+            <Accordion sx={{ width: '100%', boxShadow: 0 }}>
+              <AccordionSummary
+                aria-controls="panel1d-content"
+                id="panel1d-header"
+                expandIcon={<ExpandMore />}
+              >
+                <Typography sx={{ fontFamily: 'inherit', fontSize: '18px', marginLeft: '10px' }}>
+                  Members
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                {chatbox.members.map((item, index) => (
+                  <Member user={user} key={index} memberId={item} userId={chatbox.userId} />
+                ))}
+                <Button
+                  sx={{
+                    color: '#000',
+                    textTransform: 'none',
+                    width: '100%',
+                    justifyContent: 'start',
+                    marginTop: '5px'
+                  }}
+                >
+                  <Icon
+                    style={{ width: '30px', height: '30px', color: 'gray' }}
+                    icon="bi:plus-circle-fill"
+                  />
+                  <Typography sx={{ marginLeft: '10px', fontWeight: 'bold' }}>
+                    Add people
+                  </Typography>
+                </Button>
+              </AccordionDetails>
+            </Accordion>
+            <ButtonOption
+              click={() => setOpenModalLeaveGroup(true)}
+              name="Leave group"
+              icon="tabler:logout"
+            />
+            {user.id === chatbox.userId && (
+              <ButtonOption
+                click={() => setOpenModalDeleteGroup(true)}
+                name="Delete group"
+                icon="fluent:delete-16-regular"
+              />
+            )}{' '}
+          </Scrollbar>
         </Stack>
+
         <input
           onClick={(e) => {
             e.target.value = null;

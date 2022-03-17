@@ -16,8 +16,14 @@ import moment from 'moment';
 import { useDispatch, useSelector } from 'react-redux';
 import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../firebase-config';
-import { actionChatDeleteMessage, actionGetAllChatSort } from '../../redux/actions/chatAction';
+import {
+  actionChatDeleteMessage,
+  actionChatReplyMessage,
+  actionGetAllChatSort
+} from '../../redux/actions/chatAction';
 import { sendReactionSocket, sendMessageSocket } from '../../utils/wssConnection';
+import Reply from './Reply';
+import ReplyOther from './ReplyOther';
 
 const BoxMessageUserSender = styled(Box)(() => ({
   width: '100%',
@@ -476,7 +482,12 @@ function Message({ user, message, index }) {
                       icon="system-uicons:trash"
                     />
                   </ButtonOptionUser>
-                  <ButtonOptionUser>
+                  <ButtonOptionUser
+                    onClick={() => {
+                      dispatch(actionChatReplyMessage(message));
+                      console.log(message.id);
+                    }}
+                  >
                     <Icon
                       style={{ color: 'gray', width: '18px', height: '18px' }}
                       icon="bxs:share"
@@ -592,6 +603,7 @@ function Message({ user, message, index }) {
                   marginLeft: '0px'
                 }}
               >
+                {message.type === 'reply' && <Reply user={user} message={message} />}
                 <Typography ref={contentRef}>{message.content}</Typography>
                 {message.type === 'image' && <BoxContentImageMessage />}
                 {message.type === 'gif' && <BoxContentGifMessage />}
@@ -631,6 +643,7 @@ function Message({ user, message, index }) {
             }}
           >
             <BoxContentMessage onMouseEnter={mouseEnterMessage} onMouseLeave={mouseLeaveMessage}>
+              {message.type === 'reply' && <ReplyOther user={user} message={message} />}
               <Typography>{message.content}</Typography>
               {message.type === 'image' && <BoxContentImageMessage />}
               {message.type === 'gif' && <BoxContentGifMessage />}
@@ -645,7 +658,7 @@ function Message({ user, message, index }) {
                     icon="carbon:face-add"
                   />
                 </ButtonOptionOther>
-                <ButtonOptionOther>
+                <ButtonOptionOther onClick={() => dispatch(actionChatReplyMessage(message))}>
                   <Icon style={{ color: 'gray', width: '18px', height: '18px' }} icon="bxs:share" />
                 </ButtonOptionOther>
                 <ButtonOptionOther>

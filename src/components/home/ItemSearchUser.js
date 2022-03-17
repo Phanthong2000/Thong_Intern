@@ -78,7 +78,7 @@ function ItemSearchUser({ search }) {
     });
     getContact(search.userId, search.content);
     return () => null;
-  }, []);
+  }, [search]);
   const chooseSearch = () => {
     dispatch(actionGetContact(search.userId, search.content));
     navigate(`/home/other/${search.content}`);

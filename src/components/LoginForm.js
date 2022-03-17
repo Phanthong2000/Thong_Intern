@@ -124,28 +124,24 @@ function LoginForm() {
     }
   });
   const loginByEmail = async () => {
-    const data = await getDocs(
-      query(
-        collection(db, 'users'),
-        where('email', '==', values.email),
-        where('password', '==', values.password)
-      )
-    );
-    if (data.empty) {
-      setLoginFail('Wrong email or password');
-    } else {
-      setLoginFail('');
-      const user = {
-        id: data.docs.at(0).id,
-        ...data.docs.at(0).data(),
-        isOnline: true
-      };
-      // const userDoc = (await getDoc(doc(db, 'users', user.id))).data();
-      const userDoc = doc(db, 'users', user.id);
-      updateDoc(userDoc, { isOnline: true });
-      localStorage.setItem('user', JSON.stringify(user));
-      window.location.reload();
-    }
+    signInWithEmailAndPassword(auth, values.email, values.password)
+      .then(() => {
+        getDocs(query(collection(db, 'users'), where('email', '==', values.email))).then(
+          (snapshots) => {
+            setLoginFail('');
+            const user = {
+              id: snapshots.docs.at(0).id,
+              ...snapshots.docs.at(0).data(),
+              isOnline: true
+            };
+            const userDoc = doc(db, 'users', user.id);
+            updateDoc(userDoc, { isOnline: true });
+            localStorage.setItem('user', JSON.stringify(user));
+            window.location.reload();
+          }
+        );
+      })
+      .catch((err) => setLoginFail('Wrong email or password'));
   };
   const loginByPhone = async () => {
     const data = await getDocs(
@@ -301,7 +297,7 @@ function LoginForm() {
             </BoxInfoLogin>
           </Form>
         </FormikProvider>
-        <ForgotPassword to="/home">Forgot password?</ForgotPassword>
+        <ForgotPassword to="/forgot-password">Forgot password?</ForgotPassword>
         <Separate>
           <Typography style={{ color: '#30ab78' }}>OR</Typography>
         </Separate>

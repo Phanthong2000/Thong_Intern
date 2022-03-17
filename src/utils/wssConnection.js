@@ -33,7 +33,8 @@ export const connectWithSocket = () => {
     store.dispatch(actionUserBroadcastSocket(data));
   });
   socket.on('me', (id) => store.dispatch(actionMe(id)));
-  socket.on('callUser', ({ from, name, signal }) => {
+  socket.on('callUser', ({ from, name, signal, stream }) => {
+    console.log({ from, name, signal, stream });
     store.dispatch(actionCall({ from, name, signal }));
     store.dispatch(actionModalReceiving(true));
   });
@@ -82,14 +83,14 @@ export const answerCall = () => {
   const localStream = store.getState().call.stream;
   console.log('stream answer', localStream);
   const { call } = store.getState().call;
-  const peer = new Peer({ initiator: false, trickle: false, localStream });
+  const peer = new Peer({ initiator: false, trickle: false, stream: localStream });
 
   peer.on('signal', (data) => {
     socket.emit('answerCall', { signal: data, to: call.from });
   });
 
   peer.on('stream', (currentStream) => {
-    console.log('remote', currentStream);
+    console.log('remote answer', currentStream);
     store.dispatch(actionRemoteStream(currentStream));
   });
 
@@ -100,18 +101,39 @@ export const answerCall = () => {
 export const callUser = (id) => {
   const localStream = store.getState().call.stream;
   console.log('call user', localStream);
-  const peer = new Peer({ initiator: true, trickle: false, localStream });
+  const peer = new Peer({
+    initiator: true,
+    trickle: false,
+    config: {
+      iceServers: [
+        {
+          urls: 'stun:numb.viagenie.ca',
+          username: 'sultan1640@gmail.com',
+          credential: '98376683'
+        },
+        {
+          urls: 'turn:numb.viagenie.ca',
+          username: 'sultan1640@gmail.com',
+          credential: '98376683'
+        }
+      ]
+    },
+    stream: localStream
+  });
   const { me } = store.getState().call;
   const { name } = store.getState().call;
-  console.log('me', me);
-  console.log('name', name);
   peer.on('signal', (data) => {
     console.log('signal', data);
-    socket.emit('callUser', { userToCall: id, signalData: data, from: me, name });
+    socket.emit('callUser', {
+      userToCall: id,
+      signalData: data,
+      from: me,
+      name
+    });
   });
 
   peer.on('stream', (currentStream) => {
-    console.log('remote', currentStream);
+    console.log('remote call', currentStream);
     store.dispatch(actionRemoteStream(currentStream));
   });
 
@@ -120,8 +142,6 @@ export const callUser = (id) => {
     console.log('callaccepted', signal);
     peer.signal(signal);
   });
-
-  store.dispatch(actionConnection(peer));
 };
 export const endCall = (id) => {
   socket.emit('endCall', { to: id });

@@ -359,10 +359,10 @@ export const actionSearchAllPeople = (name, id) => async (dispatch) => {
         });
       }
     });
+    const userFilter = users.filter((item) => item.id !== id);
+    const usersSort = userFilter.sort((a, b) => b.createdAt - a.createdAt);
+    dispatch(actionUserSearchAllPeople(usersSort));
   }
-  const userFilter = users.filter((item) => item.id !== id);
-  const usersSort = userFilter.sort((a, b) => b.createdAt - a.createdAt);
-  dispatch(actionUserSearchAllPeople(usersSort));
 };
 export const actionSearchAllFriends = (name, id) => async (dispatch) => {
   const data1 = await getDocs(

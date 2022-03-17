@@ -20,6 +20,7 @@ import {
   actionChatClearImageMessage,
   actionChatGetChatbox,
   actionChatGetChatboxHome,
+  actionChatReplyMessage,
   actionGetAllBadeMessage
 } from '../../redux/actions/chatAction';
 import { actionUserCloseMessenger } from '../../redux/actions/userAction';
@@ -144,6 +145,7 @@ function UserChat({ chatbox, user, home }) {
         })
       );
     }
+    dispatch(actionChatReplyMessage({}));
   };
   const checkUserChosen = () => {
     if (chatbox.id === chatboxChosen.id) return '#ddfc92';

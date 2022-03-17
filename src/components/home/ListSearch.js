@@ -16,7 +16,7 @@ import { AccessTime, KeyboardBackspace, Close } from '@mui/icons-material';
 import PropTypes from 'prop-types';
 import { Icon } from '@iconify/react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Scrollbar } from 'smooth-scrollbar-react';
 import { db } from '../../firebase-config';
 import {
@@ -55,6 +55,7 @@ function ListSearch({ user }) {
   const [isSearch, setIsSearch] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const searchAllPeople = useSelector((state) => state.user.searchAllPeople);
   const getHistorySearch = async () => {
     const data = await getDocs(query(collection(db, 'searchs'), where('userId', '==', user.id)));
@@ -81,6 +82,7 @@ function ListSearch({ user }) {
         });
       }
       setSearchAllUser(users);
+      setSearch(users);
     });
   };
   useEffect(() => {
@@ -92,19 +94,22 @@ function ListSearch({ user }) {
     dispatch(actionUserCloseSearch());
   };
   const chooseSearchForText = () => {
-    dispatch(actionSearchAllPeople(inputCommentRef.current, user.id));
-    dispatch(actionSearchAllFriends(inputCommentRef.current, user.id));
-    dispatch(actionSearchAllSent(inputCommentRef.current, user.id));
-    dispatch(actionSearchAllFriendRequests(inputCommentRef.current, user.id));
+    // dispatch(actionSearchAllPeople(inputCommentRef.current, user.id));
+    // dispatch(actionSearchAllFriends(inputCommentRef.current, user.id));
+    // dispatch(actionSearchAllSent(inputCommentRef.current, user.id));
+    // dispatch(actionSearchAllFriendRequests(inputCommentRef.current, user.id));
     dispatch(actionUserCloseSearch());
-    navigate(`/home/search/all-people/${inputCommentRef.current}`);
+    if (pathname.includes(`/home/search`)) {
+      navigate(`/home/search/all-people/${inputCommentRef.current}`);
+      window.location.reload();
+    } else navigate(`/home/search/all-people/${inputCommentRef.current}`);
   };
   const inputSearch = (e) => {
     inputCommentRef.current = e.target.value;
-    if (inputCommentRef.current) {
+    if (e.target.value) {
       const data = [];
       searchAllUser.forEach((userSearch) => {
-        if (userSearch.username.toLowerCase().includes(inputCommentRef.current.toLowerCase())) {
+        if (userSearch.username.toLowerCase().includes(e.target.value.toLowerCase())) {
           data.push({
             userId: user.id,
             createdAt: new Date().getTime(),
@@ -116,6 +121,7 @@ function ListSearch({ user }) {
       setSearch(data);
       setIsSearch(true);
     } else {
+      getAllUser();
       getHistorySearch();
       setIsSearch(false);
     }
@@ -135,14 +141,14 @@ function ListSearch({ user }) {
       <Divider sx={{ width: '80%', marginLeft: '10%' }} />
       <Box sx={{ maxHeight: '600px', display: 'flex' }}>
         <Scrollbar alwaysShowTracks>
-          {search.length === 0 ? (
+          {search.length === 0 && isSearch ? (
             <ListItem sx={{ textAlign: 'center' }}>
-              <ListItemText>Not found history search</ListItemText>
+              <ListItemText>Not found user</ListItemText>
             </ListItem>
           ) : (
             search.map((item, index) => {
               if (item.type === 'user') return <ItemSearchUser key={index} search={item} />;
-              return <ItemSearchText key={index} search={item} />;
+              return null;
             })
           )}
         </Scrollbar>

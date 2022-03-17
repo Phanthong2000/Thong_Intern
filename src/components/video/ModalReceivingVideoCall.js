@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, Card, Modal, Stack, styled, Typography } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { actionModalReceiving } from '../../redux/actions/callAction';
+import { actionModalReceiving, actionStream } from '../../redux/actions/callAction';
 import { answerCall } from '../../utils/wssConnection';
 
 const RootStyle = styled(Card)(({ theme }) => ({
@@ -23,9 +23,16 @@ function ModalReceivingVideoCall() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const answerVideoCall = () => {
-    answerCall();
-    dispatch(actionModalReceiving(false));
-    navigate('/home/video-call');
+    navigator.mediaDevices
+      .getUserMedia({ video: true, audio: true })
+      .then((currentStream) => {
+        dispatch(actionStream(currentStream));
+      })
+      .then(() => {
+        answerCall();
+        dispatch(actionModalReceiving(false));
+        navigate('/home/video-call');
+      });
   };
   return (
     <Modal open onClose={() => dispatch(actionModalReceiving(false))}>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, styled } from '@mui/material';
 import PropTypes from 'prop-types';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { actionSearchAllPeople } from '../../redux/actions/userAction';
 import UserSearch from './UserSearch';
@@ -18,10 +18,15 @@ function AllPeople({ user }) {
   const { name } = useParams();
   const searchAllPeople = useSelector((state) => state.user.searchAllPeople);
   const dispatch = useDispatch();
+  const [allPeople, setAllPeople] = useState([]);
   useEffect(() => {
     if (user.id !== undefined) dispatch(actionSearchAllPeople(name, user.id));
     return () => null;
   }, [user]);
+  useEffect(() => {
+    setAllPeople(allPeople);
+    return () => null;
+  }, [searchAllPeople]);
   if (searchAllPeople.length === 0) return null;
   return (
     <RootStyle>
