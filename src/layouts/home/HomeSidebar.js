@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { io } from 'socket.io-client';
 import Aos from 'aos';
 import toast, { Toaster } from 'react-hot-toast';
-import { getToken, getMessaging } from 'firebase/messaging';
+// import { getToken, getMessaging } from 'firebase/messaging';
 import 'aos/dist/aos.css';
 import sidebarConfig from './SidebarConfig';
 import MenuItem from '../../components/home/MenuItem';
@@ -32,7 +32,7 @@ import {
 import { registerUser } from '../../utils/wssConnection';
 import ModalReceivingVideoCall from '../../components/video/ModalReceivingVideoCall';
 
-import { messaging, onMessageListener } from '../../firebase-config';
+// import { messaging, onMessageListener } from '../../firebase-config';
 
 const RootStyle = styled(Box)(({ theme }) => ({
   width: '80px',
