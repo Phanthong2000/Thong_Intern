@@ -1,10 +1,15 @@
 import React from 'react';
 import { IconButton } from '@mui/material';
 import { Menu } from '@mui/icons-material';
+import PropTypes from 'prop-types';
 
-function MenuBar() {
+MenuBar.prototype = {
+  click: PropTypes.func
+};
+function MenuBar({ click }) {
   return (
     <IconButton
+      onClick={click}
       size="large"
       edge="start"
       color="inherit"

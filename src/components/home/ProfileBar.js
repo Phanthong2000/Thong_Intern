@@ -61,12 +61,7 @@ function ProfileBar({ user }) {
   };
   return (
     <RootStyle direction="row" spacing={3}>
-      <IconButton
-        onClick={openMessenger}
-        size="large"
-        aria-label="show 4 new mails"
-        color="inherit"
-      >
+      <IconButton onClick={openMessenger} aria-label="show 4 new mails" color="inherit">
         <Badge badgeContent={badgeMessage >= 1 ? badgeMessage : null} color="error">
           {badgeMessage >= 1 ? (
             <Icon icon="uim:comment-message" style={{ color: '#30ab78' }} />
@@ -75,12 +70,7 @@ function ProfileBar({ user }) {
           )}
         </Badge>
       </IconButton>
-      <IconButton
-        onClick={() => openNotifications()}
-        size="large"
-        aria-label="show 4 new mails"
-        color="inherit"
-      >
+      <IconButton onClick={() => openNotifications()} aria-label="show 4 new mails" color="inherit">
         <Badge badgeContent={badgeNotification >= 1 ? badgeNotification : null} color="error">
           {badgeNotification >= 1 ? (
             <Notifications sx={{ color: '#30ab78' }} />

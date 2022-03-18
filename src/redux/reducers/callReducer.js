@@ -12,7 +12,10 @@ import {
   AUDIO,
   VIDEO_OTHER,
   AUDIO_OTHER,
-  START_COUNT
+  START_COUNT,
+  GROUP,
+  LOCAL_STREAM_GROUP,
+  MODAL_RECEIVING_GROUP
 } from '../actions/types';
 
 const defaultState = {
@@ -29,7 +32,10 @@ const defaultState = {
   video: true,
   audioOther: true,
   videoOther: true,
-  startCount: false
+  startCount: false,
+  group: {},
+  localStreamGroup: null,
+  modalReceivingGroup: false
 };
 
 const callReducer = (state = defaultState, action) => {
@@ -105,6 +111,21 @@ const callReducer = (state = defaultState, action) => {
       return {
         ...state,
         startCount: action.payload
+      };
+    case GROUP:
+      return {
+        ...state,
+        group: action.payload
+      };
+    case LOCAL_STREAM_GROUP:
+      return {
+        ...state,
+        localStreamGroup: action.payload
+      };
+    case MODAL_RECEIVING_GROUP:
+      return {
+        ...state,
+        modalReceivingGroup: action.payload
       };
     default:
       return state;

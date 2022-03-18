@@ -18,7 +18,8 @@ import {
   actionRemoteStream,
   actionCallEnded,
   actionVideoOther,
-  actionStartCount
+  actionStartCount,
+  actionModalReceivingGroup
 } from '../redux/actions/callAction';
 import {
   actionUserAddFriendRequest,
@@ -31,7 +32,7 @@ import store from '../redux/store';
 
 let socket;
 export const connectWithSocket = () => {
-  socket = io('https://7397-222-253-52-189.ngrok.io/', {
+  socket = io('https://186f-14-161-70-171.ngrok.io/', {
     forceNew: true
   });
   socket.on('broadcast', (data) => {
@@ -91,6 +92,11 @@ export const connectWithSocket = () => {
   socket.on('stopInput', (data) => {
     console.log('stop input');
     store.dispatch(actionChatInputting(''));
+  });
+
+  socket.on('callGroup', (data) => {
+    console.log('group', data);
+    store.dispatch(actionModalReceivingGroup(true));
   });
 };
 export const registerUser = (data) => {
@@ -161,6 +167,9 @@ export const callUser = (id, username) => {
     console.log('callaccepted', signal);
     peer.signal(signal);
   });
+};
+export const callGroup = (socketIds, group) => {
+  socket.emit('callGroup', { socketIds, group });
 };
 export const videoOther = (data) => {
   socket.emit('videoOther', data);

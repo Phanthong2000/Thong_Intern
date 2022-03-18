@@ -12,7 +12,10 @@ import {
   VIDEO,
   AUDIO_OTHER,
   VIDEO_OTHER,
-  START_COUNT
+  START_COUNT,
+  GROUP,
+  LOCAL_STREAM_GROUP,
+  MODAL_RECEIVING_GROUP
 } from './types';
 
 export const actionMe = (data) => ({
@@ -69,5 +72,18 @@ export const actionVideoOther = (data) => ({
 });
 export const actionStartCount = (data) => ({
   type: START_COUNT,
+  payload: data
+});
+
+export const actionGroup = (data) => ({
+  type: GROUP,
+  payload: data
+});
+export const actionLocalStreamGroup = (data) => ({
+  type: LOCAL_STREAM_GROUP,
+  payload: data
+});
+export const actionModalReceivingGroup = (data) => ({
+  type: MODAL_RECEIVING_GROUP,
   payload: data
 });

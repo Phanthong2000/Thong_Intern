@@ -14,6 +14,7 @@ import ChatBox from '../components/home/main/ChatBox';
 import BoxNewChatbox from '../components/home/main/BoxNewChatbox';
 import ModalReceivingVideoCall from '../components/video/ModalReceivingVideoCall';
 import UtilRedux from '../utils/UtilRedux';
+import ModalReceivingGroup from '../components/room/ModalReceivingGroup';
 
 const RootStyle = styled(Box)(({ theme }) => ({
   overflow: 'hidden',
@@ -35,6 +36,7 @@ function HomeLayout() {
   const chatboxHome = useSelector((state) => state.chat.chatboxHome);
   const newChatbox = useSelector((state) => state.chat.newChatbox);
   const modalReceiving = useSelector((state) => state.call.modalReceiving);
+  const modalReceivingGroup = useSelector((state) => state.call.modalReceivingGroup);
   const getUser = async (userId) => {
     const data = await getDoc(doc(db, 'users', userId));
     setUser({
@@ -93,6 +95,7 @@ function HomeLayout() {
         {newChatbox && <BoxNewChatbox user={user} />}
         <Toaster />
         {modalReceiving && <ModalReceivingVideoCall user={user} />}
+        {modalReceivingGroup && <ModalReceivingGroup />}
         <Outlet />
       </MainStyle>
     </RootStyle>

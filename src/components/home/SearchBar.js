@@ -24,12 +24,12 @@ function SearchBar() {
   return (
     <RootStyle onClick={() => search()}>
       <Responsive width="smUp">
-        <IconButton size="large" aria-label="show 4 new mails" color="inherit">
+        <IconButton aria-label="show 4 new mails" color="inherit">
           <Search />
         </IconButton>
       </Responsive>
       <Responsive width="smDown">
-        <Search sx={{ marginRight: '20px' }} />
+        <Search sx={{ marginRight: '10px' }} />
         <Typography>Search...</Typography>
       </Responsive>
     </RootStyle>

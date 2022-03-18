@@ -3,7 +3,12 @@ import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { Avatar, Box, Card, IconButton, styled, Typography } from '@mui/material';
 import { Icon } from '@iconify/react';
+import { useNavigate } from 'react-router-dom';
+import { addDoc, collection } from 'firebase/firestore';
 import { actionChatOptionsChatbox } from '../../redux/actions/chatAction';
+import { db } from '../../firebase-config';
+import { actionGroup } from '../../redux/actions/callAction';
+import { callGroup } from '../../utils/wssConnection';
 
 const RootStyle = styled(Card)(({ theme }) => ({
   padding: theme.spacing(1, 1, 1),
@@ -25,12 +30,43 @@ BoxInfoChatgroup.prototype = {
   chatbox: PropTypes.object
 };
 function BoxInfoChatgroup({ user }) {
+  const navigate = useNavigate();
+  const me = useSelector((state) => state.call.me);
   const chatbox = useSelector((state) => state.chat.chatbox);
   const optionsChatbox = useSelector((state) => state.chat.optionsChatbox);
+  const usersSocket = useSelector((state) => state.user.usersSocket);
   const dispatch = useDispatch();
   const checkQuantityMemberChatgroup = () => {
     if (chatbox.members >= 0) return `${chatbox.members.length} member`;
     return `${chatbox.members.length} members`;
+  };
+  const videoCallGroup = () => {
+    addDoc(collection(db, 'rooms'), {
+      chatgroup: chatbox,
+      members: [{ userId: user.id, socketId: me }],
+      userId: user.id
+    })
+      .then((docRef) => {
+        const socketIds = [];
+        chatbox.members.forEach((member) => {
+          const userCall = usersSocket.find((user) => user.userId === member);
+          if (userCall !== undefined && userCall.userId !== user.id) socketIds.push(userCall);
+        });
+        callGroup(socketIds, {
+          id: docRef.id,
+          chatgroup: chatbox,
+          members: [{ userId: user.id, socketId: me }]
+        });
+        dispatch(
+          actionGroup({
+            id: docRef.id,
+            chatgroup: chatbox,
+            members: [{ userId: user.id, socketId: me }]
+          })
+        );
+        navigate(`/home/room/${docRef.id}`);
+      })
+      .catch((err) => console.log(err));
   };
   return (
     <RootStyle>
@@ -49,7 +85,7 @@ function BoxInfoChatgroup({ user }) {
         <ButtonOptions>
           <Icon icon="fluent:call-48-filled" />
         </ButtonOptions>
-        <ButtonOptions>
+        <ButtonOptions onClick={videoCallGroup}>
           <Icon icon="bi:camera-video-fill" />
         </ButtonOptions>
         <ButtonOptions onClick={() => dispatch(actionChatOptionsChatbox(!optionsChatbox))}>

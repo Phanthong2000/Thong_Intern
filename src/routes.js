@@ -28,6 +28,7 @@ import CreateStory from './components/story/CreateStory';
 import ProfileSetting from './components/setting/ProfileSetting';
 import PasswordSetting from './components/setting/PasswordSetting';
 import ForgotPassword from './pages/ForgotPassword';
+import Room from './pages/Room';
 
 function Router() {
   const navigate = useNavigate();
@@ -86,6 +87,7 @@ function Router() {
         },
         { path: 'other/:id', element: <Other user={user} /> },
         { path: 'profile/:id', element: <Profile user={user} /> },
+        { path: 'room/:id', element: <Room user={user} /> },
         { path: 'photo/:id', element: <Photo user={user} /> },
         {
           path: 'search',
