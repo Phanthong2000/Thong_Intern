@@ -50,6 +50,11 @@ export const CALL = 'CALL';
 export const REMOTE_STREAM = 'REMOTE_STREAM';
 export const CONNECTION = 'CONNECTION';
 export const MODAL_RECEIVING = 'MODAL_RECEIVING';
+export const VIDEO = 'VIDEO';
+export const AUDIO = 'AUDIO';
+export const VIDEO_OTHER = 'VIDEO_OTHER';
+export const AUDIO_OTHER = 'AUDIO_OTHER';
+export const START_COUNT = 'START_COUNT';
 
 export const ACTION_POST_GET_ALL = 'ACTION_POST_GET_ALL';
 export const ACTION_POST_GET_FAIL = 'ACTION_POST_GET_FAIL';

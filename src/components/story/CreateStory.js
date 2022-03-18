@@ -72,7 +72,7 @@ const ButtonTypeText = styled(Box)(() => ({
   justifyContent: 'center',
   cursor: 'pointer',
   alignItems: 'center',
-  backgroundImage: `url(https://scontent.fsgn13-2.fna.fbcdn.net/v/t39.16376-6/40394107_464787127359918_796534073391579136_n.jpg?_nc_cat=1&ccb=1-5&_nc_sid=a86453&_nc_ohc=h03lMYTw4YYAX_UOOJd&_nc_oc=AQmlonSk9mPTronF9ibqfL7S443QUv_RrvKB9Jjb3AlTTWLOZek2QEDBsnoNgZ1dCu8&_nc_ht=scontent.fsgn13-2.fna&oh=00_AT-tgFCAjUU8CYuirP-jV2J9l0_X39Dhxv1MAPuU4Dir_g&oe=621EF4A8)`
+  backgroundImage: `url(https://scontent.fsgn13-1.fna.fbcdn.net/v/t39.16376-6/58262940_285817512345690_8722691640277336064_n.jpg?_nc_cat=1&ccb=1-5&_nc_sid=a86453&_nc_ohc=AWUjOHVcFDYAX8GKy-B&tn=tjbgIDKHVy1tLPy5&_nc_ht=scontent.fsgn13-1.fna&oh=00_AT-TtVwf5I0_iTx8aDIKKmeD3YVa7DgNV3MeR_NfGnkq0A&oe=6238110B)`
 }));
 CreateStory.prototype = {
   user: PropTypes.object

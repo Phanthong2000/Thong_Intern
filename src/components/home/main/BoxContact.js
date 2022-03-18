@@ -12,7 +12,7 @@ import Chatgroup from './Chatgroup';
 const heightScreen = window.innerHeight;
 const RootStyle = styled(Stack)(({ theme }) => ({
   width: '400px',
-  height: `${heightScreen - 80.4}px`,
+  // height: `${heightScreen - 80.4}px`,
   marginTop: '20px',
   marginRight: '10px',
   [theme.breakpoints.down('md')]: {
@@ -64,14 +64,6 @@ function BoxContact({ user }) {
         <Scrollbar alwaysShowTracks>
           {usersSocket.map((item, index) => (
             <Contact user={user} key={index} otherId={item.userId} />
-          ))}
-          <Typography
-            sx={{ color: 'gray', fontFamily: 'sans-serif', fontSize: '16px', fontWeight: 'bold' }}
-          >
-            Group conversations
-          </Typography>
-          {chatgroups.map((item, index) => (
-            <Chatgroup key={index} chatgroup={item} />
           ))}
         </Scrollbar>
       </BoxContacts>

@@ -12,6 +12,8 @@ import Responsive from '../responsive/Responsive';
 import { db } from '../firebase-config';
 import ChatBox from '../components/home/main/ChatBox';
 import BoxNewChatbox from '../components/home/main/BoxNewChatbox';
+import ModalReceivingVideoCall from '../components/video/ModalReceivingVideoCall';
+import UtilRedux from '../utils/UtilRedux';
 
 const RootStyle = styled(Box)(({ theme }) => ({
   overflow: 'hidden',
@@ -32,6 +34,7 @@ function HomeLayout() {
   const [user, setUser] = useState({});
   const chatboxHome = useSelector((state) => state.chat.chatboxHome);
   const newChatbox = useSelector((state) => state.chat.newChatbox);
+  const modalReceiving = useSelector((state) => state.call.modalReceiving);
   const getUser = async (userId) => {
     const data = await getDoc(doc(db, 'users', userId));
     setUser({
@@ -73,6 +76,7 @@ function HomeLayout() {
   // });
   return (
     <RootStyle>
+      <UtilRedux user={user} />
       <Responsive width="mdDown">
         <HomeSidebar user={user} />
       </Responsive>
@@ -88,6 +92,7 @@ function HomeLayout() {
         )}
         {newChatbox && <BoxNewChatbox user={user} />}
         <Toaster />
+        {modalReceiving && <ModalReceivingVideoCall user={user} />}
         <Outlet />
       </MainStyle>
     </RootStyle>

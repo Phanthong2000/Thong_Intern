@@ -1,5 +1,6 @@
 import Peer from 'simple-peer';
 import { io } from 'socket.io-client';
+import { useNavigate } from 'react-router-dom';
 import {
   actionChatAddMessage,
   actionGetAllChatSort,
@@ -15,7 +16,9 @@ import {
   actionConnection,
   actionMe,
   actionRemoteStream,
-  actionCallEnded
+  actionCallEnded,
+  actionVideoOther,
+  actionStartCount
 } from '../redux/actions/callAction';
 import {
   actionUserAddFriendRequest,
@@ -28,7 +31,9 @@ import store from '../redux/store';
 
 let socket;
 export const connectWithSocket = () => {
-  socket = io('http://10.0.12.148:3000/');
+  socket = io('https://7397-222-253-52-189.ngrok.io/', {
+    forceNew: true
+  });
   socket.on('broadcast', (data) => {
     store.dispatch(actionUserBroadcastSocket(data));
   });
@@ -40,7 +45,20 @@ export const connectWithSocket = () => {
   });
   socket.on('endCall', (data) => {
     console.log('endcall');
-    // store.dispatch(actionCallEnded(true));
+    const localStream = store.getState().call.stream;
+    localStream.getTracks().forEach((track) => {
+      track.stop();
+    });
+    store.dispatch(actionCallEnded(true));
+  });
+  socket.on('videoOther', (data) => {
+    store.dispatch(actionVideoOther(data));
+  });
+  socket.on('missCall', (data) => {
+    store.dispatch(actionModalReceiving(false));
+  });
+  socket.on('startCount', (data) => {
+    store.dispatch(actionStartCount(data));
   });
   socket.on('sendMessage', (data) => {
     console.log('receiver message', data);
@@ -98,9 +116,8 @@ export const answerCall = () => {
 
   store.dispatch(actionConnection(peer));
 };
-export const callUser = (id) => {
+export const callUser = (id, username) => {
   const localStream = store.getState().call.stream;
-  console.log('call user', localStream);
   const peer = new Peer({
     initiator: true,
     trickle: false,
@@ -128,13 +145,15 @@ export const callUser = (id) => {
       userToCall: id,
       signalData: data,
       from: me,
-      name
+      name: username
     });
   });
 
   peer.on('stream', (currentStream) => {
     console.log('remote call', currentStream);
+    socket.emit('startCount', { socketId: id, status: true });
     store.dispatch(actionRemoteStream(currentStream));
+    store.dispatch(actionStartCount(true));
   });
 
   socket.on('callAccepted', (signal) => {
@@ -143,8 +162,14 @@ export const callUser = (id) => {
     peer.signal(signal);
   });
 };
+export const videoOther = (data) => {
+  socket.emit('videoOther', data);
+};
 export const endCall = (id) => {
-  socket.emit('endCall', { to: id });
+  socket.emit('endCall', { socketId: id });
+};
+export const missCall = (id) => {
+  socket.emit('missCall', { socketId: id });
 };
 export const sendMessageSocket = (data) => {
   socket.emit('sendMessage', data);

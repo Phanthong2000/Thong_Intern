@@ -4152,6 +4152,11 @@ clean-css@^4.2.3:
   dependencies:
     source-map "~0.6.0"
 
+clean-react-props@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/clean-react-props/-/clean-react-props-0.4.0.tgz#68642be5538a5fece380fed704a560de2db67954"
+  integrity sha512-8KKm9sC/cUax4SBWwSY5a3W44aJKOUQg39Bo3fRErp3/mF8D1kMN9xc1lvQGmvkK/AmpH2Xh/UYVZOJMcxoy9w==
+
 clean-stack@^2.0.0:
   version "2.2.0"
   resolved "https://registry.npmjs.org/clean-stack/-/clean-stack-2.2.0.tgz"
@@ -10045,7 +10050,7 @@ prompts@^2.0.1:
     kleur "^3.0.3"
     sisteransi "^1.0.5"
 
-prop-types@^15.5.8:
+prop-types@^15.5.10, prop-types@^15.5.8:
   version "15.8.1"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.8.1.tgz#67d87bf1a694f48435cf332c24af10214a3140b5"
   integrity sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==
@@ -10492,6 +10497,22 @@ react-show-more@^2.0.0:
   integrity sha512-PlB/Ni+w0WVFmvQIqF6x6AElix51O73LbHOIzvPLyWXK8fwEz7+ES+vw7+EC/Taw0NZ3LGkwaHslpMiUh+1bQw==
   dependencies:
     react-truncate "^2.3.0"
+
+react-timecode@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/react-timecode/-/react-timecode-1.2.0.tgz#d48431f79892f930ce4169db1fc072f63a41eafe"
+  integrity sha512-nm8KCipv0HItTLYFc4VkPFgTbETDRCRnVN4NDAggQfEouW3XDduXcewJsCsdck/jv309z25EdxVPyGTtirIk2w==
+  dependencies:
+    clean-react-props "^0.4.0"
+    prop-types "^15.7.2"
+
+react-timer-wrapper@^0.4.1:
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/react-timer-wrapper/-/react-timer-wrapper-0.4.1.tgz#021a068797903b023d503a7f6f233e6b23a9acd5"
+  integrity sha512-8hG5Q02+73xlLzPneYnspZfhiQ7+9mJyoEdA9khkYuen6sWHMfpraOBGGAgRtTqHu/tp3dIwsr8Yfku2iFjKYw==
+  dependencies:
+    clean-react-props "^0.4.0"
+    prop-types "^15.5.10"
 
 react-transition-group@^4.4.2:
   version "4.4.2"

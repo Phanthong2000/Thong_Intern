@@ -7,7 +7,12 @@ import {
   NAME,
   REMOTE_STREAM,
   CONNECTION,
-  MODAL_RECEIVING
+  MODAL_RECEIVING,
+  AUDIO,
+  VIDEO,
+  AUDIO_OTHER,
+  VIDEO_OTHER,
+  START_COUNT
 } from './types';
 
 export const actionMe = (data) => ({
@@ -44,5 +49,25 @@ export const actionConnection = (data) => ({
 });
 export const actionModalReceiving = (data) => ({
   type: MODAL_RECEIVING,
+  payload: data
+});
+export const actionAudio = (data) => ({
+  type: AUDIO,
+  payload: data
+});
+export const actionVideo = (data) => ({
+  type: VIDEO,
+  payload: data
+});
+export const actionAudioOther = (data) => ({
+  type: AUDIO_OTHER,
+  payload: data
+});
+export const actionVideoOther = (data) => ({
+  type: VIDEO_OTHER,
+  payload: data
+});
+export const actionStartCount = (data) => ({
+  type: START_COUNT,
   payload: data
 });

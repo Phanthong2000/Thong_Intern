@@ -433,6 +433,106 @@ function Message({ user, message, index }) {
     }));
     return <ContentSticker src={message.contentFile} />;
   };
+  const BoxContentMessageCall = () => {
+    const ButtonIconCamera = styled(Box)(({ theme }) => ({
+      width: '35px',
+      height: '35px',
+      background: theme.palette.background,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: '35px',
+      marginRight: '10px'
+    }));
+    const IconCamera = styled(Icon)(({ theme }) => ({
+      width: '25px',
+      height: '25px',
+      color: '#000'
+    }));
+    function secondsToTime(e) {
+      const h = Math.floor(e / 3600)
+        .toString()
+        .padStart(2, '0');
+      const m = Math.floor((e % 3600) / 60)
+        .toString()
+        .padStart(2, '0');
+      const s = Math.floor(e % 60)
+        .toString()
+        .padStart(2, '0');
+
+      return `${h}:${m}:${s}`;
+    }
+    if (message.status === 'fail')
+      return (
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <ButtonIconCamera>
+            <IconCamera icon="eva:video-off-fill" />
+          </ButtonIconCamera>
+          <Typography>{message.content}</Typography>
+        </Box>
+      );
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <ButtonIconCamera>
+          <IconCamera icon="carbon:phone-outgoing-filled" />
+        </ButtonIconCamera>
+        <Box>
+          <Typography>{message.content}</Typography>
+          <Typography>{secondsToTime(message.time / 1000)}</Typography>
+        </Box>
+      </Box>
+    );
+  };
+  const BoxContentMessageCallOther = () => {
+    const ButtonIconCamera = styled(Box)(({ theme }) => ({
+      width: '35px',
+      height: '35px',
+      background: theme.palette.background,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: '35px',
+      marginRight: '10px'
+    }));
+    const IconCamera = styled(Icon)(({ theme }) => ({
+      width: '25px',
+      height: '25px',
+      color: '#000'
+    }));
+    function secondsToTime(e) {
+      const h = Math.floor(e / 3600)
+        .toString()
+        .padStart(2, '0');
+      const m = Math.floor((e % 3600) / 60)
+        .toString()
+        .padStart(2, '0');
+      const s = Math.floor(e % 60)
+        .toString()
+        .padStart(2, '0');
+
+      return `${h}:${m}:${s}`;
+    }
+    if (message.status === 'fail')
+      return (
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <ButtonIconCamera sx={{ background: 'red' }}>
+            <IconCamera style={{ color: '#fff' }} icon="eva:video-off-fill" />
+          </ButtonIconCamera>
+          <Typography>{message.content}</Typography>
+        </Box>
+      );
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <ButtonIconCamera>
+          <IconCamera icon="carbon:phone-incoming-filled" />
+        </ButtonIconCamera>
+        <Box>
+          <Typography>{message.content}</Typography>
+          <Typography>{secondsToTime(message.time / 1000)}</Typography>
+        </Box>
+      </Box>
+    );
+  };
   // if (chatbox.id !== message.chatboxId) return null;
   if (message.type === 'note')
     return (
@@ -604,7 +704,12 @@ function Message({ user, message, index }) {
                 }}
               >
                 {message.type === 'reply' && <Reply user={user} message={message} />}
-                <Typography ref={contentRef}>{message.content}</Typography>
+                {message.type === 'call' ? (
+                  <BoxContentMessageCall />
+                ) : (
+                  <Typography ref={contentRef}>{message.content}</Typography>
+                )}
+
                 {message.type === 'image' && <BoxContentImageMessage />}
                 {message.type === 'gif' && <BoxContentGifMessage />}
                 {message.type === 'sticker' && <BoxContentStickerMessage />}
@@ -644,7 +749,11 @@ function Message({ user, message, index }) {
           >
             <BoxContentMessage onMouseEnter={mouseEnterMessage} onMouseLeave={mouseLeaveMessage}>
               {message.type === 'reply' && <ReplyOther user={user} message={message} />}
-              <Typography>{message.content}</Typography>
+              {message.type === 'call' ? (
+                <BoxContentMessageCallOther />
+              ) : (
+                <Typography>{message.content}</Typography>
+              )}
               {message.type === 'image' && <BoxContentImageMessage />}
               {message.type === 'gif' && <BoxContentGifMessage />}
               {message.type === 'sticker' && <BoxContentStickerMessage />}

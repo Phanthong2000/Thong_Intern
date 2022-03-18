@@ -13,6 +13,8 @@ function LocalVideo() {
   const myVideo = useRef();
   const stream = useSelector((state) => state.call.stream);
   const endCall = useSelector((state) => state.call.endCall);
+  const audio = useSelector((state) => state.call.audio);
+  const video = useSelector((state) => state.call.video);
   useEffect(() => {
     if (stream) {
       const localVideo = myVideo.current;
@@ -31,7 +33,7 @@ function LocalVideo() {
   }, [endCall]);
   return (
     <CardVideo elevation={3} sx={{ background: '#fff' }}>
-      <Video autoPlay ref={myVideo} />
+      <Video hidden={!video} autoPlay ref={myVideo} />
     </CardVideo>
   );
 }

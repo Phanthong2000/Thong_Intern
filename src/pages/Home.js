@@ -1,13 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Avatar, Box, Grid, IconButton, styled, TextField } from '@mui/material';
+import { Avatar, Box, Grid, IconButton, Stack, styled, TextField, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
-import { io } from 'socket.io-client';
 import { Icon } from '@iconify/react';
-import { getToken } from 'firebase/messaging';
-import { db } from '../firebase-config';
 import { actionTestSearch } from '../redux/actions/userAction';
 import BoxPost from '../components/home/main/BoxPost';
 import BoxContact from '../components/home/main/BoxContact';
@@ -19,11 +16,13 @@ import {
 import ModalReceivingVideoCall from '../components/video/ModalReceivingVideoCall';
 import ChatBox from '../components/home/main/ChatBox';
 import Snack from '../components/Snack';
+import Chatgroup from '../components/home/main/Chatgroup';
 
+const heightScreen = window.innerHeight - 1;
 const RootStyle = styled(Box)(({ theme }) => ({
   width: '100%',
   marginTop: '60px',
-  height: '100%',
+  minHeight: `${heightScreen}px`,
   background: theme.palette.background,
   display: 'flex'
 }));
@@ -40,6 +39,7 @@ function Home({ user }) {
   const usersSocket = useSelector((state) => state.user.usersSocket);
   const newChatbox = useSelector((state) => state.chat.newChatbox);
   const searchAllPeople = useSelector((state) => state.user.searchAllPeople);
+  const chatgroups = useSelector((state) => state.chat.chatgroups);
   useEffect(() => {
     if (testSearch.length > 0) {
       navigate(`/home/other/${testSearch}`);
@@ -78,10 +78,22 @@ function Home({ user }) {
   };
   return (
     <RootStyle>
-      {modalReceiving && <ModalReceivingVideoCall />}
+      {/* {modalReceiving && <ModalReceivingVideoCall user={user} />} */}
       <div>{usersSocket.length}</div>
       <BoxPost user={user} />
-      <BoxContact user={user} />
+      <Stack>
+        <BoxContact user={user} />
+        <Box>
+          <Typography
+            sx={{ color: 'gray', fontFamily: 'sans-serif', fontSize: '16px', fontWeight: 'bold' }}
+          >
+            Group conversations
+          </Typography>
+          {chatgroups.map((item, index) => (
+            <Chatgroup key={index} chatgroup={item} />
+          ))}
+        </Box>
+      </Stack>
       {!chatboxHome.status && chatboxHome.user.id !== undefined && (
         <IconButton sx={{ position: 'fixed', right: 15, bottom: 130 }}>
           <Avatar

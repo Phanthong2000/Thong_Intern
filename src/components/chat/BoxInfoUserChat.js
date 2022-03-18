@@ -43,7 +43,10 @@ function BoxInfoUserChat({ user }) {
   const optionsChatbox = useSelector((state) => state.chat.optionsChatbox);
   const dispatch = useDispatch();
   const videoCall = () => {
-    navigate('/home/video-call');
+    const userCall = usersSocket.find((user) => user.userId === chatbox.user.id);
+    if (userCall === undefined) {
+      console.log(userCall);
+    } else navigate('/home/video-call');
   };
   const chooseAvatarUserChat = () => {
     navigate(`/home/other/${chatbox.user.id}`);

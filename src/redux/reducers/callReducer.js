@@ -7,19 +7,29 @@ import {
   NAME,
   REMOTE_STREAM,
   CONNECTION,
-  MODAL_RECEIVING
+  MODAL_RECEIVING,
+  VIDEO,
+  AUDIO,
+  VIDEO_OTHER,
+  AUDIO_OTHER,
+  START_COUNT
 } from '../actions/types';
 
 const defaultState = {
   me: '',
-  name: 'Phan Thong',
+  name: '',
   call: {},
   stream: null,
   remoteStream: null,
   callAccepted: false,
   callEnded: false,
   connection: null,
-  modalReceiving: false
+  modalReceiving: false,
+  audio: true,
+  video: true,
+  audioOther: true,
+  videoOther: true,
+  startCount: false
 };
 
 const callReducer = (state = defaultState, action) => {
@@ -70,6 +80,31 @@ const callReducer = (state = defaultState, action) => {
       return {
         ...state,
         modalReceiving: action.payload
+      };
+    case AUDIO:
+      return {
+        ...state,
+        audio: action.payload
+      };
+    case VIDEO:
+      return {
+        ...state,
+        video: action.payload
+      };
+    case AUDIO_OTHER:
+      return {
+        ...state,
+        audioOther: action.payload
+      };
+    case VIDEO_OTHER:
+      return {
+        ...state,
+        videoOther: action.payload
+      };
+    case START_COUNT:
+      return {
+        ...state,
+        startCount: action.payload
       };
     default:
       return state;

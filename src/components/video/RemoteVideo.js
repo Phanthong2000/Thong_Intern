@@ -15,6 +15,8 @@ function RemoteVideo() {
   const remoteStream = useSelector((state) => state.call.remoteStream);
   const endCall = useSelector((state) => state.call.endCall);
   const navigate = useNavigate();
+  const videoOther = useSelector((state) => state.call.videoOther);
+  const audioOther = useSelector((state) => state.call.audioOther);
   useEffect(() => {
     if (remoteStream) {
       const remoteVideo = remoteVideoRef.current;
@@ -29,13 +31,12 @@ function RemoteVideo() {
   useEffect(() => {
     if (endCall) {
       remoteVideoRef.current.srcObject = null;
-      console.log('remote');
       navigate('/home/app');
     }
   }, [endCall]);
   return (
     <CardVideo elevation={3} sx={{ background: '#fff' }}>
-      <Video autoPlay ref={remoteVideoRef} />
+      <Video hidden={!videoOther} autoPlay ref={remoteVideoRef} />
     </CardVideo>
   );
 }

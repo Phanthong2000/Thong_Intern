@@ -33,7 +33,7 @@ function Tag({ userId }) {
   if (userTag.username === undefined) return null;
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', marginLeft: '3px' }}>
-      <Username> {userTag.username}</Username>;
+      <Username> {userTag.username}</Username>
     </Box>
   );
 }

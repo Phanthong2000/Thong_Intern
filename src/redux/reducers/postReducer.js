@@ -23,7 +23,7 @@ const defaultState = {
   snackbar: {
     status: false,
     content: '',
-    type: ''
+    type: 'success'
   },
   isOpenCreatePost: false,
   isOpenTagPeople: false,
