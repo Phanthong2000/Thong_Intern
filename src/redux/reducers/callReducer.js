@@ -15,7 +15,17 @@ import {
   START_COUNT,
   GROUP,
   LOCAL_STREAM_GROUP,
-  MODAL_RECEIVING_GROUP
+  MODAL_RECEIVING_GROUP,
+  REMOTE_STREAM_GROUP,
+  CALL_GROUP,
+  CALL_ACCEPTED_GROUP,
+  SOCKETIDS_GROUP,
+  ADD_REMOTE_STREAM_GROUP,
+  ADD_SIGNAL_GROUP,
+  SIGNAL_GROUP,
+  ALL_MEMBERS_GROUP,
+  PARTICIPANTS,
+  CALL_ENDED_GROUP
 } from '../actions/types';
 
 const defaultState = {
@@ -35,7 +45,15 @@ const defaultState = {
   startCount: false,
   group: {},
   localStreamGroup: null,
-  modalReceivingGroup: false
+  modalReceivingGroup: false,
+  remoteStreamGroup: [],
+  callGroup: {},
+  callAcceptedGroup: false,
+  socketIds: [],
+  signalGroup: [],
+  allMembers: [],
+  participants: {},
+  callEndedGroup: false
 };
 
 const callReducer = (state = defaultState, action) => {
@@ -126,6 +144,58 @@ const callReducer = (state = defaultState, action) => {
       return {
         ...state,
         modalReceivingGroup: action.payload
+      };
+    case REMOTE_STREAM_GROUP:
+      return {
+        ...state,
+        remoteStreamGroup: action.payload
+      };
+    case CALL_GROUP:
+      return {
+        ...state,
+        callGroup: action.payload
+      };
+    case CALL_ACCEPTED_GROUP:
+      return {
+        ...state,
+        callAcceptedGroup: action.payload
+      };
+    case SOCKETIDS_GROUP:
+      return {
+        ...state,
+        socketIds: action.payload
+      };
+
+    case ADD_REMOTE_STREAM_GROUP:
+      console.log(action.payload);
+      return {
+        ...state,
+        remoteStreamGroup: [...state.remoteStreamGroup, action.payload]
+      };
+    case SIGNAL_GROUP:
+      return {
+        ...state,
+        signalGroup: action.payload
+      };
+    case ADD_SIGNAL_GROUP:
+      return {
+        ...state,
+        signalGroup: [...state.signalGroup, action.payload]
+      };
+    case ALL_MEMBERS_GROUP:
+      return {
+        ...state,
+        allMembers: action.payload
+      };
+    case PARTICIPANTS:
+      return {
+        ...state,
+        participants: action.payload
+      };
+    case CALL_ENDED_GROUP:
+      return {
+        ...state,
+        callEndedGroup: action.payload
       };
     default:
       return state;

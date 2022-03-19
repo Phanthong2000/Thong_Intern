@@ -2,8 +2,16 @@ import { keyframes } from '@emotion/react';
 import { Icon } from '@iconify/react';
 import { Box, Card, IconButton, Modal, Stack, styled, Typography } from '@mui/material';
 import React from 'react';
+import PropTypes from 'prop-types';
+import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { actionModalReceivingGroup } from '../../redux/actions/callAction';
+import { joinGroup } from '../../utils/wssConnection';
+import {
+  actionGroup,
+  actionLocalStreamGroup,
+  actionModalReceivingGroup,
+  actionParticipants
+} from '../../redux/actions/callAction';
 
 const anim = keyframes`
   0% {
@@ -31,9 +39,43 @@ const RootStyle = styled(Card)(({ theme }) => ({
   padding: theme.spacing(2, 2, 2),
   display: 'block'
 }));
-function ModalReceivingGroup() {
+ModalReceivingGroup.prototype = {
+  user: PropTypes.object
+};
+function ModalReceivingGroup({ user }) {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const modalReceivingGroup = useSelector((state) => state.call.modalReceivingGroup);
+  const group = useSelector((state) => state.call.group);
+  const me = useSelector((state) => state.call.me);
+  const callGroup = useSelector((state) => state.call.callGroup);
+  const participants = useSelector((state) => state.call.participants);
+  const answerGroup = () => {
+    navigator.mediaDevices
+      .getUserMedia({ video: true, audio: true })
+      .then((currentStream) => {
+        dispatch(actionLocalStreamGroup(currentStream));
+      })
+      .then(() => {
+        dispatch(actionModalReceivingGroup(false));
+        const memberNew = [...group.members, { userId: user.id, socketId: me }];
+        dispatch(
+          actionParticipants({
+            ...participants,
+            members: memberNew
+          })
+        );
+        dispatch(
+          actionGroup({
+            ...group,
+            members: memberNew
+          })
+        );
+        joinGroup(user.id);
+        // answerCallGroup();
+        navigate(`/home/room/${group.id}`);
+      });
+  };
   return (
     <Modal open={modalReceivingGroup} onClose={() => dispatch(actionModalReceivingGroup(false))}>
       <RootStyle>
@@ -68,6 +110,7 @@ function ModalReceivingGroup() {
             sx={{ width: '100%', display: 'flex', justifyContent: 'space-around' }}
           >
             <IconButton
+              onClick={answerGroup}
               sx={{ color: 'lightgreen', width: '50px', height: '50px', background: '#fff' }}
             >
               <Icon icon="icomoon-free:phone" />

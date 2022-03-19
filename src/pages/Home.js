@@ -40,6 +40,8 @@ function Home({ user }) {
   const newChatbox = useSelector((state) => state.chat.newChatbox);
   const searchAllPeople = useSelector((state) => state.user.searchAllPeople);
   const chatgroups = useSelector((state) => state.chat.chatgroups);
+  const signalGroup = useSelector((state) => state.call.signalGroup);
+  const remoteStreamGroup = useSelector((state) => state.call.remoteStreamGroup);
   useEffect(() => {
     if (testSearch.length > 0) {
       navigate(`/home/other/${testSearch}`);
@@ -80,6 +82,8 @@ function Home({ user }) {
     <RootStyle>
       {/* {modalReceiving && <ModalReceivingVideoCall user={user} />} */}
       <div>{usersSocket.length}</div>
+      <div>peer: {signalGroup.length}</div>
+      <div>remote: {remoteStreamGroup.length}</div>
       <BoxPost user={user} />
       <Stack>
         <BoxContact user={user} />

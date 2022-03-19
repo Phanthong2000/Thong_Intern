@@ -95,7 +95,7 @@ function HomeLayout() {
         {newChatbox && <BoxNewChatbox user={user} />}
         <Toaster />
         {modalReceiving && <ModalReceivingVideoCall user={user} />}
-        {modalReceivingGroup && <ModalReceivingGroup />}
+        {modalReceivingGroup && <ModalReceivingGroup user={user} />}
         <Outlet />
       </MainStyle>
     </RootStyle>

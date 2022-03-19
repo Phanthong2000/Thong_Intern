@@ -1,6 +1,7 @@
 import Peer from 'simple-peer';
 import { io } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import {
   actionChatAddMessage,
   actionGetAllChatSort,
@@ -19,7 +20,15 @@ import {
   actionCallEnded,
   actionVideoOther,
   actionStartCount,
-  actionModalReceivingGroup
+  actionModalReceivingGroup,
+  actionRemoteStreamGroup,
+  actionCallAcceptedGroup,
+  actionCallGroup,
+  actionGroup,
+  actionAddRemoteStreamGroup,
+  actionAddSignalGroup,
+  actionParticipants,
+  actionCallEndedGroup
 } from '../redux/actions/callAction';
 import {
   actionUserAddFriendRequest,
@@ -32,7 +41,7 @@ import store from '../redux/store';
 
 let socket;
 export const connectWithSocket = () => {
-  socket = io('https://186f-14-161-70-171.ngrok.io/', {
+  socket = io('https://35bf-14-161-70-171.ngrok.io/', {
     forceNew: true
   });
   socket.on('broadcast', (data) => {
@@ -96,7 +105,24 @@ export const connectWithSocket = () => {
 
   socket.on('callGroup', (data) => {
     console.log('group', data);
+    store.dispatch(actionCallGroup(data));
+    store.dispatch(actionGroup(data.group));
     store.dispatch(actionModalReceivingGroup(true));
+    console.log('allmembers redux', data.allMembers);
+    store.dispatch(actionAddSignalGroup(data.signalData));
+  });
+  socket.on('joinGroup', ({ group, signal }) => {
+    store.dispatch(actionAddSignalGroup(signal));
+    store.dispatch(actionGroup(group));
+  });
+  socket.on('participants', (data) => {
+    console.log('participants', data);
+    store.dispatch(actionParticipants(data));
+  });
+  socket.on('endCallGroup', (data) => {
+    console.log('end call group', data);
+    store.dispatch(actionCallEndedGroup(true));
+    store.dispatch(actionModalReceivingGroup(false));
   });
 };
 export const registerUser = (data) => {
@@ -168,14 +194,152 @@ export const callUser = (id, username) => {
     peer.signal(signal);
   });
 };
+// export const answerCallGroup = () => {
+//   store.dispatch(actionCallAcceptedGroup(true));
+//   const { localStreamGroup } = store.getState().call;
+//   console.log('answer local stream', localStreamGroup);
+//   const { callGroup } = store.getState().call;
+//   const { group } = store.getState().call;
+//   const peer = new Peer({ initiator: false, trickle: false, stream: localStreamGroup });
+
+//   peer.on('signal', (data) => {
+//     console.log('1');
+//     console.log('signal anwer group', { signal: data, to: callGroup.from, group });
+//     socket.emit('answerCallGroup', { signal: data, to: callGroup.from, group });
+//   });
+//   peer.on('stream', (currentStream) => {
+//     console.log('remote answer', currentStream);
+//     store.dispatch(actionAddRemoteStreamGroup(currentStream));
+//   });
+//   console.log('2');
+//   peer.signal(callGroup.signalData);
+// };
 export const callGroup = (socketIds, group) => {
-  socket.emit('callGroup', { socketIds, group });
+  const { localStreamGroup } = store.getState().call;
+  const { me } = store.getState().call;
+  const { allMembers } = store.getState().call;
+  const { participants } = store.getState().call;
+  const peer = new Peer({
+    initiator: true,
+    trickle: false,
+    config: {
+      iceServers: [
+        {
+          urls: 'stun:numb.viagenie.ca',
+          username: 'sultan1640@gmail.com',
+          credential: '98376683'
+        },
+        {
+          urls: 'turn:numb.viagenie.ca',
+          username: 'sultan1640@gmail.com',
+          credential: '98376683'
+        }
+      ]
+    },
+    stream: localStreamGroup
+  });
+  peer.on('signal', (data) => {
+    socket.emit('callGroup', {
+      socketIds,
+      signalData: data,
+      group,
+      from: me,
+      allMembers
+    });
+    socket.emit('participants', participants);
+  });
+  peer.on('stream', (currentStream) => {
+    console.log('remote call group', currentStream);
+    store.dispatch(actionAddRemoteStreamGroup(currentStream));
+  });
+
+  socket.on('joinGroup', (data) => {
+    store.dispatch(actionCallAcceptedGroup(true));
+    store.dispatch(actionGroup(data.group));
+    console.log('callaccepted group1', data.signal);
+    peer.signal(data.signal);
+  });
+};
+
+export const joinGroup = (id) => {
+  const { group } = store.getState().call;
+  const { localStreamGroup } = store.getState().call;
+  console.log('local stream group join group', localStreamGroup);
+  const { callGroup } = store.getState().call;
+  const { signalGroup } = store.getState().call;
+  const { participants } = store.getState().call;
+  // const config = {
+  //   iceServers: [
+  //     { url: 'stun:stun1.l.google.com:19302' },
+  //     {
+  //       url: 'turn:numb.viagenie.ca',
+  //       credential: 'muazkh',
+  //       username: 'webrtc@live.com'
+  //     }
+  //   ]
+  // };
+  // const peerConnection = new RTCPeerConnection(config);
+  // peerConnection.createOffer().then((sdp) => {
+  //   peerConnection.setRemoteDescription(sdp);
+  //   console.log(sdp);
+  const peer = new Peer({
+    initiator: false,
+    trickle: false,
+    config: {
+      iceServers: [
+        {
+          urls: 'stun:numb.viagenie.ca',
+          username: 'sultan1640@gmail.com',
+          credential: '98376683'
+        },
+        {
+          urls: 'turn:numb.viagenie.ca',
+          username: 'sultan1640@gmail.com',
+          credential: '98376683'
+        }
+      ]
+    },
+    stream: localStreamGroup
+  });
+  socket.emit('participants', participants);
+  signalGroup.forEach((signal) => {
+    peer.on('signal', (data) => {
+      console.log('id', id);
+      socket.emit('joinGroup', {
+        group,
+        signal: data,
+        allMembers: callGroup.allMembers,
+        userJoin: id
+      });
+    });
+    peer.signal(signal);
+  });
+
+  peer.on('stream', (currentStream) => {
+    console.log('remote join group', currentStream);
+    store.dispatch(actionAddRemoteStreamGroup(currentStream));
+  });
+
+  socket.on('joinGroup', (data) => {
+    store.dispatch(actionCallAcceptedGroup(true));
+    store.dispatch(actionGroup(data.group));
+    peer.signal(data.signal);
+  });
+
+  // });
 };
 export const videoOther = (data) => {
   socket.emit('videoOther', data);
 };
 export const endCall = (id) => {
   socket.emit('endCall', { socketId: id });
+};
+export const endCallGroup = () => {
+  const { allMembers } = store.getState().call;
+  socket.emit('endCallGroup', allMembers);
+};
+export const outRoomCallGroup = (participants) => {
+  socket.emit('participants', participants);
 };
 export const missCall = (id) => {
   socket.emit('missCall', { socketId: id });

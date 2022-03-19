@@ -15,7 +15,17 @@ import {
   START_COUNT,
   GROUP,
   LOCAL_STREAM_GROUP,
-  MODAL_RECEIVING_GROUP
+  REMOTE_STREAM_GROUP,
+  MODAL_RECEIVING_GROUP,
+  CALL_ACCEPTED_GROUP,
+  CALL_GROUP,
+  SOCKETIDS_GROUP,
+  ADD_REMOTE_STREAM_GROUP,
+  SIGNAL_GROUP,
+  ADD_SIGNAL_GROUP,
+  ALL_MEMBERS_GROUP,
+  PARTICIPANTS,
+  CALL_ENDED_GROUP
 } from './types';
 
 export const actionMe = (data) => ({
@@ -83,7 +93,50 @@ export const actionLocalStreamGroup = (data) => ({
   type: LOCAL_STREAM_GROUP,
   payload: data
 });
+export const actionRemoteStreamGroup = (data) => ({
+  type: REMOTE_STREAM_GROUP,
+  payload: data
+});
 export const actionModalReceivingGroup = (data) => ({
   type: MODAL_RECEIVING_GROUP,
+  payload: data
+});
+export const actionCallAcceptedGroup = (data) => ({
+  type: CALL_ACCEPTED_GROUP,
+  payload: data
+});
+export const actionCallGroup = (data) => ({
+  type: CALL_GROUP,
+  payload: data
+});
+export const actionSocketIdsGroup = (data) => ({
+  type: SOCKETIDS_GROUP,
+  payload: data
+});
+export const actionAddRemoteStreamGroup = (data) => ({
+  type: ADD_REMOTE_STREAM_GROUP,
+  payload: data
+});
+
+export const actionSignalGroup = (data) => ({
+  type: SIGNAL_GROUP,
+  payload: data
+});
+
+export const actionAddSignalGroup = (data) => ({
+  type: ADD_SIGNAL_GROUP,
+  payload: data
+});
+export const actionAllMembersGroup = (data) => ({
+  type: ALL_MEMBERS_GROUP,
+  payload: data
+});
+export const actionParticipants = (data) => ({
+  type: PARTICIPANTS,
+  payload: data
+});
+
+export const actionCallEndedGroup = (data) => ({
+  type: CALL_ENDED_GROUP,
   payload: data
 });

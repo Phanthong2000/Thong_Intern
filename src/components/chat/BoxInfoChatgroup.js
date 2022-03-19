@@ -7,7 +7,12 @@ import { useNavigate } from 'react-router-dom';
 import { addDoc, collection } from 'firebase/firestore';
 import { actionChatOptionsChatbox } from '../../redux/actions/chatAction';
 import { db } from '../../firebase-config';
-import { actionGroup } from '../../redux/actions/callAction';
+import {
+  actionAllMembersGroup,
+  actionGroup,
+  actionParticipants,
+  actionSocketIdsGroup
+} from '../../redux/actions/callAction';
 import { callGroup } from '../../utils/wssConnection';
 
 const RootStyle = styled(Card)(({ theme }) => ({
@@ -48,20 +53,28 @@ function BoxInfoChatgroup({ user }) {
     })
       .then((docRef) => {
         const socketIds = [];
+        const allMembers = [];
         chatbox.members.forEach((member) => {
           const userCall = usersSocket.find((user) => user.userId === member);
           if (userCall !== undefined && userCall.userId !== user.id) socketIds.push(userCall);
+          if (userCall !== undefined) allMembers.push(userCall);
         });
-        callGroup(socketIds, {
-          id: docRef.id,
-          chatgroup: chatbox,
-          members: [{ userId: user.id, socketId: me }]
-        });
+        dispatch(actionSocketIdsGroup(socketIds));
+        dispatch(actionAllMembersGroup(allMembers));
+        dispatch(
+          actionParticipants({
+            members: [{ userId: user.id, socketId: me }],
+            allMembers
+          })
+        );
         dispatch(
           actionGroup({
             id: docRef.id,
             chatgroup: chatbox,
-            members: [{ userId: user.id, socketId: me }]
+            members: [{ userId: user.id, socketId: me }],
+            userCreate: { userId: user.id, socketId: me },
+            notMembers: [socketIds],
+            userId: user.id
           })
         );
         navigate(`/home/room/${docRef.id}`);
