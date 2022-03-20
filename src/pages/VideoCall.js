@@ -10,7 +10,14 @@ import { actionChatAddMessage, actionGetAllChatSort } from '../redux/actions/cha
 import { actionAudio, actionStream, actionVideo } from '../redux/actions/callAction';
 import LocalVideo from '../components/video/LocalVideo';
 import RemoteVideo from '../components/video/RemoteVideo';
-import { callUser, endCall, videoOther, missCall, sendMessageSocket } from '../utils/wssConnection';
+import {
+  callUser,
+  endCall,
+  videoOther,
+  missCall,
+  sendMessageSocket,
+  audioOther
+} from '../utils/wssConnection';
 import { db } from '../firebase-config';
 
 const heightScreen = window.innerHeight - 1;
@@ -211,9 +218,21 @@ function VideoCall({ user }) {
     }
   };
   const turnOnAudio = () => {
+    const userCall = usersSocket.find((user) => user.userId === chatbox.user.id);
+    if (userCall === undefined) {
+      audioOther({ socketId: call.from, status: true });
+    } else {
+      audioOther({ socketId: userCall.socketId, status: true });
+    }
     dispatch(actionAudio(true));
   };
   const turnOffAudio = () => {
+    const userCall = usersSocket.find((user) => user.userId === chatbox.user.id);
+    if (userCall === undefined) {
+      audioOther({ socketId: call.from, status: false });
+    } else {
+      audioOther({ socketId: userCall.socketId, status: false });
+    }
     dispatch(actionAudio(false));
   };
   const turnOnVideo = () => {

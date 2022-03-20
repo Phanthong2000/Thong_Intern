@@ -29,6 +29,8 @@ import ProfileSetting from './components/setting/ProfileSetting';
 import PasswordSetting from './components/setting/PasswordSetting';
 import ForgotPassword from './pages/ForgotPassword';
 import Room from './pages/Room';
+import VideoRoom2 from './pages/VideoRoom2';
+import VideoRoom from './pages/VideoRoom';
 
 function Router() {
   const navigate = useNavigate();
@@ -88,6 +90,7 @@ function Router() {
         { path: 'other/:id', element: <Other user={user} /> },
         { path: 'profile/:id', element: <Profile user={user} /> },
         { path: 'room/:id', element: <Room user={user} /> },
+        { path: 'video-room/:roomId', element: <VideoRoom2 user={user} /> },
         { path: 'photo/:id', element: <Photo user={user} /> },
         {
           path: 'search',

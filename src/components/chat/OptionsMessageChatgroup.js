@@ -16,6 +16,7 @@ import { addDoc, collection, doc, updateDoc } from 'firebase/firestore';
 import { Scrollbar } from 'smooth-scrollbar-react';
 import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { db, storage } from '../../firebase-config';
 import {
   actionGetAllMessagesChatbox,
@@ -101,6 +102,7 @@ function OptionsMessageChatgroup({ user }) {
   const [anchorElGif, setAnchorElGif] = React.useState(null);
   const [anchorElSticker, setAnchorElSticker] = React.useState(null);
   const usersSocket = useSelector((state) => state.user.usersSocket);
+  const navigate = useNavigate();
   const handleClickGif = (event) => {
     setAnchorElGif(event.currentTarget);
   };
@@ -285,9 +287,43 @@ function OptionsMessageChatgroup({ user }) {
       });
     });
   };
+  const createRoom = () => {
+    addDoc(collection(db, 'rooms'), {
+      userCreate: user,
+      createdAt: new Date().getTime(),
+      chatbox,
+      status: 'calling',
+      members: [user]
+    }).then((docRefRoom) => {
+      const message = {
+        chatboxId: chatbox.id,
+        content: `${user.username} created video call room`,
+        isRead: false,
+        type: 'call',
+        isRestore: false,
+        reaction: [],
+        senderId: user.id,
+        createdAt: new Date().getTime(),
+        roomId: docRefRoom.id
+      };
+      addDoc(collection(db, 'messages'), message)
+        .then((docRef) => {
+          dispatch(actionChatAddMessage({ ...message, id: docRef.id }));
+          updateDoc(doc(db, 'chatboxs', chatbox.id), {
+            updatedAt: new Date().getTime()
+          }).then(() => {
+            dispatch(actionGetAllChatSort(user.id));
+            navigate(`/home/video-room/${docRefRoom.id}`);
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    });
+  };
   return (
     <RootStyle>
-      <IconButtonOption>
+      <IconButtonOption onClick={createRoom}>
         <IconOption icon="bxs:plus-circle" />
       </IconButtonOption>
       <IconButtonOption onClick={chooseMessage}>

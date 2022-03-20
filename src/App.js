@@ -13,11 +13,10 @@ import GlobalStyles from './theme/globalStyles';
 import { connectWithSocket } from './utils/wssConnection';
 
 function App() {
-  const me = useSelector((state) => state.call.me);
-  const dispatch = useDispatch();
-  let socket;
   useEffect(() => {
     connectWithSocket();
+    console.log('');
+    return () => null;
   }, []);
   return (
     <ThemeConfig>

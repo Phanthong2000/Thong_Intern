@@ -6,7 +6,7 @@ const CardVideo = styled(Card)(() => ({
   width: '40%'
 }));
 const Video = styled('video')(() => ({
-  width: '80%',
+  width: '100%',
   height: '400px'
 }));
 function LocalVideo() {
@@ -33,7 +33,7 @@ function LocalVideo() {
   }, [endCall]);
   return (
     <CardVideo elevation={3} sx={{ background: '#fff' }}>
-      <Video hidden={!video} autoPlay ref={myVideo} />
+      <Video muted={!audio} hidden={!video} autoPlay ref={myVideo} />
     </CardVideo>
   );
 }

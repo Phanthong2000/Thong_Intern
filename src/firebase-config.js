@@ -5,13 +5,13 @@ import { getStorage } from 'firebase/storage';
 import { getMessaging, onMessage } from 'firebase/messaging';
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyAE3iKdAEuLoJKQhZVyb2tVUO-Dzzh-bTE',
-  authDomain: 'testjs6-9c759.firebaseapp.com',
-  projectId: 'testjs6-9c759',
-  storageBucket: 'testjs6-9c759.appspot.com',
-  messagingSenderId: '384404016875',
-  appId: '1:384404016875:web:1ddc230e19306f7d3978ae',
-  measurementId: 'G-KTFFYBQDQQ'
+  apiKey: 'AIzaSyDI0DLoHy4Xdk9t_y_WNNWpKjotcrDIEGg',
+  authDomain: 'testjs7-752ee.firebaseapp.com',
+  projectId: 'testjs7-752ee',
+  storageBucket: 'testjs7-752ee.appspot.com',
+  messagingSenderId: '458277911249',
+  appId: '1:458277911249:web:1eca7196a9a8f58da723f0',
+  measurementId: 'G-TQD5F2ECDZ'
 };
 
 const app = initializeApp(firebaseConfig);

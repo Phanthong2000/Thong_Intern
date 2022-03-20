@@ -20,9 +20,10 @@ Signal.prototype = {
 function Signal({ signal }) {
   const ref = useRef();
   useEffect(() => {
-    const peer = new Peer();
+    const peer = new Peer({ initiator: false, trickle: false });
     peer.on('stream', (stream) => {
       console.log('ok', stream);
+      // peer.addStream(stream);
       const remoteVideo = ref.current;
       remoteVideo.srcObject = stream;
       remoteVideo.onloadedmetadata = () => {

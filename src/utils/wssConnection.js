@@ -28,7 +28,8 @@ import {
   actionAddRemoteStreamGroup,
   actionAddSignalGroup,
   actionParticipants,
-  actionCallEndedGroup
+  actionCallEndedGroup,
+  actionAudioOther
 } from '../redux/actions/callAction';
 import {
   actionUserAddFriendRequest,
@@ -41,7 +42,7 @@ import store from '../redux/store';
 
 let socket;
 export const connectWithSocket = () => {
-  socket = io('https://35bf-14-161-70-171.ngrok.io/', {
+  socket = io('https://6641-14-161-70-171.ngrok.io/', {
     forceNew: true
   });
   socket.on('broadcast', (data) => {
@@ -63,6 +64,10 @@ export const connectWithSocket = () => {
   });
   socket.on('videoOther', (data) => {
     store.dispatch(actionVideoOther(data));
+  });
+  socket.on('audioOther', (data) => {
+    console.log('audio Other');
+    store.dispatch(actionAudioOther(data));
   });
   socket.on('missCall', (data) => {
     store.dispatch(actionModalReceiving(false));
@@ -264,7 +269,6 @@ export const callGroup = (socketIds, group) => {
 export const joinGroup = (id) => {
   const { group } = store.getState().call;
   const { localStreamGroup } = store.getState().call;
-  console.log('local stream group join group', localStreamGroup);
   const { callGroup } = store.getState().call;
   const { signalGroup } = store.getState().call;
   const { participants } = store.getState().call;
@@ -302,17 +306,19 @@ export const joinGroup = (id) => {
     stream: localStreamGroup
   });
   socket.emit('participants', participants);
+  console.log('signal join group', signalGroup);
   signalGroup.forEach((signal) => {
-    peer.on('signal', (data) => {
-      console.log('id', id);
-      socket.emit('joinGroup', {
-        group,
-        signal: data,
-        allMembers: callGroup.allMembers,
-        userJoin: id
+    if (signal.type === 'offer') {
+      peer.on('signal', (data) => {
+        socket.emit('joinGroup', {
+          group,
+          signal: data,
+          allMembers: callGroup.allMembers,
+          userJoin: id
+        });
       });
-    });
-    peer.signal(signal);
+      peer.signal(signal);
+    }
   });
 
   peer.on('stream', (currentStream) => {
@@ -330,6 +336,10 @@ export const joinGroup = (id) => {
 };
 export const videoOther = (data) => {
   socket.emit('videoOther', data);
+};
+export const audioOther = (data) => {
+  console.log('audio other user');
+  socket.emit('audioOther', data);
 };
 export const endCall = (id) => {
   socket.emit('endCall', { socketId: id });

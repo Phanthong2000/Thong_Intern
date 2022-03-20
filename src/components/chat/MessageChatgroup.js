@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Avatar, Box, Button, Card, Popover, Skeleton, styled, Typography } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { Icon } from '@iconify/react';
+import { useNavigate } from 'react-router-dom';
 import moment from 'moment';
 import { deleteDoc, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase-config';
@@ -87,7 +88,9 @@ function MessageChatgroup({ user, message, index }) {
   const [heightContentText, setHeightContentText] = useState(0);
   const openReact = Boolean(anchorElReaction);
   const openDelete = Boolean(anchorElDelete);
+  const [room, setRoom] = useState({});
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const updateMessage = useSelector((state) => state.chat.updateMessage);
   const handleClickReaction = (event) => {
     setAnchorElReaction(event.currentTarget);
@@ -117,6 +120,14 @@ function MessageChatgroup({ user, message, index }) {
       });
     });
   };
+  const getRoom = (roomId) => {
+    getDoc(doc(db, 'rooms', roomId)).then((snapshot) => {
+      setRoom({
+        ...snapshot.data(),
+        id: snapshot.id
+      });
+    });
+  };
   useEffect(() => {
     // getUserSent();
     if (contentRef.current !== null) {
@@ -131,6 +142,7 @@ function MessageChatgroup({ user, message, index }) {
   }, [user]);
   useEffect(() => {
     getUserSent();
+    if (message.type === 'call' && message.roomId !== undefined) getRoom(message.roomId);
     if (message.type === 'image') setImageMessage(message.contentFile);
     if (updateMessage.messageId === message.id) {
       setImageMessage(updateMessage.image);
@@ -422,6 +434,116 @@ function MessageChatgroup({ user, message, index }) {
       </BoxReaction>
     );
   };
+  const BoxContentMessageCall = () => {
+    const ButtonIconCamera = styled(Box)(({ theme }) => ({
+      width: '35px',
+      height: '35px',
+      background: theme.palette.background,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: '35px',
+      marginRight: '10px'
+    }));
+    const IconCamera = styled(Icon)(({ theme }) => ({
+      width: '25px',
+      height: '25px',
+      color: '#000'
+    }));
+    const ButtonJoin = styled(Button)(({ theme }) => ({
+      textTransform: 'none',
+      background: '#fff',
+      color: theme.palette.green,
+      fontWeight: 'bold',
+      ':hover': {
+        background: 'lightgrey'
+      }
+    }));
+    const joinRoom = () => {
+      getDoc(doc(db, 'rooms', room.id)).then((snapshot) => {
+        const members = snapshot.data().members.filter((item) => item.id !== user.id);
+        const newMembers = [...members, user.id];
+        console.log('members', members);
+        console.log('new members', newMembers);
+        updateDoc(doc(db, 'rooms', room.id), {
+          members: newMembers
+        }).then(() => {
+          navigate(`/home/video-room/${room.id}`);
+        });
+      });
+    };
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <ButtonIconCamera>
+          <IconCamera icon="carbon:phone-outgoing-filled" />
+        </ButtonIconCamera>
+        <Box>
+          <Typography>{message.content}</Typography>
+          <Typography>Status: {room.status}</Typography>
+          {room.status === 'calling' && (
+            <Box>
+              <ButtonJoin onClick={joinRoom}>Join</ButtonJoin>
+            </Box>
+          )}
+        </Box>
+      </Box>
+    );
+  };
+  const BoxContentMessageCallOther = () => {
+    const ButtonIconCamera = styled(Box)(({ theme }) => ({
+      width: '35px',
+      height: '35px',
+      background: theme.palette.background,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: '35px',
+      marginRight: '10px'
+    }));
+    const IconCamera = styled(Icon)(({ theme }) => ({
+      width: '25px',
+      height: '25px',
+      color: '#000'
+    }));
+    const ButtonJoin = styled(Button)(({ theme }) => ({
+      textTransform: 'none',
+      background: '#fff',
+      color: theme.palette.green,
+      fontWeight: 'bold',
+      ':hover': {
+        background: 'lightgrey'
+      }
+    }));
+    const joinRoom = () => {
+      getDoc(doc(db, 'rooms', room.id)).then((snapshot) => {
+        const members = snapshot.data().members.filter((item) => item.id !== user.id);
+        const newMembers = [...members, user];
+        console.log('members', members);
+        console.log('new members', newMembers);
+        updateDoc(doc(db, 'rooms', room.id), {
+          members: newMembers
+        }).then(() => {
+          navigate(`/home/video-room/${room.id}`);
+        });
+      });
+    };
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <ButtonIconCamera>
+          <IconCamera icon="carbon:phone-outgoing-filled" />
+        </ButtonIconCamera>
+        <Box>
+          <Typography>{message.content}</Typography>
+          <Typography>Status: {room.status}</Typography>
+          {room.status === 'calling' && (
+            <Box>
+              <ButtonJoin onClick={joinRoom}>Join</ButtonJoin>
+            </Box>
+          )}
+        </Box>
+      </Box>
+    );
+  };
   if (message.chatboxId !== chatbox.id) return null;
   if (message.type === 'note')
     return (
@@ -588,7 +710,11 @@ function MessageChatgroup({ user, message, index }) {
                 }}
               >
                 {message.type === 'reply' && <Reply user={user} message={message} />}
-                <Typography ref={contentRef}>{message.content}</Typography>
+                {message.type === 'call' ? (
+                  <BoxContentMessageCall />
+                ) : (
+                  <Typography ref={contentRef}>{message.content}</Typography>
+                )}
                 {message.type === 'image' && <BoxContentImageMessage />}
                 {message.type === 'gif' && <BoxContentGifMessage />}
                 {message.type === 'sticker' && <BoxContentStickerMessage />}
@@ -631,7 +757,11 @@ function MessageChatgroup({ user, message, index }) {
                 {userSent.username}
               </Typography>
               {message.type === 'reply' && <ReplyOther user={user} message={message} />}
-              <Typography>{message.content}</Typography>
+              {message.type === 'call' ? (
+                <BoxContentMessageCallOther />
+              ) : (
+                <Typography>{message.content}</Typography>
+              )}
               {message.type === 'image' && <BoxContentImageMessage />}
               {message.type === 'gif' && <BoxContentGifMessage />}
               {message.type === 'sticker' && <BoxContentStickerMessage />}

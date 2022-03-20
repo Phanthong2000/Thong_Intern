@@ -1,4 +1,5 @@
-import { Card, styled } from '@mui/material';
+import { Icon } from '@iconify/react';
+import { Box, Card, IconButton, styled } from '@mui/material';
 import React, { useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -7,8 +8,13 @@ const CardVideo = styled(Card)(() => ({
   width: '40%'
 }));
 const Video = styled('video')(() => ({
-  width: '80%',
+  width: '100%',
   height: '400px'
+}));
+const IconSound = styled(Icon)(({ theme }) => ({
+  width: '30px',
+  height: '30px',
+  color: theme.palette.green
 }));
 function RemoteVideo() {
   const remoteVideoRef = useRef();
@@ -36,7 +42,29 @@ function RemoteVideo() {
   }, [endCall]);
   return (
     <CardVideo elevation={3} sx={{ background: '#fff' }}>
-      <Video hidden={!videoOther} autoPlay ref={remoteVideoRef} />
+      <IconButton sx={{ width: '100%', textAlign: 'left' }} disabled>
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 20,
+            left: 20,
+            width: '40px',
+            height: '40px',
+            borderRadius: '35px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: '#fff'
+          }}
+        >
+          {audioOther ? (
+            <IconSound icon="akar-icons:sound-on" />
+          ) : (
+            <IconSound icon="akar-icons:sound-off" />
+          )}
+        </Box>
+        <Video muted={!audioOther} hidden={!videoOther} autoPlay ref={remoteVideoRef} />
+      </IconButton>
     </CardVideo>
   );
 }
