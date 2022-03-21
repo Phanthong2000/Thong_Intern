@@ -25,7 +25,18 @@ import {
   ADD_SIGNAL_GROUP,
   ALL_MEMBERS_GROUP,
   PARTICIPANTS,
-  CALL_ENDED_GROUP
+  CALL_ENDED_GROUP,
+  SOCKET,
+  MODAL_ADD_USER_TO_ROOM,
+  ADD_PEERS,
+  DELETE_PEERS,
+  SET_PEERS,
+  MODAL_INVITE_JOIN_ROOM,
+  ADD_SOCKETIDS_INVITE_JOIN_ROOM,
+  DELETE_SOCKETIDS_INVITE_JOIN_ROOM,
+  SET_SOCKETIDS_INVITE_JOIN_ROOM,
+  MODAL_RECEIVE_INVITE_JOIN_ROOM,
+  CHOOSE_PARTICIPANT
 } from './types';
 
 export const actionMe = (data) => ({
@@ -138,5 +149,50 @@ export const actionParticipants = (data) => ({
 
 export const actionCallEndedGroup = (data) => ({
   type: CALL_ENDED_GROUP,
+  payload: data
+});
+export const actionSocket = (data) => ({
+  type: SOCKET,
+  payload: data
+});
+export const actionModalAddMemberToRoom = (data) => ({
+  type: MODAL_ADD_USER_TO_ROOM,
+  payload: data
+});
+export const actionSetPeers = (data) => ({
+  type: SET_PEERS,
+  payload: data
+});
+export const actionAddPeers = (data) => ({
+  type: ADD_PEERS,
+  payload: data
+});
+export const actionDeletePeers = (data) => ({
+  type: DELETE_PEERS,
+  payload: data
+});
+export const actionModalInviteJoinRoom = (data) => ({
+  type: MODAL_INVITE_JOIN_ROOM,
+  payload: data
+});
+export const actionAddSocketIdsJoinRoom = (data) => ({
+  type: ADD_SOCKETIDS_INVITE_JOIN_ROOM,
+  payload: data
+});
+export const actionDeleteSocketIdsJoinRoom = (data) => ({
+  type: DELETE_SOCKETIDS_INVITE_JOIN_ROOM,
+  payload: data
+});
+
+export const actionSetSocketIdsJoinRoom = (data) => ({
+  type: SET_SOCKETIDS_INVITE_JOIN_ROOM,
+  payload: data
+});
+export const actionModalReceiveInviteJoinRoom = (data) => ({
+  type: MODAL_RECEIVE_INVITE_JOIN_ROOM,
+  payload: data
+});
+export const actionChooseParticipant = (data) => ({
+  type: CHOOSE_PARTICIPANT,
   payload: data
 });

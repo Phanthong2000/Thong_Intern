@@ -25,7 +25,18 @@ import {
   SIGNAL_GROUP,
   ALL_MEMBERS_GROUP,
   PARTICIPANTS,
-  CALL_ENDED_GROUP
+  CALL_ENDED_GROUP,
+  SOCKET,
+  MODAL_ADD_USER_TO_ROOM,
+  ADD_PEERS,
+  DELETE_PEERS,
+  SET_PEERS,
+  MODAL_INVITE_JOIN_ROOM,
+  ADD_SOCKETIDS_INVITE_JOIN_ROOM,
+  DELETE_SOCKETIDS_INVITE_JOIN_ROOM,
+  SET_SOCKETIDS_INVITE_JOIN_ROOM,
+  MODAL_RECEIVE_INVITE_JOIN_ROOM,
+  CHOOSE_PARTICIPANT
 } from '../actions/types';
 
 const defaultState = {
@@ -53,7 +64,24 @@ const defaultState = {
   signalGroup: [],
   allMembers: [],
   participants: {},
-  callEndedGroup: false
+  callEndedGroup: false,
+  socket: {},
+  modalAddMemberToRoom: {
+    status: false,
+    room: {}
+  },
+  allPeers: [],
+  modalInviteJoinRoom: {
+    status: false,
+    name: ''
+  },
+  socketIdsJoinRoom: [],
+  modalReceiveInviteJoinRoom: {
+    status: false,
+    name: '',
+    roomId: ''
+  },
+  chooseParticipant: {}
 };
 
 const callReducer = (state = defaultState, action) => {
@@ -196,6 +224,63 @@ const callReducer = (state = defaultState, action) => {
       return {
         ...state,
         callEndedGroup: action.payload
+      };
+    case SOCKET:
+      return {
+        ...state,
+        socket: action.payload
+      };
+    case MODAL_ADD_USER_TO_ROOM:
+      return {
+        ...state,
+        modalAddMemberToRoom: action.payload
+      };
+    case SET_PEERS:
+      console.log('set peers', action.payload);
+      return {
+        ...state,
+        allPeers: action.payload
+      };
+    case ADD_PEERS:
+      return {
+        ...state,
+        allPeers: [...state.allPeers, action.payload]
+      };
+    case DELETE_PEERS:
+      return {
+        ...state,
+        allPeers: state.allPeers.filter((peer) => peer !== action.payload)
+      };
+    case MODAL_INVITE_JOIN_ROOM:
+      return {
+        ...state,
+        modalInviteJoinRoom: action.payload
+      };
+    case ADD_SOCKETIDS_INVITE_JOIN_ROOM:
+      console.log(action.payload);
+      return {
+        ...state,
+        socketIdsJoinRoom: [...state.socketIdsJoinRoom, action.payload]
+      };
+    case DELETE_SOCKETIDS_INVITE_JOIN_ROOM:
+      return {
+        ...state,
+        socketIdsJoinRoom: state.socketIdsJoinRoom.filter((socketId) => socketId !== action.payload)
+      };
+    case SET_SOCKETIDS_INVITE_JOIN_ROOM:
+      return {
+        ...state,
+        socketIdsJoinRoom: action.payload
+      };
+    case MODAL_RECEIVE_INVITE_JOIN_ROOM:
+      return {
+        ...state,
+        modalReceiveInviteJoinRoom: action.payload
+      };
+    case CHOOSE_PARTICIPANT:
+      return {
+        ...state,
+        chooseParticipant: action.payload
       };
     default:
       return state;

@@ -5,16 +5,14 @@ import { Icon } from '@iconify/react';
 import { Avatar, Box, Button, IconButton, Skeleton, styled, Typography } from '@mui/material';
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../firebase-config';
+import { actionChooseParticipant } from '../../redux/actions/callAction';
 
 const RootStyle = styled(Box)(({ theme }) => ({
-  display: 'flex',
   width: '100%',
-  justifyContent: 'start',
   textTransform: 'none',
-  background: theme.palette.background,
+  background: '#fff',
   color: theme.palette.green,
-  alignItems: 'center',
-  padding: '0px',
+  padding: '0px 5px',
   marginTop: '10px'
 }));
 const Username = styled(Typography)(() => ({
@@ -22,63 +20,74 @@ const Username = styled(Typography)(() => ({
   fontWeight: 'bold',
   fontFamily: 'inherit',
   color: '#000',
-  fontSize: '17px'
+  fontSize: '14px'
 }));
 const SkeletonAvatar = styled(Skeleton)(() => ({
   width: '40px',
   height: '40px'
 }));
+const IconOptions = styled(Icon)(({ theme }) => ({
+  width: '18px',
+  height: '18px',
+  marginRight: '5px',
+  cursor: 'pointer'
+}));
 Participant.prototype = {
-  otherId: PropTypes.string
+  other: PropTypes.object,
+  user: PropTypes.object,
+  room: PropTypes.object
 };
-function Participant({ otherId }) {
-  const [other, setOther] = useState({});
-  const participants = useSelector((state) => state.call.participants);
-  useEffect(() => {
-    if (otherId !== undefined) {
-      getDoc(doc(db, 'users', otherId)).then((snapshot) => {
-        setOther({
-          ...snapshot.data(),
-          id: snapshot.id
-        });
-      });
-    }
-    return () => null;
-  }, [participants]);
+function Participant({ other, user, room }) {
+  const chooseParticipant = useSelector((state) => state.call.chooseParticipant);
+  const dispatch = useDispatch();
+  const choose = () => {
+    if (chooseParticipant.id === other.id) dispatch(actionChooseParticipant({}));
+    else dispatch(actionChooseParticipant(other));
+  };
   const BoxContact = () => (
-    <>
+    <Box
+      onClick={user.id !== other.id && room.userCreate.id === user.id && choose}
+      sx={{
+        display: 'flex',
+        width: '100%',
+        justifyContent: 'space-between',
+        textTransform: 'none',
+        background: 'lightgrey',
+        alignItems: 'center',
+        padding: '0px 5px',
+        marginTop: '10px',
+        cursor: user.id !== other.id && room.userCreate.id === user.id && 'pointer'
+      }}
+    >
       <IconButton disabled>
-        <Avatar sx={{ width: '40px', height: '40px' }} src={other.avatar}>
+        <Avatar sx={{ width: '30px', height: '30px' }} src={other.avatar}>
           s
         </Avatar>
         <Icon
           style={{
-            width: '40px',
-            height: '40px',
+            width: '30px',
+            height: '30px',
             position: 'absolute',
             zIndex: 99,
-            right: -7,
-            bottom: -7,
+            right: -3,
+            bottom: -3,
             color: '#30ab78'
           }}
           icon="ci:dot-02-s"
         />
       </IconButton>
       <Username>{other.username}</Username>
-    </>
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <IconOptions icon="bi:mic-fill" />
+        <IconOptions style={{ color: 'orange' }} icon="bi:camera-video-fill" />
+        <IconOptions style={{ color: '#000' }} icon="entypo:dots-three-horizontal" />
+      </Box>
+    </Box>
   );
-  if (other.id === undefined)
-    return (
-      <RootStyle>
-        <Box sx={{ marginBottom: '10px', display: 'flex', alignItems: 'center' }}>
-          <SkeletonAvatar variant="circular" />
-          <Skeleton sx={{ width: '150px', marginLeft: '10px' }} variant="text" />
-        </Box>
-      </RootStyle>
-    );
   return (
     <RootStyle>
       <BoxContact />
+      {chooseParticipant.id === other.id && <Typography>ok</Typography>}
     </RootStyle>
   );
 }

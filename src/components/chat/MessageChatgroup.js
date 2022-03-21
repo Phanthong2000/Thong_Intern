@@ -478,8 +478,12 @@ function MessageChatgroup({ user, message, index }) {
           <IconCamera icon="carbon:phone-outgoing-filled" />
         </ButtonIconCamera>
         <Box>
-          <Typography>{message.content}</Typography>
-          <Typography>Status: {room.status}</Typography>
+          <Typography sx={{ fontWeight: 'bold', fontFamily: 'sans-serif', fontSize: '12px' }}>
+            {message.content}
+          </Typography>
+          <Typography sx={{ fontWeight: 'bold', fontFamily: 'sans-serif', fontSize: '12px' }}>
+            Status: {room.status}
+          </Typography>
           {room.status === 'calling' && (
             <Box>
               <ButtonJoin onClick={joinRoom}>Join</ButtonJoin>
@@ -533,8 +537,12 @@ function MessageChatgroup({ user, message, index }) {
           <IconCamera icon="carbon:phone-outgoing-filled" />
         </ButtonIconCamera>
         <Box>
-          <Typography>{message.content}</Typography>
-          <Typography>Status: {room.status}</Typography>
+          <Typography sx={{ fontWeight: 'bold', fontFamily: 'sans-serif', fontSize: '12px' }}>
+            {message.content}
+          </Typography>
+          <Typography sx={{ fontWeight: 'bold', fontFamily: 'sans-serif', fontSize: '12px' }}>
+            Status: {room.status}
+          </Typography>
           {room.status === 'calling' && (
             <Box>
               <ButtonJoin onClick={joinRoom}>Join</ButtonJoin>
@@ -543,6 +551,18 @@ function MessageChatgroup({ user, message, index }) {
         </Box>
       </Box>
     );
+  };
+  const checkHeightContent = () => {
+    if (message.type === 'image') return `224px`;
+    if (message.type === 'call') return `70px`;
+    if (message.type === 'reply') return `120px`;
+    return `24px`;
+  };
+  const checkHeightContentOther = () => {
+    if (message.type === 'image') return `224px`;
+    if (message.type === 'call') return `100px`;
+    if (message.type === 'reply') return `120px`;
+    return `24px`;
   };
   if (message.chatboxId !== chatbox.id) return null;
   if (message.type === 'note')
@@ -582,7 +602,7 @@ function MessageChatgroup({ user, message, index }) {
                 alignItems: 'center',
                 width: '100%',
                 justifyContent: 'end',
-                minHeight: message.type === 'image' ? `${224 + heightContentText}px` : '24px'
+                minHeight: checkHeightContent()
               }}
             >
               {showOptions && (
@@ -749,7 +769,7 @@ function MessageChatgroup({ user, message, index }) {
               display: 'flex',
               alignItems: 'center',
               width: '100%',
-              minHeight: message.type === 'image' ? `${200 + heightContentText}px` : '24px'
+              minHeight: checkHeightContentOther()
             }}
           >
             <BoxContentMessage onMouseEnter={mouseEnterMessage} onMouseLeave={mouseLeaveMessage}>

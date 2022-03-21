@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { styled, Box, List, ListItem, IconButton } from '@mui/material';
 import { Search } from '@mui/icons-material';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import toast, { Toaster } from 'react-hot-toast';
 import { doc, getDoc } from 'firebase/firestore';
@@ -15,6 +15,7 @@ import BoxNewChatbox from '../components/home/main/BoxNewChatbox';
 import ModalReceivingVideoCall from '../components/video/ModalReceivingVideoCall';
 import UtilRedux from '../utils/UtilRedux';
 import ModalReceivingGroup from '../components/room/ModalReceivingGroup';
+import ModalReceiveInviteJoinRoom from '../components/video/ModalReceiveInviteJoinRoom';
 
 const RootStyle = styled(Box)(({ theme }) => ({
   overflow: 'hidden',
@@ -37,6 +38,8 @@ function HomeLayout() {
   const newChatbox = useSelector((state) => state.chat.newChatbox);
   const modalReceiving = useSelector((state) => state.call.modalReceiving);
   const modalReceivingGroup = useSelector((state) => state.call.modalReceivingGroup);
+  const modalReceiveInviteJoinRoom = useSelector((state) => state.call.modalReceiveInviteJoinRoom);
+  const { pathname } = useLocation();
   const getUser = async (userId) => {
     const data = await getDoc(doc(db, 'users', userId));
     setUser({
@@ -96,6 +99,9 @@ function HomeLayout() {
         <Toaster />
         {modalReceiving && <ModalReceivingVideoCall user={user} />}
         {modalReceivingGroup && <ModalReceivingGroup user={user} />}
+        {modalReceiveInviteJoinRoom.status && !pathname.includes('/home/video-room') && (
+          <ModalReceiveInviteJoinRoom />
+        )}
         <Outlet />
       </MainStyle>
     </RootStyle>

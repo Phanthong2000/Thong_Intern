@@ -20,7 +20,9 @@ import {
   ACTION_CHAT_GET_NEW_CHATBOX_HOME,
   ACTION_CHAT_OPTIONS_CHATBOX,
   ACTION_CHAT_GET_ALL_BADGE_MESSAGE,
-  ACTION_CHAT_REPLY_MESSAGE
+  ACTION_CHAT_REPLY_MESSAGE,
+  ACTION_CHAT_DELETE_INPUTTING,
+  ACTION_CHAT_ADD_INPUTTING
 } from './types';
 
 export const actionChatGetAllChat = (data) => ({
@@ -77,6 +79,14 @@ export const actionChatUpdateReactionMessage = (data) => ({
 });
 export const actionChatInputting = (data) => ({
   type: ACTION_CHAT_INPUTTING,
+  payload: data
+});
+export const actionChatAddInputting = (data) => ({
+  type: ACTION_CHAT_ADD_INPUTTING,
+  payload: data
+});
+export const actionChatDeleteInputting = (data) => ({
+  type: ACTION_CHAT_DELETE_INPUTTING,
   payload: data
 });
 export const actionChatGetChatgroupUser = (data) => ({

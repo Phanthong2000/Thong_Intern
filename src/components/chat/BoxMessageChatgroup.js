@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Card, Skeleton, styled } from '@mui/material';
+import { Box, Card, Skeleton, styled, Typography } from '@mui/material';
 import { keyframes } from '@emotion/react';
 import { useDispatch, useSelector } from 'react-redux';
+import { Icon } from '@iconify/react';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../firebase-config';
 import MessageChatgroup from './MessageChatgroup';
@@ -22,6 +23,7 @@ BoxMessageChatgroup.prototype = {
   user: PropTypes.object
 };
 function BoxMessageChatgroup({ user }) {
+  const inputting = useSelector((state) => state.chat.inputting);
   const chatbox = useSelector((state) => state.chat.chatbox);
   const messages = useSelector((state) => state.chat.messages);
   const dispatch = useDispatch();
@@ -118,6 +120,20 @@ function BoxMessageChatgroup({ user }) {
         {messages.map((item, index) => (
           <MessageChatgroup index={index} key={index} user={user} message={item} />
         ))}
+        {inputting.includes(chatbox.id) && (
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: 90,
+              display: 'flex',
+              alignItems: 'center',
+              color: 'gray'
+            }}
+          >
+            <Typography sx={{ fontSize: '13px' }}>other inputting</Typography>
+            <Icon style={{ width: '20px', height: '20px' }} icon="eos-icons:three-dots-loading" />
+          </Box>
+        )}
         <AlwaysScrollToBottom />
       </Box>
     </RootStyle>

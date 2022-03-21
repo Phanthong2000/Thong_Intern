@@ -99,6 +99,7 @@ function HomeNavbar({ user }) {
           {sidebarConfig.map((item, index) => {
             const chooseDrawer = () => {
               navigate(`${item.path}`);
+              setOpenDrawer(false);
             };
             return (
               <ListItemButton

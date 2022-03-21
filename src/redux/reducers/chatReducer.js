@@ -18,7 +18,9 @@ import {
   ACTION_CHAT_GET_NEW_CHATBOX_HOME,
   ACTION_CHAT_OPTIONS_CHATBOX,
   ACTION_CHAT_GET_ALL_BADGE_MESSAGE,
-  ACTION_CHAT_REPLY_MESSAGE
+  ACTION_CHAT_REPLY_MESSAGE,
+  ACTION_CHAT_DELETE_INPUTTING,
+  ACTION_CHAT_ADD_INPUTTING
 } from '../actions/types';
 
 const defaultState = {
@@ -40,7 +42,7 @@ const defaultState = {
   },
   addMessageChatboxHome: 0,
   sendReaction: 0,
-  inputting: '',
+  inputting: [],
   chatgroups: [],
   newChatbox: false,
   optionsChatbox: true,
@@ -163,6 +165,16 @@ const chatReducer = (state = defaultState, action) => {
       return {
         ...state,
         reply: action.payload
+      };
+    case ACTION_CHAT_ADD_INPUTTING:
+      return {
+        ...state,
+        inputting: [...state.inputting, action.payload]
+      };
+    case ACTION_CHAT_DELETE_INPUTTING:
+      return {
+        ...state,
+        inputting: state.inputting.filter((input) => input !== action.payload)
       };
     default:
       return state;

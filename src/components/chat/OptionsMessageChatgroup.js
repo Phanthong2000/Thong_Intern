@@ -38,7 +38,8 @@ import {
   sendMessageSocket,
   endCall,
   inputtingSocket,
-  stopInputSocket
+  deleteInputtingSocketGroup,
+  inputtingSocketGroup
 } from '../../utils/wssConnection';
 
 const RootStyle = styled(Card)(({ theme }) => ({
@@ -139,6 +140,24 @@ function OptionsMessageChatgroup({ user }) {
   };
   const chooseMessage = () => {
     fileRef.current.click();
+  };
+  const focusMessage = (e) => {
+    const socketIds = [];
+    chatbox.members.forEach((member) => {
+      const userCall = usersSocket.find((user) => user.userId === member);
+      if (userCall !== undefined && userCall.userId !== user.id) socketIds.push(userCall.socketId);
+    });
+    setMessageText(e.target.value);
+    if (e.target.value !== '' && e.target.value.length === 1) {
+      if (socketIds.length > 0) {
+        inputtingSocketGroup({ chatboxId: chatbox.id, socketIds });
+      }
+    }
+    if (e.target.value === '') {
+      if (socketIds.length > 0) {
+        deleteInputtingSocketGroup({ chatboxId: chatbox.id, socketIds });
+      }
+    }
   };
   const onChangeFile = (files) => {
     if (files && files[0]) {
@@ -370,6 +389,7 @@ function OptionsMessageChatgroup({ user }) {
       <BoxInput>
         <Scrollbar alwaysShowTracks>
           <InputMessage
+            onInput={focusMessage}
             onKeyDown={handleEnterSendMessage}
             value={messageText}
             onChange={(e) => inputText(e.target.value)}

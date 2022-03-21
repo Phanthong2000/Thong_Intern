@@ -8,7 +8,9 @@ import {
   actionChatSendReaction,
   actionChatUpdateReactionMessage,
   actionChatInputting,
-  actionGetAllBadeMessage
+  actionGetAllBadeMessage,
+  actionChatDeleteInputting,
+  actionChatAddInputting
 } from '../redux/actions/chatAction';
 import {
   actionModalReceiving,
@@ -29,7 +31,9 @@ import {
   actionAddSignalGroup,
   actionParticipants,
   actionCallEndedGroup,
-  actionAudioOther
+  actionAudioOther,
+  actionSocket,
+  actionModalReceiveInviteJoinRoom
 } from '../redux/actions/callAction';
 import {
   actionUserAddFriendRequest,
@@ -42,9 +46,10 @@ import store from '../redux/store';
 
 let socket;
 export const connectWithSocket = () => {
-  socket = io('https://6641-14-161-70-171.ngrok.io/', {
+  socket = io('https://d306-14-161-70-171.ngrok.io/', {
     forceNew: true
   });
+  store.dispatch(actionSocket(socket));
   socket.on('broadcast', (data) => {
     store.dispatch(actionUserBroadcastSocket(data));
   });
@@ -101,7 +106,11 @@ export const connectWithSocket = () => {
   });
   socket.on('inputting', (data) => {
     console.log('inputting', data);
-    store.dispatch(actionChatInputting(data.chatboxId));
+    store.dispatch(actionChatAddInputting(data.chatboxId));
+  });
+  socket.on('deleteInputting', (data) => {
+    console.log('delete inputting', data);
+    store.dispatch(actionChatDeleteInputting(data.chatboxId));
   });
   socket.on('stopInput', (data) => {
     console.log('stop input');
@@ -128,6 +137,15 @@ export const connectWithSocket = () => {
     console.log('end call group', data);
     store.dispatch(actionCallEndedGroup(true));
     store.dispatch(actionModalReceivingGroup(false));
+  });
+  socket.on('invite join room', (data) => {
+    store.dispatch(
+      actionModalReceiveInviteJoinRoom({
+        status: true,
+        name: data.name,
+        roomId: data.roomId
+      })
+    );
   });
 };
 export const registerUser = (data) => {
@@ -372,8 +390,14 @@ export const pushNotificationSocket = (data) => {
 export const inputtingSocket = (data) => {
   socket.emit('inputting', data);
 };
-export const stopInputSocket = (data) => {
-  socket.emit('stopInput', data);
+export const deleteInputtingSocket = (data) => {
+  socket.emit('deleteInputting', data);
+};
+export const inputtingSocketGroup = (data) => {
+  socket.emit('inputtingGroup', data);
+};
+export const deleteInputtingSocketGroup = (data) => {
+  socket.emit('deleteInputtingGroup', data);
 };
 export const logoutSocket = () => {
   socket.disconnect();

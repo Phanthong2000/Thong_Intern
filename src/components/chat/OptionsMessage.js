@@ -37,7 +37,7 @@ import {
   sendMessageSocket,
   endCall,
   inputtingSocket,
-  stopInputSocket
+  deleteInputtingSocket
 } from '../../utils/wssConnection';
 
 const RootStyle = styled(Card)(({ theme }) => ({
@@ -124,7 +124,7 @@ function OptionsMessage({ user }) {
     return () => {
       const userCall = usersSocket.find((user) => user.userId === chatbox.user.id);
       if (userCall !== undefined) {
-        stopInputSocket({ socketId: userCall.socketId });
+        deleteInputtingSocket({ chatboxId: chatbox.id, socketId: userCall.socketId });
       }
     };
   }, [chatbox, chatboxs]);
@@ -170,7 +170,7 @@ function OptionsMessage({ user }) {
     if (e.target.value === '') {
       const userCall = usersSocket.find((user) => user.userId === chatbox.user.id);
       if (userCall !== undefined) {
-        stopInputSocket({ socketId: userCall.socketId });
+        deleteInputtingSocket({ chatboxId: chatbox.id, socketId: userCall.socketId });
       }
     }
   };

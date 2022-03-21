@@ -533,6 +533,18 @@ function Message({ user, message, index }) {
       </Box>
     );
   };
+  const checkHeightContent = () => {
+    if (message.type === 'image') return `224px`;
+    if (message.type === 'call') return `70px`;
+    if (message.type === 'reply') return `120px`;
+    return `24px`;
+  };
+  const checkHeightContentOther = () => {
+    if (message.type === 'image') return `224px`;
+    if (message.type === 'call') return `100px`;
+    if (message.type === 'reply') return `120px`;
+    return `24px`;
+  };
   // if (chatbox.id !== message.chatboxId) return null;
   if (message.type === 'note')
     return (
@@ -571,7 +583,7 @@ function Message({ user, message, index }) {
                 alignItems: 'center',
                 width: '100%',
                 justifyContent: 'end',
-                minHeight: message.type === 'image' ? `${224 + heightContentText}px` : '24px'
+                minHeight: checkHeightContent()
               }}
             >
               {showOptions && (
@@ -744,7 +756,7 @@ function Message({ user, message, index }) {
               display: 'flex',
               alignItems: 'center',
               width: '100%',
-              minHeight: message.type === 'image' ? `${200 + heightContentText}px` : '24px'
+              minHeight: checkHeightContentOther()
             }}
           >
             <BoxContentMessage onMouseEnter={mouseEnterMessage} onMouseLeave={mouseLeaveMessage}>

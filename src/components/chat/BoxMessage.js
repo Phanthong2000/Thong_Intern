@@ -195,7 +195,7 @@ function BoxMessage({ user }) {
   return (
     <RootStyle>
       <ContentMessage />
-      {inputting === chatbox.id && (
+      {inputting.includes(chatbox.id) && (
         <Box
           sx={{
             position: 'absolute',
