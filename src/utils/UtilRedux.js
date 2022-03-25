@@ -27,6 +27,12 @@ import {
 } from '../redux/actions/chatAction';
 import { registerUser } from './wssConnection';
 import ModalReceivingVideoCall from '../components/video/ModalReceivingVideoCall';
+import {
+  actionGetAllGroups,
+  actionGetGroupsYouJoined,
+  actionGetGroupsYouManage,
+  actionGetPostsAllGroup
+} from '../redux/actions/groupAction';
 
 UtilRedux.prototype = {
   user: PropTypes.object
@@ -49,6 +55,10 @@ function UtilRedux({ user }) {
       dispatch(actionGetStoryUser(user.id));
       dispatch(actionGetFriendsHaveStory(user.id));
       dispatch(actionGetAllBadeMessage(user.id));
+      dispatch(actionGetGroupsYouManage(user.id));
+      dispatch(actionGetGroupsYouJoined(user.id));
+      dispatch(actionGetPostsAllGroup(user.id));
+      dispatch(actionGetAllGroups());
       // if (tokenMessaging === '') {
       //   Notification.requestPermission().then((permission) => {
       //     if (permission === 'granted') {

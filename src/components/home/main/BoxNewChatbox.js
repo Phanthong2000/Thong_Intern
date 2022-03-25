@@ -24,6 +24,7 @@ import {
   actionGetChatgroupUser
 } from '../../../redux/actions/chatAction';
 import { db } from '../../../firebase-config';
+import { createChatboxGroup } from '../../../utils/wssConnection';
 
 const RootStyle = styled(Card)(() => ({
   width: '350px',
@@ -108,6 +109,11 @@ function BoxNewChatbox({ user }) {
       dispatch(actionChatGetNewChatboxHome(false));
     }
     if (usersChoose.length > 1) {
+      const socketIds = [];
+      usersChoose.forEach((member) => {
+        const userCall = usersSocket.find((user) => user.userId === member.id);
+        if (userCall !== undefined && userCall.userId !== user.id) socketIds.push(userCall);
+      });
       const members = [];
       usersChoose.forEach((item) => {
         members.push(item.id);
@@ -137,6 +143,7 @@ function BoxNewChatbox({ user }) {
           dispatch(actionGetAllChatSort(user.id));
           dispatch(actionChatGetNewChatboxHome(false));
           dispatch(actionGetChatgroupUser(user.id));
+          createChatboxGroup({ socketIds });
         });
       });
     }

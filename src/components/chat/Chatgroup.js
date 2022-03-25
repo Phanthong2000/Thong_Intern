@@ -145,6 +145,14 @@ function Chatgroup({ user, chatbox, home }) {
       if (messageLast.senderId === user.id) return `You: sent a note`;
       return `Sent a note`;
     }
+    if (messageLast.type === 'reply') {
+      if (messageLast.senderId === user.id) return `You: replied a message`;
+      return `Replied a message`;
+    }
+    if (messageLast.type === 'call') {
+      if (messageLast.senderId === user.id) return `You: started video call`;
+      return `Started a message`;
+    }
     if (messageLast.senderId === user.id) return `You: sent a image`;
     return `Sent a image`;
   };

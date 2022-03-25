@@ -9,7 +9,7 @@ import { db } from '../../../firebase-config';
 import Story from './Story';
 
 const RootStyle = styled(Box)(({ theme }) => ({
-  width: '50%',
+  width: '70%',
   height: '200px',
   marginTop: '20px',
   display: 'flex',

@@ -36,7 +36,13 @@ import {
   DELETE_SOCKETIDS_INVITE_JOIN_ROOM,
   SET_SOCKETIDS_INVITE_JOIN_ROOM,
   MODAL_RECEIVE_INVITE_JOIN_ROOM,
-  CHOOSE_PARTICIPANT
+  CHOOSE_PARTICIPANT,
+  TURN_OFF_VIDEO_ROOM,
+  TURN_ON_VIDEO_ROOM,
+  TURN_OFF_AUDIO_ROOM,
+  TURN_ON_AUDIO_ROOM,
+  FACING_MODE,
+  ROOM
 } from '../actions/types';
 
 const defaultState = {
@@ -81,7 +87,11 @@ const defaultState = {
     name: '',
     roomId: ''
   },
-  chooseParticipant: {}
+  chooseParticipant: {},
+  turnOffVideoRoom: [],
+  turnOffAudioRoom: [],
+  facing: 'user',
+  room: {}
 };
 
 const callReducer = (state = defaultState, action) => {
@@ -236,7 +246,6 @@ const callReducer = (state = defaultState, action) => {
         modalAddMemberToRoom: action.payload
       };
     case SET_PEERS:
-      console.log('set peers', action.payload);
       return {
         ...state,
         allPeers: action.payload
@@ -247,9 +256,10 @@ const callReducer = (state = defaultState, action) => {
         allPeers: [...state.allPeers, action.payload]
       };
     case DELETE_PEERS:
+      console.log('delete peer', action.payload);
       return {
         ...state,
-        allPeers: state.allPeers.filter((peer) => peer !== action.payload)
+        allPeers: state.allPeers.filter((peer) => peer.userJoin !== action.payload)
       };
     case MODAL_INVITE_JOIN_ROOM:
       return {
@@ -257,7 +267,6 @@ const callReducer = (state = defaultState, action) => {
         modalInviteJoinRoom: action.payload
       };
     case ADD_SOCKETIDS_INVITE_JOIN_ROOM:
-      console.log(action.payload);
       return {
         ...state,
         socketIdsJoinRoom: [...state.socketIdsJoinRoom, action.payload]
@@ -281,6 +290,36 @@ const callReducer = (state = defaultState, action) => {
       return {
         ...state,
         chooseParticipant: action.payload
+      };
+    case TURN_OFF_VIDEO_ROOM:
+      return {
+        ...state,
+        turnOffVideoRoom: [...state.turnOffVideoRoom, action.payload]
+      };
+    case TURN_ON_VIDEO_ROOM:
+      return {
+        ...state,
+        turnOffVideoRoom: state.turnOffVideoRoom.filter((id) => id !== action.payload)
+      };
+    case TURN_OFF_AUDIO_ROOM:
+      return {
+        ...state,
+        turnOffAudioRoom: [...state.turnOffAudioRoom, action.payload]
+      };
+    case TURN_ON_AUDIO_ROOM:
+      return {
+        ...state,
+        turnOffAudioRoom: state.turnOffAudioRoom.filter((id) => id !== action.payload)
+      };
+    case FACING_MODE:
+      return {
+        ...state,
+        facing: action.payload
+      };
+    case ROOM:
+      return {
+        ...state,
+        room: action.payload
       };
     default:
       return state;

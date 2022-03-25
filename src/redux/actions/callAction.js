@@ -36,7 +36,13 @@ import {
   DELETE_SOCKETIDS_INVITE_JOIN_ROOM,
   SET_SOCKETIDS_INVITE_JOIN_ROOM,
   MODAL_RECEIVE_INVITE_JOIN_ROOM,
-  CHOOSE_PARTICIPANT
+  CHOOSE_PARTICIPANT,
+  TURN_OFF_VIDEO_ROOM,
+  TURN_ON_VIDEO_ROOM,
+  TURN_OFF_AUDIO_ROOM,
+  TURN_ON_AUDIO_ROOM,
+  FACING_MODE,
+  ROOM
 } from './types';
 
 export const actionMe = (data) => ({
@@ -194,5 +200,32 @@ export const actionModalReceiveInviteJoinRoom = (data) => ({
 });
 export const actionChooseParticipant = (data) => ({
   type: CHOOSE_PARTICIPANT,
+  payload: data
+});
+export const actionTurnOffVideoRoom = (data) => ({
+  type: TURN_OFF_VIDEO_ROOM,
+  payload: data
+});
+
+export const actionTurnOnVideoRoom = (data) => ({
+  type: TURN_ON_VIDEO_ROOM,
+  payload: data
+});
+export const actionTurnOffAudioRoom = (data) => ({
+  type: TURN_OFF_AUDIO_ROOM,
+  payload: data
+});
+
+export const actionTurnOnAudioRoom = (data) => ({
+  type: TURN_ON_AUDIO_ROOM,
+  payload: data
+});
+
+export const actionFacingMode = (data) => ({
+  type: FACING_MODE,
+  payload: data
+});
+export const actionRoom = (data) => ({
+  type: ROOM,
   payload: data
 });

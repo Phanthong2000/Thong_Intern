@@ -16,6 +16,12 @@ const sidebarConfig = [
     path: '/home/chat',
     icon: 'uil:comment-message',
     name: 'Chat'
+  },
+  {
+    title: 'groups',
+    path: '/home/groups',
+    icon: 'el:group-alt',
+    name: 'Groups'
   }
 ];
 export default sidebarConfig;

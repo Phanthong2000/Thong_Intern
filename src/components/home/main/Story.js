@@ -8,7 +8,7 @@ import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firesto
 import { db } from '../../../firebase-config';
 
 const RootStyle = styled(Stack)(({ theme }) => ({
-  width: '120px',
+  width: '20%',
   height: '200px',
   maxWidth: '100px',
   textAlign: 'center',

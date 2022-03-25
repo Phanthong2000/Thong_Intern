@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Box, Stack, styled, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
@@ -14,7 +14,7 @@ import BoxMessageChatgroup from '../components/chat/BoxMessageChatgroup';
 import OptionsMessageChatgroup from '../components/chat/OptionsMessageChatgroup';
 import BoxOptionsChatbox from '../components/chat/BoxOptionsChatbox';
 import BoxReply from '../components/chat/BoxReply';
-import { actionChatReplyMessage } from '../redux/actions/chatAction';
+import { actionChatReplyMessage, actionGetAllChatSort } from '../redux/actions/chatAction';
 
 const heightScreen = window.screen.height;
 const RootStyle = styled(Stack)(({ theme }) => ({
@@ -31,12 +31,20 @@ function Chat({ user }) {
   const optionsChatbox = useSelector((state) => state.chat.optionsChatbox);
   const reply = useSelector((state) => state.chat.reply);
   const dispatch = useDispatch();
+  const socketRef = useRef();
+  const socket = useSelector((state) => state.call.socket);
   useEffect(() => {
     document.title = 'Chat';
+    if (socket.id !== undefined) {
+      socketRef.current = socket;
+      socketRef.current.on('changeNameGroup', (data) => {
+        dispatch(actionGetAllChatSort(user.id));
+      });
+    }
     return () => {
       dispatch(actionChatReplyMessage({}));
     };
-  }, [user]);
+  }, [user, socket]);
   return (
     <RootStyle direction="row">
       <BoxUserChat user={user} />

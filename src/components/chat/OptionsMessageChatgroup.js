@@ -39,8 +39,10 @@ import {
   endCall,
   inputtingSocket,
   deleteInputtingSocketGroup,
-  inputtingSocketGroup
+  inputtingSocketGroup,
+  deleteInputtingSocket
 } from '../../utils/wssConnection';
+import { actionRoom } from '../../redux/actions/callAction';
 
 const RootStyle = styled(Card)(({ theme }) => ({
   width: '100%',
@@ -177,6 +179,11 @@ function OptionsMessageChatgroup({ user }) {
   };
   const sendMessage = () => {
     if (reply.id !== undefined) {
+      const socketIds = [];
+      chatbox.members.forEach((member) => {
+        const userCall = usersSocket.find((user) => user.userId === member);
+        if (userCall !== undefined && userCall.userId !== user.id) socketIds.push(userCall);
+      });
       const message = {
         chatboxId: chatbox.id,
         content: messageText,
@@ -196,10 +203,24 @@ function OptionsMessageChatgroup({ user }) {
           dispatch(actionChatReplyMessage({}));
           setMessageText('');
           setIsChatting(false);
+          socketIds.forEach((socketId) => {
+            sendMessageSocket({
+              ...message,
+              id: docRef.id,
+              socketId: socketId.socketId,
+              receiverId: socketId.userId
+            });
+            deleteInputtingSocket({ chatboxId: chatbox.id, socketId: socketId.socketId });
+          });
           dispatch(actionGetAllChatSort(user.id));
         });
       });
     } else if (type === 'image' && imageMessages.length > 0) {
+      const socketIds = [];
+      chatbox.members.forEach((member) => {
+        const userCall = usersSocket.find((user) => user.userId === member);
+        if (userCall !== undefined && userCall.userId !== user.id) socketIds.push(userCall);
+      });
       const message = {
         chatboxId: chatbox.id,
         content: messageText,
@@ -244,6 +265,15 @@ function OptionsMessageChatgroup({ user }) {
                 updateDoc(doc(db, 'chatboxs', chatbox.id), {
                   updatedAt: new Date().getTime()
                 }).then(() => {
+                  socketIds.forEach((socketId) => {
+                    sendMessageSocket({
+                      ...message,
+                      id: docRef.id,
+                      contentFile: downloadURL,
+                      socketId: socketId.socketId,
+                      receiverId: socketId.userId
+                    });
+                  });
                   dispatch(actionGetAllChatSort(user.id));
                 });
               });
@@ -252,6 +282,11 @@ function OptionsMessageChatgroup({ user }) {
         );
       });
     } else {
+      const socketIds = [];
+      chatbox.members.forEach((member) => {
+        const userCall = usersSocket.find((user) => user.userId === member);
+        if (userCall !== undefined && userCall.userId !== user.id) socketIds.push(userCall);
+      });
       const message = {
         chatboxId: chatbox.id,
         content: messageText,
@@ -265,6 +300,15 @@ function OptionsMessageChatgroup({ user }) {
       addDoc(collection(db, 'messages'), message)
         .then((docRef) => {
           dispatch(actionChatAddMessage({ ...message, id: docRef.id }));
+          socketIds.forEach((socketId) => {
+            sendMessageSocket({
+              ...message,
+              id: docRef.id,
+              socketId: socketId.socketId,
+              receiverId: socketId.userId
+            });
+            deleteInputtingSocket({ chatboxId: chatbox.id, socketId: socketId.socketId });
+          });
           updateDoc(doc(db, 'chatboxs', chatbox.id), {
             updatedAt: new Date().getTime()
           }).then(() => {
@@ -279,6 +323,11 @@ function OptionsMessageChatgroup({ user }) {
     }
   };
   const sendIconLike = () => {
+    const socketIds = [];
+    chatbox.members.forEach((member) => {
+      const userCall = usersSocket.find((user) => user.userId === member);
+      if (userCall !== undefined && userCall.userId !== user.id) socketIds.push(userCall);
+    });
     const message = {
       chatboxId: chatbox.id,
       content: '',
@@ -302,6 +351,15 @@ function OptionsMessageChatgroup({ user }) {
         ...chatbox,
         updatedAt: new Date().getTime()
       }).then(() => {
+        socketIds.forEach((socketId) => {
+          sendMessageSocket({
+            ...message,
+            id: docRef.id,
+            socketId: socketId.socketId,
+            receiverId: socketId.userId
+          });
+          deleteInputtingSocket({ chatboxId: chatbox.id, socketId: socketId.socketId });
+        });
         dispatch(actionGetAllChatSort(user.id));
       });
     });
@@ -314,6 +372,16 @@ function OptionsMessageChatgroup({ user }) {
       status: 'calling',
       members: [user]
     }).then((docRefRoom) => {
+      dispatch(
+        actionRoom({
+          userCreate: user,
+          createdAt: new Date().getTime(),
+          chatbox,
+          status: 'calling',
+          members: [user],
+          id: docRefRoom.id
+        })
+      );
       const message = {
         chatboxId: chatbox.id,
         content: `${user.username} created video call room`,

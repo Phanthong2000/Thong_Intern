@@ -5,10 +5,20 @@ import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { Icon } from '@iconify/react';
 import { keyframes } from '@emotion/react';
-import { addDoc, collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  updateDoc,
+  where
+} from 'firebase/firestore';
 import {
   actionModalReceiveInviteJoinRoom,
   actionModalReceiving,
+  actionRoom,
   actionStream
 } from '../../redux/actions/callAction';
 import { answerCall, endCall } from '../../utils/wssConnection';
@@ -59,8 +69,19 @@ function ModalReceiveInviteJoinRoom() {
     );
   };
   const accept = () => {
-    navigate(`/home/video-room/${modalReceiveInviteJoinRoom.roomId}`);
-    handleClose();
+    getDoc(doc(db, 'rooms', modalReceiveInviteJoinRoom.roomId))
+      .then((snapshot) => {
+        dispatch(
+          actionRoom({
+            ...snapshot.data(),
+            id: snapshot.id
+          })
+        );
+      })
+      .then(() => {
+        navigate(`/home/video-room/${modalReceiveInviteJoinRoom.roomId}`);
+        handleClose();
+      });
   };
   return (
     <Modal open={modalReceiveInviteJoinRoom.status} onClose={handleClose}>

@@ -15,7 +15,8 @@ import {
   ACTION_POST_GET_ALL_OTHER,
   ACTION_POST_LOADING_GET_ALL_OTHER,
   ACTION_POST_GET_ALL_POST_ALL_FRIEND,
-  ACTION_POST_LOADING_GET_ALL_POST_ALL_FRIEND
+  ACTION_POST_LOADING_GET_ALL_POST_ALL_FRIEND,
+  ACTION_POST_MODAL_SHARE_POST
 } from '../actions/types';
 
 const defaultState = {
@@ -35,7 +36,12 @@ const defaultState = {
   postsOther: [],
   isLoadingPostsOther: true,
   allPosts: [],
-  isLoadingAllPosts: false
+  isLoadingAllPosts: false,
+  modalSharePost: {
+    status: false,
+    post: {},
+    userPost: {}
+  }
 };
 const postReducer = (state = defaultState, action) => {
   switch (action.type) {
@@ -139,6 +145,11 @@ const postReducer = (state = defaultState, action) => {
       return {
         ...state,
         isLoadingAllPosts: true
+      };
+    case ACTION_POST_MODAL_SHARE_POST:
+      return {
+        ...state,
+        modalSharePost: action.payload
       };
     default:
       return state;

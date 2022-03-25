@@ -35,7 +35,8 @@ import Comment from './Comment';
 import {
   actionPostOpenConfirmDeletePost,
   getAllPosts,
-  actionGetAllPostAllFriend
+  actionGetAllPostAllFriend,
+  actionPostModalSharePost
 } from '../../redux/actions/postAction';
 import Tag from './Tag';
 import ModalConfirmDeletePost from './ModalConfirmDeletePost';
@@ -56,7 +57,8 @@ const BoxInfoUserPost = styled(Box)(() => ({
   width: '100%',
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'space-between'
+  justifyContent: 'space-between',
+  marginBottom: '10px'
 }));
 const DotOnline = styled(Icon)(({ theme }) => ({
   position: 'absolute',
@@ -74,6 +76,11 @@ const Username = styled(Typography)(() => ({
   ':hover': {
     textDecoration: 'underline'
   }
+}));
+const AvatarGroup = styled(Button)(({ theme }) => ({
+  width: '35px',
+  height: '35px',
+  borderRadius: '5px'
 }));
 Post.prototype = {
   post: PropTypes.object,
@@ -94,6 +101,15 @@ function Post({ user, post }) {
   const [notificationCommentsByPost, setNotificationCommentsByPost] = useState({});
   const [lovesPost, setLovesPost] = useState(post.loves);
   const navigate = useNavigate();
+  const [group, setGroup] = useState({});
+  const getGroup = (id) => {
+    getDoc(doc(db, 'groups', id)).then((snapshot) => {
+      setGroup({
+        ...snapshot.data(),
+        id: snapshot.id
+      });
+    });
+  };
   const getNotificationsLovesByPost = () => {
     getDocs(
       query(
@@ -153,6 +169,9 @@ function Post({ user, post }) {
   useEffect(() => {
     getUserPost();
     getCommentsByPostId();
+    if (post.groupId) {
+      getGroup(post.groupId);
+    }
     return () => null;
   }, []);
   const StatusPost = () => {
@@ -184,8 +203,7 @@ function Post({ user, post }) {
     const ContentBackground = styled(Typography)(() => ({
       fontWeight: 'bold',
       fontSize: '20px',
-      color: post.textColor,
-      width: '50%'
+      color: post.textColor
     }));
     if (post.type === 'background')
       return (
@@ -209,7 +227,7 @@ function Post({ user, post }) {
     const AvatarPost = styled(Avatar)(() => ({
       width: '350px',
       height: '350px',
-      border: `10px solid #fff`,
+      outline: `10px solid #fff`,
       cursor: 'pointer'
     }));
     return (
@@ -379,7 +397,13 @@ function Post({ user, post }) {
       setIsCommenting(true);
     };
     const share = () => {
-      console.log('share');
+      dispatch(
+        actionPostModalSharePost({
+          status: true,
+          post,
+          userPost
+        })
+      );
     };
     const GridItem = styled(Grid)(({ theme }) => ({
       padding: theme.spacing(1, 1, 1)
@@ -406,7 +430,7 @@ function Post({ user, post }) {
         {name}
       </Button>
     );
-    if (post.status === 'public')
+    if (post.status === 'public' && !post.groupId)
       return (
         <Grid container>
           <GridItem item xs={4} sm={4} md={4} lg={4} xl={4}>
@@ -518,7 +542,15 @@ function Post({ user, post }) {
               }}
             >
               <Avatar sx={{ width: '30px', height: '30px' }} src={user.avatar} />
-              <DotOnline icon="ci:dot-05-xl" style={user.isOnline ? null : { color: 'grey' }} />
+              <DotOnline
+                icon="ci:dot-05-xl"
+                style={{
+                  color:
+                    usersSocket.find((socket) => socket.userId === userPost.id) === undefined
+                      ? 'gray'
+                      : null
+                }}
+              />
             </Button>
           </Grid>
           <Grid item xs={10} sm={10} md={10} lg={10} xl={10}>
@@ -589,117 +621,159 @@ function Post({ user, post }) {
   return (
     <RootStyle data-aos="zoom-in">
       <StackPost>
-        <BoxInfoUserPost>
-          <Stack direction="row" sx={{ alignItems: 'center' }}>
-            <Button
-              sx={{
-                '&:hover': { backgroundColor: 'transparent' },
-                '&:focus': { backgroundColor: 'transparent' }
-              }}
-            >
-              {userPost.avatar === undefined ? (
-                <Skeleton sx={{ width: '40px', height: '40px' }} variant="circular" />
-              ) : (
-                <Avatar
-                  onClick={() => navigate(`/home/other/${userPost.id}`)}
-                  src={userPost.avatar}
-                />
-              )}
-              <DotOnline
-                icon="ci:dot-05-xl"
-                style={{
-                  color:
-                    usersSocket.find((socket) => socket.userId === userPost.id) === undefined
-                      ? 'gray'
-                      : null
+        {post.groupId ? (
+          <BoxInfoUserPost>
+            <Box sx={{ display: 'flex' }}>
+              <AvatarGroup
+                sx={{
+                  backgroundImage: `url(${group.avatar})`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundSize: '100% 100%'
                 }}
-              />
-            </Button>
-            <Stack>
-              <Box sx={{ display: 'flex', alignItems: 'center', textAlign: 'left' }}>
-                {userPost.username === undefined ? (
-                  <Skeleton variant="text" sx={{ width: '100px', height: '20px' }} />
-                ) : (
-                  <>
-                    <Username onMouseOver={openUsername}>{userPost.username}</Username>
-                    <Popover
-                      id="basic-menu"
-                      anchorEl={anchorElUsername}
-                      open={openUS}
-                      onClose={handleCloseUsername}
-                      anchorOrigin={{
-                        vertical: 'top',
-                        horizontal: 'center'
-                      }}
-                      transformOrigin={{
-                        vertical: 'bottom',
-                        horizontal: 'center'
-                      }}
-                    >
-                      <BoxHoverUsernamePost user={user} />
-                    </Popover>
-                  </>
-                )}
-
-                {post.type === 'avatar' && (
-                  <Typography sx={{ color: 'gray', marginLeft: '3px' }}>
-                    updated his profile picture.
+              >
+                <Avatar
+                  sx={{
+                    width: '25px',
+                    height: '25px',
+                    position: 'absolute',
+                    bottom: -5,
+                    right: -5,
+                    outline: `1px solid #000`
+                  }}
+                  src={user.avatar}
+                />
+              </AvatarGroup>
+              <Box sx={{ marginLeft: '15px' }}>
+                <Username>{group.name}</Username>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Typography sx={{ fontWeight: 'bold', fontSize: '12px', color: 'gray' }}>
+                    {userPost.username}
                   </Typography>
-                )}
-                {post.type === 'cover' && (
-                  <Typography sx={{ color: 'gray', marginLeft: '3px' }}>
-                    updated his cover photo.
-                  </Typography>
-                )}
-                <Tags />
+                  <Icon icon="ci:dot-01-xs" />
+                  <DatePost />
+                  <Icon icon="ci:dot-01-xs" />
+                  <Icon icon="el:group-alt" />
+                </Box>
               </Box>
-              <Stack sx={{ display: 'flex', alignItems: 'center' }} direction="row">
-                <DatePost />
-                <StatusPost />
+            </Box>
+            <IconButton>
+              <Icon icon="bx:bx-dots-horizontal-rounded" />
+            </IconButton>
+          </BoxInfoUserPost>
+        ) : (
+          <BoxInfoUserPost>
+            <Stack direction="row" sx={{ alignItems: 'center' }}>
+              <Button
+                sx={{
+                  '&:hover': { backgroundColor: 'transparent' },
+                  '&:focus': { backgroundColor: 'transparent' }
+                }}
+              >
+                {userPost.avatar === undefined ? (
+                  <Skeleton sx={{ width: '40px', height: '40px' }} variant="circular" />
+                ) : (
+                  <Avatar
+                    onClick={() => navigate(`/home/other/${userPost.id}`)}
+                    src={userPost.avatar}
+                  />
+                )}
+                <DotOnline
+                  icon="ci:dot-05-xl"
+                  style={{
+                    color:
+                      usersSocket.find((socket) => socket.userId === userPost.id) === undefined
+                        ? 'gray'
+                        : null
+                  }}
+                />
+              </Button>
+              <Stack>
+                <Box sx={{ display: 'flex', alignItems: 'center', textAlign: 'left' }}>
+                  {userPost.username === undefined ? (
+                    <Skeleton variant="text" sx={{ width: '100px', height: '20px' }} />
+                  ) : (
+                    <>
+                      <Username onMouseOver={openUsername}>{userPost.username}</Username>
+                      <Popover
+                        id="basic-menu"
+                        anchorEl={anchorElUsername}
+                        open={openUS}
+                        onClose={handleCloseUsername}
+                        anchorOrigin={{
+                          vertical: 'top',
+                          horizontal: 'center'
+                        }}
+                        transformOrigin={{
+                          vertical: 'bottom',
+                          horizontal: 'center'
+                        }}
+                      >
+                        <BoxHoverUsernamePost user={user} />
+                      </Popover>
+                    </>
+                  )}
+
+                  {post.type === 'avatar' && (
+                    <Typography sx={{ color: 'gray', marginLeft: '3px' }}>
+                      updated his profile picture.
+                    </Typography>
+                  )}
+                  {post.type === 'cover' && (
+                    <Typography sx={{ color: 'gray', marginLeft: '3px' }}>
+                      updated his cover photo.
+                    </Typography>
+                  )}
+                  <Tags />
+                </Box>
+                <Stack sx={{ display: 'flex', alignItems: 'center' }} direction="row">
+                  <DatePost />
+                  <StatusPost />
+                </Stack>
               </Stack>
             </Stack>
-          </Stack>
-          <IconButton onClick={openOptionsPost}>
-            <Icon icon="bx:bx-dots-horizontal-rounded" />
-          </IconButton>
-          <Popover
-            id="basic-menu"
-            anchorEl={anchorEl}
-            open={open}
-            onClose={handleClose}
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'left'
-            }}
-            transformOrigin={{
-              vertical: 'center',
-              horizontal: 'right'
-            }}
-          >
-            <Stack sx={{ padding: '10px', background: '#fff' }}>
-              <Button
-                sx={{ color: 'gray', textTransform: 'none', justifyContent: 'left' }}
-                startIcon={<Icon style={{ marginLeft: '5px' }} icon="bytesize:edit" />}
-              >
-                Edit post
-              </Button>
-              <Button
-                sx={{ color: 'gray', textTransform: 'none', justifyContent: 'left' }}
-                startIcon={<StatusPost />}
-              >
-                Edit audience
-              </Button>
-              <Divider sx={{ margin: `10px 0px` }} />
-              <Button
-                onClick={deletePost}
-                sx={{ color: 'gray', textTransform: 'none', justifyContent: 'left' }}
-                startIcon={<Icon style={{ marginLeft: '5px' }} icon="ion:trash-outline" />}
-              >
-                Delete post
-              </Button>
-            </Stack>
-          </Popover>
-        </BoxInfoUserPost>
+            <IconButton onClick={openOptionsPost}>
+              <Icon icon="bx:bx-dots-horizontal-rounded" />
+            </IconButton>
+            <Popover
+              id="basic-menu"
+              anchorEl={anchorEl}
+              open={open}
+              onClose={handleClose}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'left'
+              }}
+              transformOrigin={{
+                vertical: 'center',
+                horizontal: 'right'
+              }}
+            >
+              <Stack sx={{ padding: '10px', background: '#fff' }}>
+                <Button
+                  sx={{ color: 'gray', textTransform: 'none', justifyContent: 'left' }}
+                  startIcon={<Icon style={{ marginLeft: '5px' }} icon="bytesize:edit" />}
+                >
+                  Edit post
+                </Button>
+                <Button
+                  sx={{ color: 'gray', textTransform: 'none', justifyContent: 'left' }}
+                  startIcon={<StatusPost />}
+                >
+                  Edit audience
+                </Button>
+                <Divider sx={{ margin: `10px 0px` }} />
+                <Button
+                  onClick={deletePost}
+                  sx={{ color: 'gray', textTransform: 'none', justifyContent: 'left' }}
+                  startIcon={<Icon style={{ marginLeft: '5px' }} icon="ion:trash-outline" />}
+                >
+                  Delete post
+                </Button>
+              </Stack>
+            </Popover>
+          </BoxInfoUserPost>
+        )}
+
         {post.type !== 'background' ? (
           <>
             <ShowMore

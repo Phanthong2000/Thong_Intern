@@ -17,7 +17,8 @@ import {
   ACTION_POST_GET_ALL_OTHER,
   ACTION_POST_LOADING_GET_ALL_OTHER,
   ACTION_POST_GET_ALL_POST_ALL_FRIEND,
-  ACTION_POST_LOADING_GET_ALL_POST_ALL_FRIEND
+  ACTION_POST_LOADING_GET_ALL_POST_ALL_FRIEND,
+  ACTION_POST_MODAL_SHARE_POST
 } from './types';
 
 export const actionPostGetAll = (data) => ({
@@ -80,6 +81,10 @@ export const actionPostGetAllPostAllFriend = (data) => ({
 });
 export const actionPostLoadingGetAllPostAllFriend = () => ({
   type: ACTION_POST_LOADING_GET_ALL_POST_ALL_FRIEND
+});
+export const actionPostModalSharePost = (data) => ({
+  type: ACTION_POST_MODAL_SHARE_POST,
+  payload: data
 });
 export const actionGetAllPostAllFriend = (id) => (dispatch) => {
   const allPostUser = [];
@@ -180,12 +185,13 @@ export const getAllPosts = (id, sort) => (dispatch) => {
   } else {
     posts.then((snapshot) => {
       const data = [];
-      snapshot.docs.forEach((post) =>
-        data.push({
-          ...post.data(),
-          id: post.id
-        })
-      );
+      snapshot.docs.forEach((post) => {
+        if (!post.data().groupId)
+          data.push({
+            ...post.data(),
+            id: post.id
+          });
+      });
       if (sort === 'desc') {
         const postSort = data.sort((a, b) => b.createdAt - a.createdAt);
         dispatch(actionPostGetAll(postSort));
@@ -207,10 +213,12 @@ export const getAllPostsOther = (id, sort) => (dispatch) => {
     } else {
       const posts = [];
       snapshots.docs.forEach((post) => {
-        posts.push({
-          ...post.data(),
-          id: post.id
-        });
+        if (!post.data().groupId) {
+          posts.push({
+            ...post.data(),
+            id: post.id
+          });
+        }
       });
       if (sort === 'desc') {
         const postsSort = posts.sort((a, b) => b.createdAt - a.createdAt);

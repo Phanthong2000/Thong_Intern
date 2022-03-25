@@ -167,11 +167,13 @@ const chatReducer = (state = defaultState, action) => {
         reply: action.payload
       };
     case ACTION_CHAT_ADD_INPUTTING:
+      console.log('inputting', action.payload);
       return {
         ...state,
         inputting: [...state.inputting, action.payload]
       };
     case ACTION_CHAT_DELETE_INPUTTING:
+      console.log('delete inputting', action.payload);
       return {
         ...state,
         inputting: state.inputting.filter((input) => input !== action.payload)

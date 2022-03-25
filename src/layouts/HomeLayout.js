@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { styled, Box, List, ListItem, IconButton } from '@mui/material';
+import { styled, Box, List, ListItem, IconButton, Typography, Backdrop } from '@mui/material';
 import { Search } from '@mui/icons-material';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -16,6 +16,9 @@ import ModalReceivingVideoCall from '../components/video/ModalReceivingVideoCall
 import UtilRedux from '../utils/UtilRedux';
 import ModalReceivingGroup from '../components/room/ModalReceivingGroup';
 import ModalReceiveInviteJoinRoom from '../components/video/ModalReceiveInviteJoinRoom';
+import Snack from '../components/Snack';
+import ModalSharePost from '../components/post/ModalSharePost';
+import Backdrops from '../components/Backdrop';
 
 const RootStyle = styled(Box)(({ theme }) => ({
   overflow: 'hidden',
@@ -31,7 +34,7 @@ const MainStyle = styled('div')(({ theme }) => ({
 function HomeLayout() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [notification, setNotification] = useState({ title: '', body: '' });
+  const hotToast = useSelector((state) => state.user.hotToast);
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
   const [user, setUser] = useState({});
   const chatboxHome = useSelector((state) => state.chat.chatboxHome);
@@ -39,6 +42,8 @@ function HomeLayout() {
   const modalReceiving = useSelector((state) => state.call.modalReceiving);
   const modalReceivingGroup = useSelector((state) => state.call.modalReceivingGroup);
   const modalReceiveInviteJoinRoom = useSelector((state) => state.call.modalReceiveInviteJoinRoom);
+  const modalSharePost = useSelector((state) => state.post.modalSharePost);
+  const backdrop = useSelector((state) => state.user.backdrop);
   const { pathname } = useLocation();
   const getUser = async (userId) => {
     const data = await getDoc(doc(db, 'users', userId));
@@ -49,14 +54,11 @@ function HomeLayout() {
   };
   const notify = () => toast.success(<ToastDisplay />);
   const ToastDisplay = () => (
-    <div>
-      <p>
-        <b>{notification.title}</b>
-      </p>
-      <p>
-        <b>{notification.body}</b>
-      </p>
-    </div>
+    <Box>
+      <Typography sx={{ fontWeight: 'bold', fontSize: '20px', fontFamily: 'sans-serif' }}>
+        {hotToast}
+      </Typography>
+    </Box>
   );
   useEffect(() => {
     if (!isLoggedIn) navigate('/login');
@@ -67,9 +69,9 @@ function HomeLayout() {
     return () => null;
   }, []);
   useEffect(() => {
-    if (notification.title !== '') notify();
+    if (hotToast !== '') notify();
     return () => null;
-  }, [notification]);
+  }, [hotToast]);
   const closeSearch = () => {
     dispatch(actionUserCloseSearch());
   };
@@ -102,6 +104,9 @@ function HomeLayout() {
         {modalReceiveInviteJoinRoom.status && !pathname.includes('/home/video-room') && (
           <ModalReceiveInviteJoinRoom />
         )}
+        {modalSharePost.status && <ModalSharePost user={user} />}
+        <Snack />
+        <Backdrops />
         <Outlet />
       </MainStyle>
     </RootStyle>

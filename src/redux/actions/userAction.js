@@ -41,7 +41,9 @@ import {
   ACTION_USER_GET_STORY_USER,
   ACTION_USER_GET_FRIENDS_HAVE_STORY,
   ACTION_USER_GET_TOKEN_MESSAGING,
-  ACTION_USER_DELETE_FRIEND_USER
+  ACTION_USER_DELETE_FRIEND_USER,
+  ACTION_USER_HOT_TOAST,
+  ACTION_USER_BACKDROP
 } from './types';
 
 export const actionUserOpenSearch = () => ({ type: ACTION_USER_OPEN_SEARCH });
@@ -158,6 +160,14 @@ export const actionUserGetFriendsHaveStory = (data) => ({
 });
 export const actionUserGetTokenMessaging = (data) => ({
   type: ACTION_USER_GET_TOKEN_MESSAGING,
+  payload: data
+});
+export const actionUserHotToast = (data) => ({
+  type: ACTION_USER_HOT_TOAST,
+  payload: data
+});
+export const actionUserBackdrop = (data) => ({
+  type: ACTION_USER_BACKDROP,
   payload: data
 });
 export const actionGetContact = (userId, otherId) => async (dispatch) => {

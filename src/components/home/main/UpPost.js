@@ -8,12 +8,12 @@ import TagPeople from '../../post/TagPeople';
 import CreatePost from '../../post/CreatePost';
 
 const RootStyle = styled(Card)(({ theme }) => ({
-  width: '50%',
+  width: '70%',
   marginTop: '20px',
   padding: theme.spacing(1, 2, 1),
   background: '#fff',
   [theme.breakpoints.down('md')]: {
-    width: '90%'
+    width: '100%'
   }
 }));
 const BoxUpPost = styled(Box)(() => ({
@@ -62,7 +62,7 @@ function UpPost({ user }) {
               src={user.avatar}
             />
             <ButtonUpPost onClick={() => dispatch(actionPostOpenCreatePost())}>
-              What's on your mind{' '}
+              What's on your mind
               <span role="img" aria-label="information">
                 😀
               </span>

@@ -17,6 +17,7 @@ import { Icon } from '@iconify/react';
 import moment from 'moment';
 import { doc, getDoc, getDocs, collection, query, where } from 'firebase/firestore';
 import ShowMore from 'react-show-more';
+import { useSelector } from 'react-redux';
 import { db } from '../../firebase-config';
 
 const DotOnline = styled(Icon)(({ theme }) => ({
@@ -52,6 +53,7 @@ Comment.prototype = {
 };
 function Comment({ comment, user }) {
   const [userComment, setUserComment] = useState({});
+  const usersSocket = useSelector((state) => state.user.usersSocket);
   const getUserComment = () => {
     getDoc(doc(db, 'users', comment.userId)).then((snapshot) => {
       setUserComment({
@@ -96,7 +98,12 @@ function Comment({ comment, user }) {
               <Avatar sx={{ width: '30px', height: '30px' }} src={userComment.avatar} />
               <DotOnline
                 icon="ci:dot-05-xl"
-                style={userComment.isOnline ? null : { color: 'grey' }}
+                style={{
+                  color:
+                    usersSocket.find((socket) => socket.userId === userComment.id) === undefined
+                      ? 'gray'
+                      : null
+                }}
               />
             </>
           )}

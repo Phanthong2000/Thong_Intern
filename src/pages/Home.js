@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { Icon } from '@iconify/react';
+import { Scrollbar } from 'smooth-scrollbar-react';
 import { actionTestSearch } from '../redux/actions/userAction';
 import BoxPost from '../components/home/main/BoxPost';
 import BoxContact from '../components/home/main/BoxContact';
@@ -22,9 +23,15 @@ const heightScreen = window.innerHeight - 1;
 const RootStyle = styled(Box)(({ theme }) => ({
   width: '100%',
   marginTop: '60px',
-  minHeight: `${heightScreen}px`,
+  minHeight: `${heightScreen - 60}px`,
   background: theme.palette.background,
   display: 'flex'
+}));
+const StackContact = styled(Box)(({ theme }) => ({
+  height: `${heightScreen - 60}px`,
+  maxHeight: `${heightScreen - 60}px`,
+  display: 'flex',
+  width: '30%'
 }));
 Home.prototype = {
   user: PropTypes.object
@@ -81,24 +88,23 @@ function Home({ user }) {
   };
   return (
     <RootStyle>
-      {/* {modalReceiving && <ModalReceivingVideoCall user={user} />} */}
       <div>{usersSocket.length}</div>
-      <div>peer: {allPeers.length}</div>
-      <div>remote: {remoteStreamGroup.length}</div>
       <BoxPost user={user} />
-      <Stack>
-        <BoxContact user={user} />
-        <Box>
-          <Typography
-            sx={{ color: 'gray', fontFamily: 'sans-serif', fontSize: '16px', fontWeight: 'bold' }}
-          >
-            Group conversations
-          </Typography>
-          {chatgroups.map((item, index) => (
-            <Chatgroup key={index} chatgroup={item} />
-          ))}
-        </Box>
-      </Stack>
+      <StackContact>
+        <Scrollbar alwaysShowTracks>
+          <BoxContact user={user} />
+          <Box>
+            <Typography
+              sx={{ color: 'gray', fontFamily: 'sans-serif', fontSize: '16px', fontWeight: 'bold' }}
+            >
+              Group conversations
+            </Typography>
+            {chatgroups.map((item, index) => (
+              <Chatgroup key={index} chatgroup={item} />
+            ))}
+          </Box>
+        </Scrollbar>
+      </StackContact>
       {!chatboxHome.status && chatboxHome.user.id !== undefined && (
         <IconButton sx={{ position: 'fixed', right: 15, bottom: 130 }}>
           <Avatar

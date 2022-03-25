@@ -16,6 +16,7 @@ import Post from '../components/other/Post';
 import EmptyPost from '../components/profile/EmptyPost';
 import { actionGetAllFriendOther } from '../redux/actions/userAction';
 import { actionChatGetChatbox } from '../redux/actions/chatAction';
+import SharePost from '../components/post/SharePost';
 
 const RootStyle = styled(Stack)(({ theme }) => ({
   marginTop: '60px',
@@ -62,12 +63,18 @@ function Other({ user }) {
     );
     return () => null;
   }, [user, id]);
-  const BoxMessage = () => {
+  const BoxPost = () => {
     if (postsOther.length === 0) return <EmptyPost />;
     return (
       <>
         {postsOther.map((item, index) => (
-          <Post key={index} post={item} user={user} />
+          <>
+            {item.type === 'share' ? (
+              <SharePost key={index} post={item} user={user} />
+            ) : (
+              <Post post={item} key={index} user={user} />
+            )}
+          </>
         ))}
       </>
     );
@@ -100,7 +107,7 @@ function Other({ user }) {
                 icon="eos-icons:loading"
               />
             ) : (
-              <BoxMessage />
+              <BoxPost />
             )}
           </Grid>
         </Grid>

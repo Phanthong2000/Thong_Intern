@@ -65,6 +65,9 @@ function BoxOptionsChatbox({ user }) {
   const [openModalChangeBackground, setOpenModalChangeBackground] = useState(false);
   const [openModalLeaveGroup, setOpenModalLeaveGroup] = useState(false);
   const [openModalDeleteGroup, setOpenModalDeleteGroup] = useState(false);
+  const socketRef = useRef();
+  const socket = useSelector((state) => state.call.socket);
+  const usersSocket = useSelector((state) => state.user.usersSocket);
   useEffect(() => {
     console.log('');
     return () => dispatch(actionChatOptionsChatbox(false));
@@ -119,34 +122,53 @@ function BoxOptionsChatbox({ user }) {
     };
 
     const saveChangeName = () => {
-      updateDoc(doc(db, 'chatboxs', chatbox.id), {
+      socketRef.current = socket;
+      const socketIds = [];
+      chatbox.members.forEach((member) => {
+        const userCall = usersSocket.find((user) => user.userId === member);
+        if (userCall !== undefined && userCall.userId !== user.id) socketIds.push(userCall);
+      });
+      dispatch(
+        actionChatGetChatbox({
+          ...chatbox,
+          name: inputRef.current,
+          type: 'group'
+        })
+      );
+      socketRef.current.emit('changeNameGroup', {
         ...chatbox,
         name: inputRef.current,
-        updatedAt: new Date().getTime()
-      }).then(() => {
-        const message = {
-          content: `${user.username} change name group`,
-          type: 'note',
-          senderId: user.id,
-          chatboxId: chatbox.id,
-          isRead: false,
-          isRestore: false,
-          reaction: [],
-          createdAt: new Date().getTime()
-        };
-        addDoc(collection(db, 'messages'), message).then(() => {
-          dispatch(actionGetAllChatSort(user.id));
-          dispatch(actionGetChatgroupUser(user.id));
-          dispatch(
-            actionChatGetChatbox({
-              ...chatbox,
-              name: inputRef.current,
-              type: 'group'
-            })
-          );
-          setOpenModalChangeName(false);
-        });
+        type: 'group',
+        socketIds
       });
+      // updateDoc(doc(db, 'chatboxs', chatbox.id), {
+      //   ...chatbox,
+      //   name: inputRef.current,
+      //   updatedAt: new Date().getTime()
+      // }).then(() => {
+      //   const message = {
+      //     content: `${user.username} change name group`,
+      //     type: 'note',
+      //     senderId: user.id,
+      //     chatboxId: chatbox.id,
+      //     isRead: false,
+      //     isRestore: false,
+      //     reaction: [],
+      //     createdAt: new Date().getTime()
+      //   };
+      //   addDoc(collection(db, 'messages'), message).then(() => {
+      //     dispatch(actionGetAllChatSort(user.id));
+      //     dispatch(actionGetChatgroupUser(user.id));
+      //     dispatch(
+      //       actionChatGetChatbox({
+      //         ...chatbox,
+      //         name: inputRef.current,
+      //         type: 'group'
+      //       })
+      //     );
+      //     setOpenModalChangeName(false);
+      //   });
+      // });
     };
     return (
       <Modal open={openModalChangeName} onClose={() => setOpenModalChangeName(false)}>

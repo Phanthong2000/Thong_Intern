@@ -53,19 +53,14 @@ function BoxContact({ user }) {
   }, [usersSocket, user]);
   const Contacts = () => {
     const BoxContacts = styled(Box)(() => ({
-      width: '100%',
-      height: `calc(100%-30px)`,
-      minHeight: `calc(100% - 30px)`,
-      display: 'flex'
+      width: '100%'
     }));
-    if (quantityFriendManual === 0) return null;
+    // if (quantityFriendManual === 0) return null;
     return (
       <BoxContacts>
-        <Scrollbar alwaysShowTracks>
-          {usersSocket.map((item, index) => (
-            <Contact user={user} key={index} otherId={item.userId} />
-          ))}
-        </Scrollbar>
+        {usersSocket.map((item, index) => (
+          <Contact user={user} key={index} otherId={item.userId} />
+        ))}
       </BoxContacts>
     );
   };

@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Icon } from '@iconify/react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { doc, getDoc, getDocs, collection, query, where } from 'firebase/firestore';
+import SharePost from '../components/post/SharePost';
 import { db } from '../firebase-config';
 import InfoMain from '../components/profile/BackgroundImage';
 import Information from '../components/profile/Information';
@@ -61,11 +62,19 @@ function Profile({ user }) {
   }, [user]);
   const BoxPost = () => {
     if (quantityPost.length === 0) return <EmptyPost />;
-    return allPosts.map((item, index) => (
-      <div key={index}>
-        <Post user={user} post={item} />
-      </div>
-    ));
+    return (
+      <>
+        {allPosts.map((item, index) => (
+          <>
+            {item.type === 'share' ? (
+              <SharePost key={index} post={item} user={user} />
+            ) : (
+              <Post post={item} key={index} user={user} />
+            )}
+          </>
+        ))}
+      </>
+    );
   };
   return (
     <RootStyle sx={{ alignItems: 'center' }}>

@@ -194,6 +194,10 @@ function OptionsMessage({ user }) {
           updatedAt: new Date().getTime()
         }).then((snapshot) => {
           dispatch(actionChatReplyMessage({}));
+          const userCall = usersSocket.find((user) => user.userId === chatbox.user.id);
+          if (userCall !== undefined) {
+            sendMessageSocket({ ...message, id: docRef.id, socketId: userCall.socketId });
+          }
           setMessageText('');
           setIsChatting(false);
           dispatch(actionGetAllChatSort(user.id));
@@ -303,6 +307,7 @@ function OptionsMessage({ user }) {
                     dispatch(actionGetAllChatSort(user.id));
                     sendMessageSocket({
                       ...message,
+                      id: docRef.id,
                       contentFile: downloadURL,
                       socketId: userCall.socketId
                     });
@@ -355,7 +360,6 @@ function OptionsMessage({ user }) {
         };
         addDoc(collection(db, 'messages'), message)
           .then((docRef) => {
-            console.log(docRef.id);
             dispatch(actionChatAddMessage({ ...message, id: docRef.id }));
             updateDoc(doc(db, 'chatboxs', chatbox.id), {
               updatedAt: new Date().getTime()
@@ -363,7 +367,7 @@ function OptionsMessage({ user }) {
               setMessageText('');
               setIsChatting(false);
               dispatch(actionGetAllChatSort(user.id));
-              sendMessageSocket({ ...message, socketId: userCall.socketId });
+              sendMessageSocket({ ...message, id: docRef.id, socketId: userCall.socketId });
             });
           })
           .catch((error) => {
@@ -427,10 +431,7 @@ function OptionsMessage({ user }) {
           ...chatbox,
           updatedAt: new Date().getTime()
         }).then(() => {
-          sendMessageSocket({
-            ...message,
-            socketId: userCall.socketId
-          });
+          sendMessageSocket({ ...message, id: docRef.id, socketId: userCall.socketId });
           dispatch(actionGetAllChatSort(user.id));
         });
       });

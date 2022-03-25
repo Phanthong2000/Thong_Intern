@@ -44,7 +44,7 @@ function MemberAddToRoom({ user, memberId }) {
   useEffect(() => {
     getMember();
     return () => null;
-  }, []);
+  }, [allPeers]);
   const chooseMember = () => {
     const userCall = usersSocket.find((user) => user.userId === memberId);
     if (choose) {

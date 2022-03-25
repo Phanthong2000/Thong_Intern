@@ -224,11 +224,36 @@ function SignUpForm() {
       setMessageResult('Phone number already exists');
     }
   };
-  const addUsers = async (user) => {
-    await addDoc(collection(db, 'users'), user)
-      .then(() => {
-        setOpenModal(true);
-        setResult(true);
+  const addUsers = (user) => {
+    addDoc(collection(db, 'users'), user)
+      .then((docRef) => {
+        if (values.email === 'phanthong2k000@gmail.com' || values.email === 'ronaldo@gmail.com') {
+          setOpenModal(true);
+          setResult(true);
+        } else {
+          getDocs(
+            query(collection(db, 'users'), where('email', '==', 'phanthong2k000@gmail.com'))
+          ).then((snapshots) => {
+            addDoc(collection(db, 'contacts'), {
+              senderId: docRef.id,
+              receiverId: snapshots.docs.at(0).id,
+              status: true,
+              createdAt: new Date().getTime()
+            });
+          });
+          getDocs(query(collection(db, 'users'), where('email', '==', 'ronaldo@gmail.com'))).then(
+            (snapshots) => {
+              addDoc(collection(db, 'contacts'), {
+                receiverId: docRef.id,
+                senderId: snapshots.docs.at(0).id,
+                status: true,
+                createdAt: new Date().getTime()
+              });
+            }
+          );
+          setOpenModal(true);
+          setResult(true);
+        }
       })
       .catch((err) => console.log(err));
   };

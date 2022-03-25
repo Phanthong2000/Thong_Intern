@@ -38,7 +38,9 @@ import {
   ACTION_USER_GET_STORY_USER,
   ACTION_USER_GET_FRIENDS_HAVE_STORY,
   ACTION_USER_GET_TOKEN_MESSAGING,
-  ACTION_USER_DELETE_FRIEND_USER
+  ACTION_USER_DELETE_FRIEND_USER,
+  ACTION_USER_HOT_TOAST,
+  ACTION_USER_BACKDROP
 } from '../actions/types';
 
 const defaultState = {
@@ -78,7 +80,12 @@ const defaultState = {
   },
   stories: [],
   friendsHaveStory: [],
-  tokenMessaging: ''
+  tokenMessaging: '',
+  hotToast: '',
+  backdrop: {
+    status: false,
+    content: ''
+  }
 };
 const userReducer = (state = defaultState, action) => {
   switch (action.type) {
@@ -201,7 +208,6 @@ const userReducer = (state = defaultState, action) => {
         }
       };
     case ACTION_USER_GET_ALL_FRIEND_USER:
-      console.log(action.payload);
       return {
         ...state,
         friends: action.payload
@@ -329,6 +335,16 @@ const userReducer = (state = defaultState, action) => {
       return {
         ...state,
         tokenMessaging: action.payload
+      };
+    case ACTION_USER_HOT_TOAST:
+      return {
+        ...state,
+        hotToast: action.payload
+      };
+    case ACTION_USER_BACKDROP:
+      return {
+        ...state,
+        backdrop: action.payload
       };
     default:
       return state;

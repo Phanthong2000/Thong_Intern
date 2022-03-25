@@ -10,6 +10,7 @@ import { db } from '../../firebase-config';
 import { actionChatDeleteMessage, actionChatReplyMessage } from '../../redux/actions/chatAction';
 import ReplyOther from './ReplyOther';
 import Reply from './Reply';
+import { actionRoom } from '../../redux/actions/callAction';
 
 const BoxMessageUserSender = styled(Box)(() => ({
   width: '100%',
@@ -522,8 +523,12 @@ function MessageChatgroup({ user, message, index }) {
       getDoc(doc(db, 'rooms', room.id)).then((snapshot) => {
         const members = snapshot.data().members.filter((item) => item.id !== user.id);
         const newMembers = [...members, user];
-        console.log('members', members);
-        console.log('new members', newMembers);
+        dispatch(
+          actionRoom({
+            ...snapshot.data(),
+            id: snapshot.id
+          })
+        );
         updateDoc(doc(db, 'rooms', room.id), {
           members: newMembers
         }).then(() => {

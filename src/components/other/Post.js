@@ -31,7 +31,11 @@ import {
 import ShowMore from 'react-show-more';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase-config';
-import { actionPostOpenConfirmDeletePost, getAllPosts } from '../../redux/actions/postAction';
+import {
+  actionPostModalSharePost,
+  actionPostOpenConfirmDeletePost,
+  getAllPosts
+} from '../../redux/actions/postAction';
 import Comment from '../post/Comment';
 import Tag from '../post/Tag';
 import { pushNotificationSocket } from '../../utils/wssConnection';
@@ -173,8 +177,7 @@ function Post({ user, post }) {
     const ContentBackground = styled(Typography)(() => ({
       fontWeight: 'bold',
       fontSize: '20px',
-      color: post.textColor,
-      width: '50%'
+      color: post.textColor
     }));
     if (post.type === 'background')
       return (
@@ -429,7 +432,13 @@ function Post({ user, post }) {
       setIsCommenting(true);
     };
     const share = () => {
-      console.log('share');
+      dispatch(
+        actionPostModalSharePost({
+          status: true,
+          post,
+          userPost
+        })
+      );
     };
     const GridItem = styled(Grid)(({ theme }) => ({
       padding: theme.spacing(1, 1, 1)
@@ -591,7 +600,15 @@ function Post({ user, post }) {
               }}
             >
               <Avatar sx={{ width: '30px', height: '30px' }} src={user.avatar} />
-              <DotOnline icon="ci:dot-05-xl" style={user.isOnline ? null : { color: 'grey' }} />
+              <DotOnline
+                icon="ci:dot-05-xl"
+                style={{
+                  color:
+                    usersSocket.find((socket) => socket.userId === userPost.id) === undefined
+                      ? 'gray'
+                      : null
+                }}
+              />
             </Button>
           </Grid>
           <Grid item xs={10} sm={10} md={10} lg={10} xl={10}>

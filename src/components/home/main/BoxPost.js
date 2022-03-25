@@ -6,6 +6,7 @@ import BoxStory from './BoxStory';
 import UpPost from './UpPost';
 import Post from '../../post/Post';
 import { actionGetFriendsHaveStory } from '../../../redux/actions/userAction';
+import SharePost from '../../post/SharePost';
 
 const RootStyle = styled(Stack)(({ theme }) => ({
   width: '100%',
@@ -13,7 +14,7 @@ const RootStyle = styled(Stack)(({ theme }) => ({
   flexDirection: 'column'
 }));
 const WrapperPost = styled(Box)(({ theme }) => ({
-  width: '50%',
+  width: '70%',
   [theme.breakpoints.down('md')]: {
     width: '100%'
   }
@@ -31,7 +32,13 @@ function BoxPost({ user }) {
       {isLoadingAllPosts && (
         <WrapperPost>
           {allPosts.map((item, index) => (
-            <Post key={index} user={user} post={item} />
+            <>
+              {item.type === 'share' ? (
+                <SharePost key={index} post={item} user={user} />
+              ) : (
+                <Post post={item} key={index} user={user} />
+              )}
+            </>
           ))}
         </WrapperPost>
       )}

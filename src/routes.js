@@ -31,6 +31,13 @@ import ForgotPassword from './pages/ForgotPassword';
 import Room from './pages/Room';
 import VideoRoom2 from './pages/VideoRoom2';
 import VideoRoom from './pages/VideoRoom';
+import Feed from './components/group/Feed';
+import CreateGroup from './components/group/CreateGroup';
+import Group from './components/group/Group';
+import GroupPage from './pages/Group';
+import YourFeed from './components/group/YourFeed';
+import Discover from './components/group/Discover';
+import YourNotifications from './components/group/YourNotifications';
 
 function Router() {
   const navigate = useNavigate();
@@ -111,6 +118,25 @@ function Router() {
         {
           path: 'user-not-found',
           element: <UserNotFound />
+        },
+        {
+          path: 'groups',
+          element: <GroupPage />,
+          children: [
+            { element: <Navigate to="/home/groups/feed" /> },
+            {
+              path: 'feed',
+              element: <Feed user={user} />,
+              children: [
+                { path: 'your-feed', element: <YourFeed user={user} /> },
+                { path: 'discover', element: <Discover user={user} /> },
+                { path: 'notifications', element: <YourNotifications user={user} /> },
+                { element: <Navigate to="/home/groups/feed/your-feed" /> }
+              ]
+            },
+            { path: 'create-group', element: <CreateGroup user={user} /> },
+            { path: ':id', element: <Group user={user} /> }
+          ]
         }
       ]
     },

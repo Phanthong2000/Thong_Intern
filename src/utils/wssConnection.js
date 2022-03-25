@@ -10,7 +10,8 @@ import {
   actionChatInputting,
   actionGetAllBadeMessage,
   actionChatDeleteInputting,
-  actionChatAddInputting
+  actionChatAddInputting,
+  actionGetChatgroupUser
 } from '../redux/actions/chatAction';
 import {
   actionModalReceiving,
@@ -46,7 +47,7 @@ import store from '../redux/store';
 
 let socket;
 export const connectWithSocket = () => {
-  socket = io('https://d306-14-161-70-171.ngrok.io/', {
+  socket = io('https://9834-14-161-70-171.ngrok.io/', {
     forceNew: true
   });
   store.dispatch(actionSocket(socket));
@@ -84,7 +85,7 @@ export const connectWithSocket = () => {
     console.log('receiver message', data);
     store.dispatch(actionChatAddMessage(data));
     store.dispatch(actionGetAllChatSort(data.receiverId));
-    store.dispatch(actionChatInputting(''));
+    // store.dispatch(actionChatDeleteInputting(data.chatboxId));
     store.dispatch(actionGetAllBadeMessage(data.receiverId));
   });
   socket.on('sendReaction', (data) => {
@@ -112,9 +113,14 @@ export const connectWithSocket = () => {
     console.log('delete inputting', data);
     store.dispatch(actionChatDeleteInputting(data.chatboxId));
   });
+  socket.on('loadChatbox', (data) => {
+    console.log('load chatbox');
+    store.dispatch(actionGetAllChatSort(data));
+    store.dispatch(actionGetChatgroupUser(data));
+  });
   socket.on('stopInput', (data) => {
     console.log('stop input');
-    store.dispatch(actionChatInputting(''));
+    store.dispatch(actionChatInputting([]));
   });
 
   socket.on('callGroup', (data) => {
@@ -398,6 +404,9 @@ export const inputtingSocketGroup = (data) => {
 };
 export const deleteInputtingSocketGroup = (data) => {
   socket.emit('deleteInputtingGroup', data);
+};
+export const createChatboxGroup = (data) => {
+  socket.emit('createChatboxGroup', data);
 };
 export const logoutSocket = () => {
   socket.disconnect();
