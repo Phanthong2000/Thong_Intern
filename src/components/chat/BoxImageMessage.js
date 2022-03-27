@@ -1,7 +1,5 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { Card, Stack, styled } from '@mui/material';
-import {} from '@iconify/react';
+import { Card, styled } from '@mui/material';
 import { useSelector } from 'react-redux';
 import ImageMessage from './ImageMessage';
 
@@ -15,10 +13,7 @@ const RootStyle = styled(Card)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center'
 }));
-BoxImageMessage.prototype = {
-  user: PropTypes.object
-};
-function BoxImageMessage({ user }) {
+function BoxImageMessage() {
   const imageMessages = useSelector((state) => state.chat.imageMessages);
   return (
     <RootStyle>

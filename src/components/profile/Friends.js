@@ -54,7 +54,7 @@ function Friends({ user }) {
           <QuantityFriend>{getQuantityFriend()}</QuantityFriend>
           <Grid sx={{ textAlign: 'center' }} container>
             {friends.map((item, index) => (
-              <ItemFriend key={index} friend={item} />
+              <ItemFriend index={index} key={index} friend={item} />
             ))}
           </Grid>
         </Box>

@@ -25,10 +25,8 @@ const Title = styled(Typography)(({ theme }) => ({
   fontSize: '14px',
   color: 'gray'
 }));
-BoxReply.prototype = {
-  user: PropTypes.object
-};
-function BoxReply({ user }) {
+function BoxReply() {
+  const user = useSelector((state) => state.user.user);
   const reply = useSelector((state) => state.chat.reply);
   const dispatch = useDispatch();
   const [userSent, setUserSent] = useState({});

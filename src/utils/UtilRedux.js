@@ -33,12 +33,19 @@ import {
   actionGetGroupsYouManage,
   actionGetPostsAllGroup
 } from '../redux/actions/groupAction';
+import {
+  actionGetAllInvites,
+  actionGetAllPages,
+  actionGetLikedPages,
+  actionGetYourPages
+} from '../redux/actions/pageAction';
 
 UtilRedux.prototype = {
   user: PropTypes.object
 };
-function UtilRedux({ user }) {
+function UtilRedux() {
   const dispatch = useDispatch();
+  const user = useSelector((state) => state.user.user);
   const tokenMessaging = useSelector((state) => state.user.tokenMessaging);
   const me = useSelector((state) => state.call.me);
   useEffect(() => {
@@ -58,7 +65,11 @@ function UtilRedux({ user }) {
       dispatch(actionGetGroupsYouManage(user.id));
       dispatch(actionGetGroupsYouJoined(user.id));
       dispatch(actionGetPostsAllGroup(user.id));
-      dispatch(actionGetAllGroups());
+      dispatch(actionGetAllGroups(user.id));
+      dispatch(actionGetYourPages(user.id));
+      dispatch(actionGetAllPages(user.id));
+      dispatch(actionGetLikedPages(user.id));
+      dispatch(actionGetAllInvites(user.id));
       // if (tokenMessaging === '') {
       //   Notification.requestPermission().then((permission) => {
       //     if (permission === 'granted') {

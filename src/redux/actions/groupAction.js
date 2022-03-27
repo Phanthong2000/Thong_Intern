@@ -107,17 +107,19 @@ export const actionGetPostsAllGroup = (id) => async (dispatch) => {
     });
   }
 };
-export const actionGetAllGroups = () => async (dispatch) => {
+export const actionGetAllGroups = (id) => async (dispatch) => {
   const data = await getDocs(collection(db, 'groups'));
   if (data.empty) {
     dispatch(actionGroupGetAllGroups([]));
   } else {
     const allGroups = [];
     data.docs.forEach((group) => {
-      allGroups.push({
-        ...group.data(),
-        id: group.id
-      });
+      if (!group.data().members.includes(id) && !group.data().requests.includes(id)) {
+        allGroups.push({
+          ...group.data(),
+          id: group.id
+        });
+      }
     });
     dispatch(actionGroupGetAllGroups(allGroups.sort((a, b) => b.createdAt - a.createdAt)));
   }

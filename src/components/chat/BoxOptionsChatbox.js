@@ -5,7 +5,6 @@ import {
   Typography,
   Avatar,
   Stack,
-  ListItemButton,
   Button,
   Box,
   Modal,
@@ -18,7 +17,6 @@ import {
   AccordionSummary
 } from '@mui/material';
 import { ExpandMore } from '@mui/icons-material';
-import PropTypes from 'prop-types';
 import { addDoc, collection, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { Icon } from '@iconify/react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -51,10 +49,8 @@ const AvatarChat = styled(Avatar)(() => ({
   height: '100px',
   margin: '50px 0px 0px 10px'
 }));
-BoxOptionsChatbox.prototype = {
-  user: PropTypes.object
-};
-function BoxOptionsChatbox({ user }) {
+function BoxOptionsChatbox() {
+  const user = useSelector((state) => state.user.user);
   const fileRef = useRef();
   const inputRef = useRef();
   const chatbox = useSelector((state) => state.chat.chatbox);

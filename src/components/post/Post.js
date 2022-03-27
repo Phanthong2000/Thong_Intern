@@ -83,10 +83,10 @@ const AvatarGroup = styled(Button)(({ theme }) => ({
   borderRadius: '5px'
 }));
 Post.prototype = {
-  post: PropTypes.object,
-  user: PropTypes.object
+  post: PropTypes.object
 };
-function Post({ user, post }) {
+function Post({ post }) {
+  const user = useSelector((state) => state.user.user);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [anchorElUsername, setAnchorElUsername] = React.useState(null);
   const open = Boolean(anchorEl);

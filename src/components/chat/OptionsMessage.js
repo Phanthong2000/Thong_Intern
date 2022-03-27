@@ -86,10 +86,8 @@ const WaitChatboxButtonOption = styled(Skeleton)(() => ({
   height: '30px',
   marginLeft: '5px'
 }));
-OptionsMessage.prototype = {
-  user: PropTypes.object
-};
-function OptionsMessage({ user }) {
+function OptionsMessage() {
+  const user = useSelector((state) => state.user.user);
   const fileRef = useRef(null);
   const chatboxs = useSelector((state) => state.chat.chatboxs);
   const chatbox = useSelector((state) => state.chat.chatbox);

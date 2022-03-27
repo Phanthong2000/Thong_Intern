@@ -43,14 +43,12 @@ const SkeletonButtonPost = styled(Skeleton)(() => ({
   marginLeft: '10px',
   borderRadius: '100px'
 }));
-UpPost.prototype = {
-  user: PropTypes.object
-};
-function UpPost({ user }) {
+function UpPost() {
   const dispatch = useDispatch();
   const isOpenCreatePost = useSelector((state) => state.post.isOpenCreatePost);
   const isOpenTagPeople = useSelector((state) => state.post.isOpenTagPeople);
   const navigate = useNavigate();
+  const user = useSelector((state) => state.user.user);
   return (
     <RootStyle elevation={3}>
       <BoxUpPost>

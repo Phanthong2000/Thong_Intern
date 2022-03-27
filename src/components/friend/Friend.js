@@ -76,11 +76,11 @@ const SkeletonMutual = styled(Skeleton)(() => ({
   marginTop: '10px'
 }));
 Friend.prototype = {
-  user: PropTypes.object,
   friend: PropTypes.object,
   index: PropTypes.number
 };
-function Friend({ user, friend, index }) {
+function Friend({ friend, index }) {
+  const user = useSelector((state) => state.user.user);
   const [userFriend, setUserFriend] = useState({});
   const navigate = useNavigate();
   const [friendMutualUser, setFriendMutualUser] = useState([]);
@@ -152,7 +152,7 @@ function Friend({ user, friend, index }) {
       checkExistsChatboxUserAndFriend(snapshot.id);
     });
     return () => null;
-  }, [user, friends]);
+  }, [friends]);
   const chooseFriend = () => {
     navigate(`/home/other/${friend.friendId}`);
   };

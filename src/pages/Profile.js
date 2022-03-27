@@ -18,6 +18,7 @@ import Snack from '../components/Snack';
 import Friends from '../components/profile/Friends';
 import EmptyPost from '../components/profile/EmptyPost';
 import { actionChatGetChatbox } from '../redux/actions/chatAction';
+import Photos from '../components/profile/Photos';
 
 const RootStyle = styled(Stack)(({ theme }) => ({
   marginTop: '60px',
@@ -104,6 +105,7 @@ function Profile({ user }) {
           <Grid item xs={12} sm={12} lg={5} md={5}>
             <Intro user={user} />
             <Friends user={user} />
+            <Photos user={user} />
           </Grid>
           <Grid item lg={0.2} md={0.2}>
             {' '}

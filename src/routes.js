@@ -38,26 +38,16 @@ import GroupPage from './pages/Group';
 import YourFeed from './components/group/YourFeed';
 import Discover from './components/group/Discover';
 import YourNotifications from './components/group/YourNotifications';
+import Page from './pages/Page';
+import CreatePage from './components/page/CreatePage';
+import YourPage from './components/page/YourPage';
+import PageUser from './components/page/Page';
+import Invites from './components/page/Invites';
+import LikedPages from './components/page/LikedPages';
+import DiscoverPage from './components/page/Discover';
 
 function Router() {
-  const navigate = useNavigate();
-  const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
-  const [user, setUser] = useState({});
-  const getUser = async (userId) => {
-    const data = await getDoc(doc(db, 'users', userId));
-    setUser({
-      ...data.data(),
-      id: data.id
-    });
-  };
-  useEffect(() => {
-    if (!isLoggedIn) navigate('/login');
-    if (localStorage.getItem('user') !== null) {
-      const userId = JSON.parse(localStorage.getItem('user')).id;
-      getUser(userId);
-    }
-    return () => null;
-  }, []);
+  const user = useSelector((state) => state.user.user);
   return useRoutes([
     { path: '/', element: <Navigate to="/login" /> },
     {
@@ -73,15 +63,15 @@ function Router() {
       element: <HomeLayout />,
       children: [
         { element: <Navigate to="/home/app" replace /> },
-        { path: 'app', element: <Home user={user} /> },
-        { path: 'chat', element: <Chat user={user} /> },
-        { path: 'video-call', element: <VideoCall user={user} /> },
+        { path: 'app', element: <Home /> },
+        { path: 'chat', element: <Chat /> },
+        { path: 'video-call', element: <VideoCall /> },
         {
           path: 'friends',
-          element: <Friends user={user} />,
+          element: <Friends />,
           children: [
-            { path: 'friend-requests', element: <FriendRequests user={user} /> },
-            { path: 'all-friends', element: <AllFriends user={user} /> },
+            { path: 'friend-requests', element: <FriendRequests /> },
+            { path: 'all-friends', element: <AllFriends /> },
             { element: <Navigate to="/home/friends/friend-requests" /> }
           ]
         },
@@ -94,6 +84,18 @@ function Router() {
             { element: <Navigate to="/home/setting/profile-setting" /> }
           ]
         },
+        {
+          path: 'pages',
+          element: <Page user={user} />,
+          children: [
+            { path: 'your-page/:id', element: <YourPage user={user} /> },
+            { path: 'discover', element: <DiscoverPage user={user} /> },
+            { path: 'liked-pages', element: <LikedPages user={user} /> },
+            { path: 'invites', element: <Invites user={user} /> }
+          ]
+        },
+        { path: 'pages/:id', element: <PageUser user={user} /> },
+        { path: 'pages/create-page', element: <CreatePage user={user} /> },
         { path: 'other/:id', element: <Other user={user} /> },
         { path: 'profile/:id', element: <Profile user={user} /> },
         { path: 'room/:id', element: <Room user={user} /> },
@@ -101,7 +103,7 @@ function Router() {
         { path: 'photo/:id', element: <Photo user={user} /> },
         {
           path: 'search',
-          element: <Search user={user} />,
+          element: <Search />,
           children: [
             { path: 'all-people/:name', element: <AllPeople user={user} /> },
             { path: 'all-friends/:name', element: <AllFriendsSearch user={user} /> },
@@ -112,9 +114,9 @@ function Router() {
         },
         {
           path: 'stories',
-          element: <Story user={user} />
+          element: <Story />
         },
-        { path: 'create-story', element: <CreateStory user={user} /> },
+        { path: 'create-story', element: <CreateStory /> },
         {
           path: 'user-not-found',
           element: <UserNotFound />

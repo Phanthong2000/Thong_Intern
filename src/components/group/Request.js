@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Avatar, Box, Button, Card, Skeleton, styled, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase-config';
 import { actionGroupUpdate } from '../../redux/actions/groupAction';
@@ -41,6 +41,9 @@ Request.prototype = {
 };
 function Request({ request, group }) {
   const [userRequest, setUserRequest] = useState({});
+  const usersSocket = useSelector((state) => state.user.usersSocket);
+  const socketRef = useRef();
+  const socket = useSelector((state) => state.call.socket);
   const dispatch = useDispatch();
   const getUserRequests = () => {
     getDoc(doc(db, 'users', request)).then((snapshot) => {
@@ -60,8 +63,35 @@ function Request({ request, group }) {
       members: [...group.members, request],
       requests: group.requests.filter((item) => item !== request)
     };
+    const userCall = usersSocket.find((user) => user.userId === request);
+    socketRef.current = socket;
     updateDoc(doc(db, 'groups', group.id), groupNew).then((snapshot) => {
       dispatch(actionGroupUpdate());
+      if (userCall !== undefined)
+        socketRef.current.emit(`answer request`, {
+          socketId: userCall.socketId,
+          group,
+          type: 'confirm',
+          userJoin: userCall.userId
+        });
+    });
+  };
+  const decline = () => {
+    const groupNew = {
+      ...group,
+      requests: group.requests.filter((item) => item !== request)
+    };
+    const userCall = usersSocket.find((user) => user.userId === request);
+    socketRef.current = socket;
+    updateDoc(doc(db, 'groups', group.id), groupNew).then((snapshot) => {
+      dispatch(actionGroupUpdate());
+      if (userCall !== undefined)
+        socketRef.current.emit(`answer request`, {
+          socketId: userCall.socketId,
+          group,
+          type: 'cancel',
+          userJoin: userCall.userId
+        });
     });
   };
   return (
@@ -90,7 +120,7 @@ function Request({ request, group }) {
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <ButtonApprove onClick={approve}>Approve</ButtonApprove>
-        <ButtonDecline>Decline</ButtonDecline>
+        <ButtonDecline onClick={decline}>Decline</ButtonDecline>
       </Box>
     </RootStyle>
   );

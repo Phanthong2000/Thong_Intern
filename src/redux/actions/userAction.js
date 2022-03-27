@@ -1,6 +1,7 @@
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../firebase-config';
 import {
+  ACTION_USER_GET_USER,
   ACTION_USER_CLOSE_SEARCH,
   ACTION_USER_OPEN_SEARCH,
   ACTION_USER_CLOSE_PROFILE,
@@ -46,6 +47,10 @@ import {
   ACTION_USER_BACKDROP
 } from './types';
 
+export const actionUserGetUser = (data) => ({
+  type: ACTION_USER_GET_USER,
+  payload: data
+});
 export const actionUserOpenSearch = () => ({ type: ACTION_USER_OPEN_SEARCH });
 export const actionUserCloseSearch = () => ({ type: ACTION_USER_CLOSE_SEARCH });
 export const actionUserOpenMessenger = () => ({ type: ACTION_USER_OPEN_MESSENGER });

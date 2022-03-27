@@ -1,4 +1,5 @@
 import {
+  ACTION_USER_GET_USER,
   ACTION_USER_CLOSE_SEARCH,
   ACTION_USER_OPEN_SEARCH,
   ACTION_USER_CLOSE_PROFILE,
@@ -45,6 +46,7 @@ import {
 
 const defaultState = {
   isLoggedIn: !!localStorage.getItem('user'),
+  user: {},
   isSearching: false,
   isMessenger: false,
   isOpeningProfile: false,
@@ -89,6 +91,11 @@ const defaultState = {
 };
 const userReducer = (state = defaultState, action) => {
   switch (action.type) {
+    case ACTION_USER_GET_USER:
+      return {
+        ...state,
+        user: action.payload
+      };
     case ACTION_USER_OPEN_SEARCH:
       return {
         ...state,

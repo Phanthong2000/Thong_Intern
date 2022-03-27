@@ -22,19 +22,20 @@ const WrapperPost = styled(Box)(({ theme }) => ({
 BoxPost.prototype = {
   user: PropTypes.object
 };
-function BoxPost({ user }) {
+function BoxPost() {
+  const user = useSelector((state) => state.user.user);
   const allPosts = useSelector((state) => state.post.allPosts);
   const isLoadingAllPosts = useSelector((state) => state.post.isLoadingAllPosts);
   return (
     <RootStyle>
-      <BoxStory user={user} />
-      <UpPost user={user} />
+      <BoxStory />
+      <UpPost />
       {isLoadingAllPosts && (
         <WrapperPost>
           {allPosts.map((item, index) => (
             <>
               {item.type === 'share' ? (
-                <SharePost key={index} post={item} user={user} />
+                <SharePost key={index} post={item} />
               ) : (
                 <Post post={item} key={index} user={user} />
               )}

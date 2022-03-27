@@ -1,11 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { useEffect, useRef } from 'react';
 import { Box, Card, Skeleton, styled, Typography } from '@mui/material';
 import { keyframes } from '@emotion/react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Icon } from '@iconify/react';
-import { collection, getDocs, query, where } from 'firebase/firestore';
-import { db } from '../../firebase-config';
 import MessageChatgroup from './MessageChatgroup';
 import { actionGetAllMessagesChatbox } from '../../redux/actions/chatAction';
 
@@ -19,10 +16,8 @@ const RootStyle = styled(Card)(({ theme }) => ({
   display: 'block',
   padding: theme.spacing(1, 1, 1)
 }));
-BoxMessageChatgroup.prototype = {
-  user: PropTypes.object
-};
-function BoxMessageChatgroup({ user }) {
+function BoxMessageChatgroup() {
+  const user = useSelector((state) => state.user.user);
   const inputting = useSelector((state) => state.chat.inputting);
   const chatbox = useSelector((state) => state.chat.chatbox);
   const messages = useSelector((state) => state.chat.messages);
@@ -118,7 +113,7 @@ function BoxMessageChatgroup({ user }) {
         }}
       >
         {messages.map((item, index) => (
-          <MessageChatgroup index={index} key={index} user={user} message={item} />
+          <MessageChatgroup index={index} key={index} message={item} />
         ))}
         {inputting.includes(chatbox.id) && (
           <Box

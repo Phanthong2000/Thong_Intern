@@ -31,10 +31,10 @@ const ButtonOptions = styled(IconButton)(({ theme }) => ({
   marginRight: '10px'
 }));
 BoxInfoChatgroup.prototype = {
-  user: PropTypes.object,
   chatbox: PropTypes.object
 };
-function BoxInfoChatgroup({ user }) {
+function BoxInfoChatgroup() {
+  const user = useSelector((state) => state.user.user);
   const navigate = useNavigate();
   const me = useSelector((state) => state.call.me);
   const chatbox = useSelector((state) => state.chat.chatbox);

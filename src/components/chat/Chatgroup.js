@@ -32,11 +32,11 @@ const BoxInfo = styled(Box)(({ theme }) => ({
   }
 }));
 Chatgroup.prototype = {
-  user: PropTypes.object,
   chatbox: PropTypes.object,
   home: PropTypes.bool
 };
-function Chatgroup({ user, chatbox, home }) {
+function Chatgroup({ chatbox, home }) {
+  const user = useSelector((state) => state.user.user);
   const chatboxs = useSelector((state) => state.chat.chatboxs);
   const chatboxChosen = useSelector((state) => state.chat.chatbox);
   const [messageLast, setMessageLast] = useState({});

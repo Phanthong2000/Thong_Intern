@@ -60,10 +60,10 @@ const Username = styled(Typography)(() => ({
   }
 }));
 SharePost.prototype = {
-  user: PropTypes.object,
   post: PropTypes.object
 };
-function SharePost({ user, post }) {
+function SharePost({ post }) {
+  const user = useSelector((state) => state.user.user);
   const [userShare, setUserShare] = useState({});
   const [userPost, setUserPost] = useState({});
   const [commentByPostId, setCommentByPostId] = useState([]);

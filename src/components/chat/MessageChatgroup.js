@@ -71,11 +71,11 @@ const ButtonOptionOther = styled(Box)(() => ({
   }
 }));
 MessageChatgroup.prototype = {
-  user: PropTypes.object,
   message: PropTypes.object,
   index: PropTypes.number
 };
-function MessageChatgroup({ user, message, index }) {
+function MessageChatgroup({ message, index }) {
+  const user = useSelector((state) => state.user.user);
   const contentRef = useRef(null);
   const [nameReactChosen, setNameReactChosen] = useState('');
   const [imageMessage, setImageMessage] = useState('');

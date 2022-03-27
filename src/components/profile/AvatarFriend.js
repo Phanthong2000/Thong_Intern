@@ -25,7 +25,7 @@ function AvatarFriend({ friend, index }) {
       });
     });
     return () => null;
-  }, [friend]);
+  }, []);
   const goToOther = () => {
     navigate(`/home/other/${friend.friendId}`);
   };

@@ -44,10 +44,13 @@ import {
   actionGetBadgeNotifications
 } from '../redux/actions/userAction';
 import store from '../redux/store';
+import { actionOpenSnackbar } from '../redux/actions/postAction';
+import { actionGetAllGroups, actionGetGroupsYouJoined } from '../redux/actions/groupAction';
+import { actionGetAllInvites } from '../redux/actions/pageAction';
 
 let socket;
 export const connectWithSocket = () => {
-  socket = io('https://9834-14-161-70-171.ngrok.io/', {
+  socket = io('http://localhost:3000/', {
     forceNew: true
   });
   store.dispatch(actionSocket(socket));
@@ -152,6 +155,50 @@ export const connectWithSocket = () => {
         roomId: data.roomId
       })
     );
+  });
+
+  socket.on('join group public', (data) => {
+    store.dispatch(
+      actionOpenSnackbar({
+        status: true,
+        content: `${data.userJoin.username} joined group ${data.group.name.toUpperCase()}`,
+        type: 'success'
+      })
+    );
+  });
+  socket.on('join group private', (data) => {
+    store.dispatch(
+      actionOpenSnackbar({
+        status: true,
+        content: `${data.userJoin.username} requests join group ${data.group.name.toUpperCase()}`,
+        type: 'success'
+      })
+    );
+  });
+  socket.on('answer request', (data) => {
+    if (data.type === 'confirm') {
+      store.dispatch(
+        actionOpenSnackbar({
+          status: true,
+          content: `Your join group ${data.group.name} request is confirmed`,
+          type: 'success'
+        })
+      );
+      store.dispatch(actionGetGroupsYouJoined(data.userJoin));
+    } else {
+      store.dispatch(actionGetAllGroups(data.userJoin));
+    }
+  });
+  socket.on('invite like page', (data) => {
+    console.log(data);
+    store.dispatch(
+      actionOpenSnackbar({
+        status: true,
+        content: `${data.userInvite.username} invited you to like page ${data.page.name}`,
+        type: 'success'
+      })
+    );
+    store.dispatch(actionGetAllInvites(data.userId));
   });
 };
 export const registerUser = (data) => {

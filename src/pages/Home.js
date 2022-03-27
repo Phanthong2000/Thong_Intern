@@ -37,7 +37,7 @@ Home.prototype = {
   user: PropTypes.object
 };
 // const socket = io('http://localhost:5000');
-function Home({ user }) {
+function Home() {
   const testSearch = useSelector((state) => state.user.testSearch);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -89,10 +89,10 @@ function Home({ user }) {
   return (
     <RootStyle>
       <div>{usersSocket.length}</div>
-      <BoxPost user={user} />
+      <BoxPost />
       <StackContact>
         <Scrollbar alwaysShowTracks>
-          <BoxContact user={user} />
+          <BoxContact />
           <Box>
             <Typography
               sx={{ color: 'gray', fontFamily: 'sans-serif', fontSize: '16px', fontWeight: 'bold' }}

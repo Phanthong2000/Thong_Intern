@@ -1,9 +1,8 @@
 import React, { useEffect } from 'react';
 import { Box, styled, Card, Typography, ListItemButton } from '@mui/material';
-import PropTypes from 'prop-types';
 import { useParams, Outlet, useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   actionSearchAllFriendRequests,
   actionSearchAllFriends,
@@ -28,10 +27,8 @@ const BoxMenuSearch = styled(Card)(({ theme }) => ({
 const BoxContentSearch = styled(Box)(() => ({
   width: '100%'
 }));
-Search.prototype = {
-  user: PropTypes.object
-};
-function Search({ user }) {
+function Search() {
+  const user = useSelector((state) => state.user.user);
   const nameSearch = useParams().name;
   const navigate = useNavigate();
   const dispatch = useDispatch();

@@ -47,10 +47,10 @@ const IconButtonOption = styled(IconButton)(({ theme }) => ({
 }));
 UserChat.prototype = {
   chatbox: PropTypes.object,
-  user: PropTypes.object,
   home: PropTypes.bool
 };
-function UserChat({ chatbox, user, home }) {
+function UserChat({ chatbox, home }) {
+  const user = useSelector((state) => state.user.user);
   const { pathname } = useLocation();
   const sendMessage = useSelector((state) => state.chat.sendMessage);
   const [userChat, setUserChat] = useState({});

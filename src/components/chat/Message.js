@@ -85,10 +85,10 @@ const ButtonOptionOther = styled(Box)(() => ({
 }));
 Message.prototype = {
   message: PropTypes.object,
-  user: PropTypes.object,
   index: PropTypes.number
 };
-function Message({ user, message, index }) {
+function Message({ message, index }) {
+  const user = useSelector((state) => state.user.user);
   const chatbox = useSelector((state) => state.chat.chatbox);
   const contentRef = useRef(null);
   const dispatch = useDispatch();

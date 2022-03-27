@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react';
-import PropTypes from 'prop-types';
+import React from 'react';
 import { useSelector } from 'react-redux';
 import { Icon } from '@iconify/react';
 import { useNavigate } from 'react-router-dom';
@@ -31,10 +30,8 @@ const BoxUserStory = styled(Card)(({ theme }) => ({
     display: 'none'
   }
 }));
-Story.prototype = {
-  user: PropTypes.object
-};
-function Story({ user }) {
+function Story() {
+  const user = useSelector((state) => state.user.user);
   const friends = useSelector((state) => state.user.friends);
   const allStories = useSelector((state) => state.user.allStories);
   const navigate = useNavigate();

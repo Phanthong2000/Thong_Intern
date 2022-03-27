@@ -90,10 +90,8 @@ const WaitChatboxButtonOption = styled(Skeleton)(() => ({
   height: '30px',
   marginLeft: '5px'
 }));
-OptionsMessageChatgroup.prototype = {
-  user: PropTypes.object
-};
-function OptionsMessageChatgroup({ user }) {
+function OptionsMessageChatgroup() {
+  const user = useSelector((state) => state.user.user);
   const fileRef = useRef(null);
   const chatboxs = useSelector((state) => state.chat.chatboxs);
   const chatbox = useSelector((state) => state.chat.chatbox);
@@ -452,7 +450,7 @@ function OptionsMessageChatgroup({ user }) {
           horizontal: 'center'
         }}
       >
-        <GifMessage type="group" close={handleCloseGif} user={user} />
+        <GifMessage type="group" close={handleCloseGif} />
       </Popover>
       <BoxInput>
         <Scrollbar alwaysShowTracks>

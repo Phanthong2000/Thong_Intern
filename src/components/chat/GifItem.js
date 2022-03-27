@@ -13,12 +13,12 @@ const RootStyle = styled('img')(() => ({
   cursor: 'pointer'
 }));
 GifItem.prototype = {
-  user: PropTypes.object,
   url: PropTypes.string,
   close: PropTypes.func,
   type: PropTypes.string
 };
-function GifItem({ user, url, close, type }) {
+function GifItem({ url, close, type }) {
+  const user = useSelector((state) => state.user.user);
   const chatbox = useSelector((state) => state.chat.chatbox);
   const usersSocket = useSelector((state) => state.user.usersSocket);
   const dispatch = useDispatch();

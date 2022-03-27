@@ -1,14 +1,15 @@
 import { Box, Card, styled } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { doc, getDoc } from 'firebase/firestore';
 import BoxAvatarGroup from './BoxAvatarGroup';
 import { db } from '../../firebase-config';
 import BoxAdmin from './BoxAdmin';
 import BoxOverview from './BoxOverview';
 import BoxMemberRequests from './BoxMemberRequests';
+import { actionGetGroupsYouJoined, actionGetAllGroups } from '../../redux/actions/groupAction';
 
 const heightScreen = window.innerHeight - 1;
 const RootStyle = styled(Box)(({ theme }) => ({
@@ -23,7 +24,10 @@ Group.prototype = {
   user: PropTypes.object
 };
 function Group({ user }) {
+  const socket = useSelector((state) => state.call.socket);
+  const socketRef = useRef();
   const { id } = useParams();
+  const dispatch = useDispatch();
   const [hidden, setHidden] = useState(false);
   const [option, setOption] = useState('home');
   const [group, setGroup] = useState({});
@@ -38,6 +42,20 @@ function Group({ user }) {
   };
   useEffect(() => {
     getGroup();
+    if (socket.id !== undefined) {
+      socketRef.current = socket;
+      socketRef.current.on(`join group private`, (data) => {
+        if (data.group.id === id) getGroup();
+      });
+      socketRef.current.on(`cancel request`, (data) => {
+        if (data.group.id === id) getGroup();
+      });
+      socketRef.current.on('answer request', (data) => {
+        if (data.group.id === id) {
+          getGroup();
+        }
+      });
+    }
     return () => null;
   }, [user, update]);
   if (group.id === undefined) return null;
@@ -55,7 +73,13 @@ function Group({ user }) {
         />
       )}
       {option === 'home' && (
-        <BoxAvatarGroup show={() => setHidden(false)} hidden={hidden} user={user} />
+        <BoxAvatarGroup
+          group={group}
+          getGroup={() => getGroup()}
+          show={() => setHidden(false)}
+          hidden={hidden}
+          user={user}
+        />
       )}
       {option === 'overview' && <BoxOverview />}
       {option === 'requests' && <BoxMemberRequests user={user} group={group} />}

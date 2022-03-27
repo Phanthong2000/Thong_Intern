@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Box, Stack, styled, Typography } from '@mui/material';
-import PropTypes from 'prop-types';
+import React, { useEffect, useRef } from 'react';
+import { Stack, styled } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import BoxUserChat from '../components/chat/BoxUserChat';
 import BoxMessage from '../components/chat/BoxMessage';
@@ -22,10 +21,8 @@ const RootStyle = styled(Stack)(({ theme }) => ({
   background: theme.palette.background,
   height: `calc(${heightScreen}px - 180px)`
 }));
-Chat.prototype = {
-  user: PropTypes.object
-};
-function Chat({ user }) {
+function Chat() {
+  const user = useSelector((state) => state.user.user);
   const imageMessages = useSelector((state) => state.chat.imageMessages);
   const chatbox = useSelector((state) => state.chat.chatbox);
   const optionsChatbox = useSelector((state) => state.chat.optionsChatbox);
@@ -47,28 +44,16 @@ function Chat({ user }) {
   }, [user, socket]);
   return (
     <RootStyle direction="row">
-      <BoxUserChat user={user} />
+      <BoxUserChat />
       <Stack sx={{ width: '100%', marginRight: '20px' }}>
         <BoxFileMessage />
-        {chatbox.type === 'group' ? (
-          <BoxInfoChatgroup user={user} />
-        ) : (
-          <BoxInfoUserChat user={user} />
-        )}
-        {chatbox.type === 'group' ? (
-          <BoxMessageChatgroup user={user} />
-        ) : (
-          <BoxMessage user={user} />
-        )}
-        {imageMessages.length !== 0 && <BoxImageMessage user={user} />}
-        {reply.id !== undefined && <BoxReply user={user} />}
-        {chatbox.type === 'group' ? (
-          <OptionsMessageChatgroup user={user} />
-        ) : (
-          <OptionsMessage user={user} />
-        )}
+        {chatbox.type === 'group' ? <BoxInfoChatgroup /> : <BoxInfoUserChat />}
+        {chatbox.type === 'group' ? <BoxMessageChatgroup /> : <BoxMessage />}
+        {imageMessages.length !== 0 && <BoxImageMessage />}
+        {reply.id !== undefined && <BoxReply />}
+        {chatbox.type === 'group' ? <OptionsMessageChatgroup /> : <OptionsMessage />}
       </Stack>
-      {optionsChatbox && chatbox.type === 'group' && <BoxOptionsChatbox user={user} />}
+      {optionsChatbox && chatbox.type === 'group' && <BoxOptionsChatbox />}
       <Snack />
     </RootStyle>
   );

@@ -29,10 +29,10 @@ const SkeletonAvatar = styled(Skeleton)(() => ({
   height: '40px'
 }));
 Contact.prototype = {
-  user: PropTypes.object,
   otherId: PropTypes.string
 };
-function Contact({ user, otherId }) {
+function Contact({ otherId }) {
+  const user = useSelector((state) => state.user.user);
   const [other, setOther] = useState({});
   const [status, setStatus] = useState('');
   const dispatch = useDispatch();

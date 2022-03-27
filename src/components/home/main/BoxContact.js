@@ -39,10 +39,9 @@ const ButtonOption = styled(Box)(({ theme }) => ({
     background: 'lightgray'
   }
 }));
-BoxContact.prototype = {
-  user: PropTypes.object
-};
-function BoxContact({ user }) {
+
+function BoxContact() {
+  const user = useSelector((state) => state.user.user);
   const friendManual = useSelector((state) => state.user.friendManual);
   const [quantityFriendManual, setQuantityFriendManual] = useState(-1);
   const usersSocket = useSelector((state) => state.user.usersSocket);
@@ -50,7 +49,7 @@ function BoxContact({ user }) {
   useEffect(() => {
     setQuantityFriendManual(usersSocket.length);
     return () => null;
-  }, [usersSocket, user]);
+  }, [usersSocket]);
   const Contacts = () => {
     const BoxContacts = styled(Box)(() => ({
       width: '100%'
@@ -59,7 +58,7 @@ function BoxContact({ user }) {
     return (
       <BoxContacts>
         {usersSocket.map((item, index) => (
-          <Contact user={user} key={index} otherId={item.userId} />
+          <Contact key={index} otherId={item.userId} />
         ))}
       </BoxContacts>
     );

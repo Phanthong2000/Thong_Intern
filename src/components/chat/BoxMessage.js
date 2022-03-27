@@ -1,16 +1,10 @@
-import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Avatar, Box, Card, Skeleton, Stack, styled, Typography } from '@mui/material';
 import { Icon } from '@iconify/react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Scrollbar } from 'smooth-scrollbar-react';
-import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
-import { useBeforeunload } from 'react-beforeunload';
-import {
-  actionChatGetChatbox,
-  actionChatUpdateMessage,
-  actionGetAllMessagesChatbox
-} from '../../redux/actions/chatAction';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { actionGetAllMessagesChatbox } from '../../redux/actions/chatAction';
 import { actionGetContact } from '../../redux/actions/userAction';
 import { db } from '../../firebase-config';
 import Message from './Message';
@@ -26,11 +20,8 @@ const RootStyle = styled(Card)(({ theme }) => ({
   padding: theme.spacing(1, 1, 1)
 }));
 
-BoxMessage.prototype = {
-  user: PropTypes.object
-};
-
-function BoxMessage({ user }) {
+function BoxMessage() {
+  const user = useSelector((state) => state.user.user);
   const scrollRef = useRef(null);
   const chatbox = useSelector((state) => state.chat.chatbox);
   const dispatch = useDispatch();
@@ -106,7 +97,7 @@ function BoxMessage({ user }) {
       {/* <Scrollbar alwaysShowTracks> */}
       <BoxUserEmptyMessage />
       {messages.map((item, index) => (
-        <Message key={index} user={user} message={item} index={index} />
+        <Message key={index} message={item} index={index} />
       ))}
       <AlwaysScrollToBottom />
       {/* </Scrollbar> */}

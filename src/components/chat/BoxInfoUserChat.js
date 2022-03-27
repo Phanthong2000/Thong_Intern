@@ -1,11 +1,8 @@
 import React from 'react';
 import { Avatar, Box, Card, IconButton, Skeleton, styled, Typography } from '@mui/material';
 import { Icon } from '@iconify/react';
-import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { callUser } from '../../utils/wssConnection';
-import BoxInfoChatgroup from './BoxInfoChatgroup';
 import { actionChatOptionsChatbox } from '../../redux/actions/chatAction';
 
 const RootStyle = styled(Card)(({ theme }) => ({
@@ -32,10 +29,7 @@ const ButtonOptions = styled(IconButton)(({ theme }) => ({
   color: theme.palette.green,
   marginRight: '10px'
 }));
-BoxInfoUserChat.prototype = {
-  user: PropTypes.object
-};
-function BoxInfoUserChat({ user }) {
+function BoxInfoUserChat() {
   const chatbox = useSelector((state) => state.chat.chatbox);
   const usersSocket = useSelector((state) => state.user.usersSocket);
   const me = useSelector((state) => state.call.me);

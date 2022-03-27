@@ -46,10 +46,8 @@ const SkeletonPost = styled(Skeleton)(() => ({
   marginRight: '10px',
   borderRadius: '10px'
 }));
-BoxStory.prototype = {
-  user: PropTypes.object
-};
-function BoxStory({ user }) {
+function BoxStory() {
+  const user = useSelector((state) => state.user.user);
   const navigate = useNavigate();
   const storiesUser = useSelector((state) => state.user.stories);
   const tokenMessaging = useSelector((state) => state.user.tokenMessaging);

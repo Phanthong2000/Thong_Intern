@@ -45,10 +45,7 @@ const BoxAllChatbox = styled(List)(() => ({
   maxHeight: '550px',
   display: 'flex'
 }));
-BoxUserChat.prototype = {
-  user: PropTypes.object
-};
-function BoxUserChat({ user }) {
+function BoxUserChat() {
   const chatboxs = useSelector((state) => state.chat.chatboxs);
   const dispatch = useDispatch();
   const BoxSkeleton = () => (
@@ -85,9 +82,9 @@ function BoxUserChat({ user }) {
           <Scrollbar alwaysShowTracks>
             {chatboxs.map((item, index) =>
               item.type === 'personal' ? (
-                <UserChat user={user} home={false} key={index} chatbox={item} />
+                <UserChat home={false} key={index} chatbox={item} />
               ) : (
-                <Chatgroup user={user} home={false} key={index} chatbox={item} />
+                <Chatgroup home={false} key={index} chatbox={item} />
               )
             )}
           </Scrollbar>

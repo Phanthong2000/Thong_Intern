@@ -1,5 +1,5 @@
-import { Box, Card, styled, Typography, Stack, Button, IconButton } from '@mui/material';
-import React, { useEffect, useRef, useState } from 'react';
+import { Box, styled, Typography, Stack, Button, IconButton } from '@mui/material';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import Timer from 'react-timer-wrapper';
@@ -38,7 +38,8 @@ const IconOptions = styled(Icon)(({ theme }) => ({
   width: '35px',
   height: '35px'
 }));
-function VideoCall({ user }) {
+function VideoCall() {
+  const user = useSelector((state) => state.user.user);
   const dispatch = useDispatch();
   const me = useSelector((state) => state.call.me);
   const stream = useSelector((state) => state.call.stream);

@@ -1,14 +1,6 @@
-import React, { useEffect } from 'react';
-import PropTypes from 'prop-types';
+import React from 'react';
 import { Box, Grid, styled, Typography } from '@mui/material';
-import { doc, getDoc } from 'firebase/firestore';
-import { useLocation } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-  actionGetAllFriendRequest,
-  actionUserGetAllFriendRequest
-} from '../../redux/actions/userAction';
-import { db } from '../../firebase-config';
+import { useSelector } from 'react-redux';
 import Request from './Request';
 
 const RootStyle = styled(Grid)(({ theme }) => ({
@@ -20,13 +12,9 @@ const Title = styled(Typography)(() => ({
   fontWeight: 'bold',
   fontSize: '25px'
 }));
-FriendRequests.prototype = {
-  user: PropTypes.object
-};
-function FriendRequests({ user }) {
+function FriendRequests() {
+  const user = useSelector((state) => state.user.user);
   const friendRequests = useSelector((state) => state.user.friendRequests);
-  const dispatch = useDispatch();
-  const pathname = useLocation();
   return (
     <Box sx={{ padding: '20px' }}>
       <Title>Friend requests</Title>

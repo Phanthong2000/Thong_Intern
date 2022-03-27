@@ -11,12 +11,10 @@ import {
   Button,
   Skeleton
 } from '@mui/material';
-import PropTypes from 'prop-types';
 import { Icon } from '@iconify/react';
 import { addDoc, collection } from 'firebase/firestore';
-import { Scrollbar } from 'smooth-scrollbar-react';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import backgroundStory from '../../asset/data/backgroundStory';
 import { db } from '../../firebase-config';
 import { actionOpenSnackbar } from '../../redux/actions/postAction';
@@ -74,10 +72,8 @@ const ButtonTypeText = styled(Box)(() => ({
   alignItems: 'center',
   backgroundImage: `url(https://scontent.fsgn13-1.fna.fbcdn.net/v/t39.16376-6/58262940_285817512345690_8722691640277336064_n.jpg?_nc_cat=1&ccb=1-5&_nc_sid=a86453&_nc_ohc=AWUjOHVcFDYAX8GKy-B&tn=tjbgIDKHVy1tLPy5&_nc_ht=scontent.fsgn13-1.fna&oh=00_AT-TtVwf5I0_iTx8aDIKKmeD3YVa7DgNV3MeR_NfGnkq0A&oe=6238110B)`
 }));
-CreateStory.prototype = {
-  user: PropTypes.object
-};
-function CreateStory({ user }) {
+function CreateStory() {
+  const user = useSelector((state) => state.user.user);
   const fileRef = useRef();
   const navigate = useNavigate();
   const dispatch = useDispatch();

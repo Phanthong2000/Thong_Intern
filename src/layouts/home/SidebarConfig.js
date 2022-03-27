@@ -22,6 +22,12 @@ const sidebarConfig = [
     path: '/home/groups',
     icon: 'el:group-alt',
     name: 'Groups'
+  },
+  {
+    title: 'Pages',
+    path: '/home/pages',
+    icon: 'fontisto:flag',
+    name: 'Pages'
   }
 ];
 export default sidebarConfig;
