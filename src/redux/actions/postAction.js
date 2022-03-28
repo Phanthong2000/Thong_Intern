@@ -1,4 +1,5 @@
 import { getDocs, collection, query, where } from 'firebase/firestore';
+import { m } from 'framer-motion';
 import { db } from '../../firebase-config';
 import {
   ACTION_POST_GET_ALL,
@@ -94,10 +95,11 @@ export const actionGetAllPostAllFriend = (id) => (dispatch) => {
     .then((snapshots) => {
       if (!snapshots.empty) {
         snapshots.docs.forEach((post) => {
-          allPostUser.push({
-            ...post.data(),
-            id: post.id
-          });
+          if (!post.data().groupId)
+            allPostUser.push({
+              ...post.data(),
+              id: post.id
+            });
         });
       }
     })
@@ -122,10 +124,11 @@ export const actionGetAllPostAllFriend = (id) => (dispatch) => {
                 // console.log('2', count);
                 if (!posts.empty) {
                   posts.docs.forEach((post) => {
-                    allPostUser.push({
-                      ...post.data(),
-                      id: post.id
-                    });
+                    if (!post.data().groupId)
+                      allPostUser.push({
+                        ...post.data(),
+                        id: post.id
+                      });
                   });
                 }
               })
@@ -152,20 +155,258 @@ export const actionGetAllPostAllFriend = (id) => (dispatch) => {
                             count2 += 1;
                             if (!posts2.empty) {
                               posts2.docs.forEach((post) => {
-                                allPostUser.push({
-                                  ...post.data(),
-                                  id: post.id
-                                });
+                                if (!post.data().groupId)
+                                  allPostUser.push({
+                                    ...post.data(),
+                                    id: post.id
+                                  });
                               });
                             }
                           })
                           .then(() => {
                             if (count2 === snapshots2.size) {
-                              const allPostUserSort = allPostUser.sort(
-                                (a, b) => b.createdAt - a.createdAt
-                              );
-                              dispatch(actionPostGetAllPostAllFriend(allPostUserSort));
-                              dispatch(actionPostLoadingGetAllPostAllFriend());
+                              getDocs(
+                                query(
+                                  collection(db, 'pages'),
+                                  where('followers', 'array-contains', id)
+                                )
+                              ).then((snapshots) => {
+                                // 1
+                                if (snapshots.empty) {
+                                  getDocs(
+                                    query(
+                                      collection(db, 'groups'),
+                                      where('members', 'array-contains', id)
+                                    )
+                                  ).then((snapshots) => {
+                                    if (snapshots.empty) {
+                                      console.log(allPostUser);
+                                      const allPostUserSort = allPostUser.sort(
+                                        (a, b) => b.createdAt - a.createdAt
+                                      );
+                                      dispatch(actionPostGetAllPostAllFriend(allPostUserSort));
+                                      dispatch(actionPostLoadingGetAllPostAllFriend());
+                                    } else {
+                                      let count4 = 0;
+                                      let checkEmpty1 = 0;
+                                      snapshots.docs.forEach((group) => {
+                                        getDocs(
+                                          query(
+                                            collection(db, 'posts'),
+                                            where('groupId', '==', group.id)
+                                          )
+                                        )
+                                          .then((snapshot) => {
+                                            count4 += 1;
+                                            if (snapshot.empty) checkEmpty1 += 1;
+                                            else {
+                                              snapshot.docs.forEach((post) => {
+                                                allPostUser.push({
+                                                  ...post.data(),
+                                                  id: post.id
+                                                });
+                                              });
+                                            }
+                                          })
+                                          .then(() => {
+                                            if (count4 === snapshots.size) {
+                                              if (checkEmpty1 === count4) {
+                                                console.log(allPostUser);
+                                                const allPostUserSort = allPostUser.sort(
+                                                  (a, b) => b.createdAt - a.createdAt
+                                                );
+                                                dispatch(
+                                                  actionPostGetAllPostAllFriend(allPostUserSort)
+                                                );
+                                                dispatch(actionPostLoadingGetAllPostAllFriend());
+                                              } else {
+                                                console.log(allPostUser);
+                                                const allPostUserSort = allPostUser.sort(
+                                                  (a, b) => b.createdAt - a.createdAt
+                                                );
+                                                dispatch(
+                                                  actionPostGetAllPostAllFriend(allPostUserSort)
+                                                );
+                                                dispatch(actionPostLoadingGetAllPostAllFriend());
+                                              }
+                                            }
+                                          });
+                                      });
+                                    }
+                                  });
+                                } else {
+                                  let count3 = 0;
+                                  let checkEmpty = 0;
+                                  snapshots.docs.forEach((page) => {
+                                    getDocs(
+                                      query(collection(db, 'posts'), where('pageId', '==', page.id))
+                                    )
+                                      .then((snapshot) => {
+                                        count3 += 1;
+                                        if (snapshot.empty) checkEmpty += 1;
+                                        else {
+                                          snapshot.docs.forEach((post) => {
+                                            allPostUser.push({
+                                              ...post.data(),
+                                              id: post.id
+                                            });
+                                          });
+                                        }
+                                      })
+                                      .then(() => {
+                                        if (count3 === snapshots.size) {
+                                          // 2
+                                          if (checkEmpty === count3) {
+                                            getDocs(
+                                              query(
+                                                collection(db, 'groups'),
+                                                where('members', 'array-contains', id)
+                                              )
+                                            ).then((snapshots) => {
+                                              if (snapshots.empty) {
+                                                console.log(allPostUser);
+                                                const allPostUserSort = allPostUser.sort(
+                                                  (a, b) => b.createdAt - a.createdAt
+                                                );
+                                                dispatch(
+                                                  actionPostGetAllPostAllFriend(allPostUserSort)
+                                                );
+                                                dispatch(actionPostLoadingGetAllPostAllFriend());
+                                              } else {
+                                                let count4 = 0;
+                                                let checkEmpty1 = 0;
+                                                snapshots.docs.forEach((group) => {
+                                                  getDocs(
+                                                    query(
+                                                      collection(db, 'posts'),
+                                                      where('groupId', '==', group.id)
+                                                    )
+                                                  )
+                                                    .then((snapshot) => {
+                                                      count4 += 1;
+                                                      if (snapshot.empty) checkEmpty1 += 1;
+                                                      else {
+                                                        snapshot.docs.forEach((post) => {
+                                                          allPostUser.push({
+                                                            ...post.data(),
+                                                            id: post.id
+                                                          });
+                                                        });
+                                                      }
+                                                    })
+                                                    .then(() => {
+                                                      if (count4 === snapshots.size) {
+                                                        if (checkEmpty1 === count4) {
+                                                          console.log(allPostUser);
+                                                          const allPostUserSort = allPostUser.sort(
+                                                            (a, b) => b.createdAt - a.createdAt
+                                                          );
+                                                          dispatch(
+                                                            actionPostGetAllPostAllFriend(
+                                                              allPostUserSort
+                                                            )
+                                                          );
+                                                          dispatch(
+                                                            actionPostLoadingGetAllPostAllFriend()
+                                                          );
+                                                        } else {
+                                                          console.log(allPostUser);
+                                                          const allPostUserSort = allPostUser.sort(
+                                                            (a, b) => b.createdAt - a.createdAt
+                                                          );
+                                                          dispatch(
+                                                            actionPostGetAllPostAllFriend(
+                                                              allPostUserSort
+                                                            )
+                                                          );
+                                                          dispatch(
+                                                            actionPostLoadingGetAllPostAllFriend()
+                                                          );
+                                                        }
+                                                      }
+                                                    });
+                                                });
+                                              }
+                                            });
+                                          } else {
+                                            // 3
+                                            getDocs(
+                                              query(
+                                                collection(db, 'groups'),
+                                                where('members', 'array-contains', id)
+                                              )
+                                            ).then((snapshots) => {
+                                              if (snapshots.empty) {
+                                                console.log(allPostUser);
+                                                const allPostUserSort = allPostUser.sort(
+                                                  (a, b) => b.createdAt - a.createdAt
+                                                );
+                                                dispatch(
+                                                  actionPostGetAllPostAllFriend(allPostUserSort)
+                                                );
+                                                dispatch(actionPostLoadingGetAllPostAllFriend());
+                                              } else {
+                                                let count4 = 0;
+                                                let checkEmpty1 = 0;
+                                                snapshots.docs.forEach((group) => {
+                                                  getDocs(
+                                                    query(
+                                                      collection(db, 'posts'),
+                                                      where('groupId', '==', group.id)
+                                                    )
+                                                  )
+                                                    .then((snapshot) => {
+                                                      count4 += 1;
+                                                      if (snapshot.empty) checkEmpty1 += 1;
+                                                      else {
+                                                        snapshot.docs.forEach((post) => {
+                                                          allPostUser.push({
+                                                            ...post.data(),
+                                                            id: post.id
+                                                          });
+                                                        });
+                                                      }
+                                                    })
+                                                    .then(() => {
+                                                      if (count4 === snapshots.size) {
+                                                        if (checkEmpty1 === count4) {
+                                                          console.log(allPostUser);
+                                                          const allPostUserSort = allPostUser.sort(
+                                                            (a, b) => b.createdAt - a.createdAt
+                                                          );
+                                                          dispatch(
+                                                            actionPostGetAllPostAllFriend(
+                                                              allPostUserSort
+                                                            )
+                                                          );
+                                                          dispatch(
+                                                            actionPostLoadingGetAllPostAllFriend()
+                                                          );
+                                                        } else {
+                                                          console.log(allPostUser);
+                                                          const allPostUserSort = allPostUser.sort(
+                                                            (a, b) => b.createdAt - a.createdAt
+                                                          );
+                                                          dispatch(
+                                                            actionPostGetAllPostAllFriend(
+                                                              allPostUserSort
+                                                            )
+                                                          );
+                                                          dispatch(
+                                                            actionPostLoadingGetAllPostAllFriend()
+                                                          );
+                                                        }
+                                                      }
+                                                    });
+                                                });
+                                              }
+                                            });
+                                          }
+                                        }
+                                      });
+                                  });
+                                }
+                              });
                             }
                           });
                       });

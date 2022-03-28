@@ -34,7 +34,8 @@ const BoxLeft = styled(Card)(({ theme }) => ({
   maxHeight: `${heightScreen - 60}px`,
   display: 'flex',
   background: '#fff',
-  padding: '10px'
+  padding: '10px',
+  position: 'fixed'
 }));
 const BoxTitle = styled(Box)(({ theme }) => ({
   width: '100%',
@@ -60,7 +61,8 @@ const ButtonCreateGroup = styled(Button)(({ theme }) => ({
   padding: '7px 0px'
 }));
 const BoxRight = styled(Box)(({ theme }) => ({
-  width: `${widthScreen - 350}px`
+  width: `${widthScreen - 400}px`,
+  marginLeft: '400px'
 }));
 function Feed({ user }) {
   const navigate = useNavigate();

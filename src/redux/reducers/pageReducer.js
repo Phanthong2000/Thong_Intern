@@ -3,7 +3,8 @@ import {
   ACTION_PAGE_GET_ALL_PAGES,
   ACTION_PAGE_GET_LIKED_PAGES,
   ACTION_PAGE_MODAL_INVITE,
-  ACTION_PAGE_GET_ALL_INVITES
+  ACTION_PAGE_GET_ALL_INVITES,
+  ACTION_PAGE_MODAL_CREATE_POST
 } from '../actions/types';
 
 const defaultState = {
@@ -14,7 +15,11 @@ const defaultState = {
     status: false,
     page: {}
   },
-  allInvites: []
+  allInvites: [],
+  modalCreatePostPage: {
+    status: false,
+    page: {}
+  }
 };
 
 const pageReducer = (state = defaultState, action) => {
@@ -43,6 +48,11 @@ const pageReducer = (state = defaultState, action) => {
       return {
         ...state,
         allInvites: action.payload
+      };
+    case ACTION_PAGE_MODAL_CREATE_POST:
+      return {
+        ...state,
+        modalCreatePostPage: action.payload
       };
     default:
       return state;

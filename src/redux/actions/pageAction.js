@@ -5,7 +5,8 @@ import {
   ACTION_PAGE_GET_ALL_PAGES,
   ACTION_PAGE_GET_LIKED_PAGES,
   ACTION_PAGE_MODAL_INVITE,
-  ACTION_PAGE_GET_ALL_INVITES
+  ACTION_PAGE_GET_ALL_INVITES,
+  ACTION_PAGE_MODAL_CREATE_POST
 } from './types';
 
 export const actionPageGetYourPages = (data) => ({
@@ -26,6 +27,10 @@ export const actionPageModalInvite = (data) => ({
 });
 export const actionPageGetAllInvites = (data) => ({
   type: ACTION_PAGE_GET_ALL_INVITES,
+  payload: data
+});
+export const actionPageModalCreatePost = (data) => ({
+  type: ACTION_PAGE_MODAL_CREATE_POST,
   payload: data
 });
 export const actionGetYourPages = (id) => async (dispatch) => {

@@ -29,7 +29,7 @@ const SpaceTop = styled('div')(({ theme }) => ({
 const SpaceBottom = styled(Box)(({ theme }) => ({
   width: '80px',
   background: theme.palette.green,
-  height: '300px',
+  height: '350px',
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center'

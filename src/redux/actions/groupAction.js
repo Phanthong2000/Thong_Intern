@@ -7,7 +7,8 @@ import {
   ACTION_GROUP_MODAL_CREATE_POST,
   ACTION_GROUP_UPDATE,
   ACTION_GROUP_GET_POSTS_ALL_GROUP,
-  ACTION_GROUP_GET_ALL_GROUPS
+  ACTION_GROUP_GET_ALL_GROUPS,
+  ACTION_GROUP_MODAL_INVITE
 } from './types';
 
 export const actionGroupGetGroupsYouManage = (data) => ({
@@ -31,6 +32,10 @@ export const actionGroupGetPostsAllGroup = (data) => ({
 });
 export const actionGroupGetAllGroups = (data) => ({
   type: ACTION_GROUP_GET_ALL_GROUPS,
+  payload: data
+});
+export const actionGroupModalInvite = (data) => ({
+  type: ACTION_GROUP_MODAL_INVITE,
   payload: data
 });
 export const actionGetGroupsYouManage = (id) => async (dispatch) => {

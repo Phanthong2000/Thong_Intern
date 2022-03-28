@@ -10,7 +10,8 @@ import {
   InputBase,
   Skeleton,
   styled,
-  Typography
+  Typography,
+  Stack
 } from '@mui/material';
 import PropTypes from 'prop-types';
 import moment from 'moment';
@@ -27,6 +28,7 @@ import {
   updateDoc,
   where
 } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
 import { Scrollbar } from 'smooth-scrollbar-react';
 import { db } from '../../firebase-config';
 import { actionGetAllPostAllFriend, getAllPosts } from '../../redux/actions/postAction';
@@ -41,10 +43,12 @@ const RootStyle = styled(Card)(({ theme }) => ({
     marginTop: '20px'
   }
 }));
-const BoxInfo = styled(Box)(() => ({
+const BoxInfoUserPost = styled(Box)(() => ({
   width: '100%',
   display: 'flex',
-  justifyContent: 'space-between'
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  marginBottom: '10px'
 }));
 const DotOnline = styled(Icon)(({ theme }) => ({
   position: 'absolute',
@@ -53,6 +57,20 @@ const DotOnline = styled(Icon)(({ theme }) => ({
   bottom: '5px',
   right: '5px',
   color: theme.palette.green
+}));
+const Username = styled(Typography)(() => ({
+  fontWeight: 'bold',
+  fontFamily: 'sans-serif',
+  fontSize: '13px',
+  cursor: 'pointer',
+  ':hover': {
+    textDecoration: 'underline'
+  }
+}));
+const AvatarGroup = styled(Button)(({ theme }) => ({
+  width: '35px',
+  height: '35px',
+  borderRadius: '5px'
 }));
 CommentPhoto.prototype = {
   user: PropTypes.object,
@@ -66,6 +84,17 @@ function CommentPhoto({ user, postCurrent }) {
   const dispatch = useDispatch();
   const [lovesPost, setLovesPost] = useState(post.loves);
   const usersSocket = useSelector((state) => state.user.usersSocket);
+  const [group, setGroup] = useState({});
+  const [page, setPage] = useState({});
+  const navigate = useNavigate();
+  const getPage = (id) => {
+    getDoc(doc(db, 'pages', id)).then((post) => {
+      setPage({
+        ...post.data(),
+        id: post.id
+      });
+    });
+  };
   const getUserPost = () => {
     getDoc(doc(db, 'users', post.userId)).then((post) => {
       setUserPost({
@@ -90,11 +119,28 @@ function CommentPhoto({ user, postCurrent }) {
       setCommentByPostId(commentSort);
     }
   };
+  const getGroup = (id) => {
+    getDoc(doc(db, 'groups', id)).then((snapshot) => {
+      setGroup({
+        ...snapshot.data(),
+        id: snapshot.id
+      });
+    });
+  };
   useEffect(() => {
     getUserPost();
     getCommentsByPostId();
+    if (post.groupId) {
+      getGroup(post.groupId);
+    }
+    if (post.pageId) {
+      getPage(post.pageId);
+    }
     return () => null;
   }, [user]);
+  const goToPage = () => {
+    navigate(`/home/pages/${page.id}`);
+  };
   const StatusPost = () => {
     const IconStatus = styled(Icon)(() => ({
       marginLeft: '5px',
@@ -118,7 +164,7 @@ function CommentPhoto({ user, postCurrent }) {
       display: 'flex',
       justifyContent: 'space-between'
     }));
-    if (post.loves.length === 0 && commentByPostId.length === 0 && post.shares.length === 0)
+    if (lovesPost.length === 0 && commentByPostId.length === 0 && post.shares.length === 0)
       return null;
     return (
       <>
@@ -139,15 +185,15 @@ function CommentPhoto({ user, postCurrent }) {
       alignItems: 'center'
     }));
     const checkQuantityLove = () => {
-      if (post.loves.length === 1) return `You`;
-      if (post.loves.length === 2) return `You and 1 other`;
+      if (lovesPost.length === 1) return `You`;
+      if (lovesPost.length === 2) return `You and 1 other`;
       return `You and ${post.loves.length - 1} others`;
     };
     const checkQuantityLoveDontHaveUserCurrent = () => {
-      if (post.loves.length < 2) return `${post.loves.length} other`;
-      return `${post.loves.length} others`;
+      if (lovesPost.length < 2) return `${lovesPost.length} other`;
+      return `${lovesPost.length} others`;
     };
-    if (post.loves.length === 0) return <div> </div>;
+    if (lovesPost.length === 0) return <div> </div>;
     return (
       <BoxInfoContactLoves>
         <Icon
@@ -155,7 +201,7 @@ function CommentPhoto({ user, postCurrent }) {
           style={{ color: 'red', width: '20px', height: '20px' }}
         />
         <Typography sx={{ marginLeft: '2px', fontFamily: 'inherit', color: 'gray' }}>
-          {post.loves.find((love) => love.userId === user.id) === undefined
+          {lovesPost.find((love) => love.userId === user.id) === undefined
             ? checkQuantityLoveDontHaveUserCurrent()
             : checkQuantityLove()}
         </Typography>
@@ -189,53 +235,32 @@ function CommentPhoto({ user, postCurrent }) {
   };
   const ButtonContact = () => {
     const love = () => {
-      if (post.loves.find((love) => love.userId === user.id) === undefined) {
-        getDoc(doc(db, 'posts', post.id)).then((snapshot) => {
-          const postNew = {
-            id: snapshot.id,
-            ...snapshot.data(),
-            loves: [
-              ...snapshot.data().loves,
-              {
-                userId: user.id,
-                createdAt: new Date().getTime()
-              }
-            ]
-          };
-          updateDoc(doc(db, 'posts', post.id), postNew).then(() => {
-            setPost(postNew);
-            dispatch(getAllPosts(user.id, 'desc'));
-            dispatch(actionGetAllPostAllFriend(user.id));
-          });
+      if (lovesPost.find((love) => love.userId === user.id) === undefined) {
+        const postNew = {
+          ...post,
+          loves: [
+            ...lovesPost,
+            {
+              userId: user.id,
+              createdAt: new Date().getTime()
+            }
+          ]
+        };
+        console.log(postNew);
+        updateDoc(doc(db, 'posts', post.id), postNew).then(() => {
+          setLovesPost(postNew.loves);
+          dispatch(actionGetAllPostAllFriend(user.id));
         });
       } else {
-        getDoc(doc(db, 'posts', post.id)).then((snapshot) => {
-          const postNew = {
-            ...snapshot.data(),
-            id: snapshot.id,
-            loves: [snapshot.data().loves.find((love) => love.userId !== user.id)]
-          };
-          if (postNew.loves.indexOf(undefined) === 0) {
-            updateDoc(doc(db, 'posts', post.id), {
-              ...postNew,
-              loves: []
-            }).then(() => {
-              setPost({
-                ...postNew,
-                loves: []
-              });
-              dispatch(getAllPosts(user.id, 'desc'));
-              dispatch(actionGetAllPostAllFriend(user.id));
-            });
-          } else {
-            updateDoc(doc(db, 'posts', post.id), {
-              ...postNew
-            }).then(() => {
-              setPost(postNew);
-              dispatch(getAllPosts(user.id, 'desc'));
-              dispatch(actionGetAllPostAllFriend(user.id));
-            });
-          }
+        const postNew = {
+          ...post,
+          loves: lovesPost.filter((love) => love.userId !== user.id)
+        };
+        updateDoc(doc(db, 'posts', post.id), {
+          ...postNew
+        }).then(() => {
+          setLovesPost(postNew.loves);
+          dispatch(actionGetAllPostAllFriend(user.id));
         });
       }
     };
@@ -255,7 +280,7 @@ function CommentPhoto({ user, postCurrent }) {
           fontFamily: 'inherit',
           fontSize: '17px',
           color:
-            name === 'Love' && post.loves.find((love) => love.userId === user.id) !== undefined
+            name === 'Love' && lovesPost.find((love) => love.userId === user.id) !== undefined
               ? '#30ab78'
               : 'gray',
           height: '30px',
@@ -372,31 +397,135 @@ function CommentPhoto({ user, postCurrent }) {
   };
   return (
     <RootStyle>
-      <BoxInfo>
-        <Box sx={{ display: 'flex' }}>
-          {userPost.avatar === undefined ? (
-            <Skeleton sx={{ width: '50px', height: '50px' }} variant="circular" />
-          ) : (
-            <Avatar sx={{ width: '50px', height: '50px' }} src={userPost.avatar} />
-          )}
-          <Box sx={{ marginLeft: '10px', alignItems: 'center' }}>
-            {userPost.username === undefined ? (
-              <Skeleton sx={{ width: '100px', height: '24px' }} variant="text" />
+      {post.pageId ? (
+        <BoxInfoUserPost>
+          <Stack direction="row" sx={{ alignItems: 'center' }}>
+            {page.avatar === undefined ? (
+              <Skeleton sx={{ width: '40px', height: '40px' }} variant="circular" />
             ) : (
-              <Typography sx={{ fontWeight: 'bold', fontSize: '16px' }}>
-                {userPost.username}
-              </Typography>
+              <Avatar onClick={() => navigate(`/home/pages/${page.id}`)} src={page.avatar} />
             )}
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <DatePost />
-              <StatusPost />
-            </Box>
-          </Box>
-        </Box>
-        <IconButton>
-          <Icon icon="bi:three-dots" />
-        </IconButton>
-      </BoxInfo>
+            <Stack sx={{ marginLeft: '10px' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  textAlign: 'left'
+                }}
+              >
+                {page.name === undefined ? (
+                  <Skeleton variant="text" sx={{ width: '100px', height: '20px' }} />
+                ) : (
+                  <Username onClick={goToPage}>{page.name}</Username>
+                )}
+              </Box>
+              <Stack sx={{ display: 'flex', alignItems: 'center' }} direction="row">
+                <DatePost />
+                <StatusPost />
+                <Icon icon="ci:dot-01-xs" />
+                <Icon icon="fontisto:flag" />
+              </Stack>
+            </Stack>
+          </Stack>
+          <IconButton>
+            <Icon icon="bx:bx-dots-horizontal-rounded" />
+          </IconButton>
+        </BoxInfoUserPost>
+      ) : (
+        <>
+          {post.groupId ? (
+            <BoxInfoUserPost>
+              <Box sx={{ display: 'flex' }}>
+                <AvatarGroup
+                  sx={{
+                    backgroundImage: `url(${group.avatar})`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundSize: '100% 100%'
+                  }}
+                >
+                  <Avatar
+                    sx={{
+                      width: '25px',
+                      height: '25px',
+                      position: 'absolute',
+                      bottom: -5,
+                      right: -5,
+                      outline: `1px solid #000`
+                    }}
+                    src={user.avatar}
+                  />
+                </AvatarGroup>
+                <Box sx={{ marginLeft: '15px' }}>
+                  <Username onClick={() => navigate(`/home/groups/${group.id}`)}>
+                    {group.name}
+                  </Username>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Typography sx={{ fontWeight: 'bold', fontSize: '12px', color: 'gray' }}>
+                      {userPost.username}
+                    </Typography>
+                    <Icon icon="ci:dot-01-xs" />
+                    <DatePost />
+                    <Icon icon="ci:dot-01-xs" />
+                    <Icon icon="el:group-alt" />
+                  </Box>
+                </Box>
+              </Box>
+              <IconButton>
+                <Icon icon="bx:bx-dots-horizontal-rounded" />
+              </IconButton>
+            </BoxInfoUserPost>
+          ) : (
+            <BoxInfoUserPost>
+              <Stack direction="row" sx={{ alignItems: 'center' }}>
+                <Button
+                  sx={{
+                    '&:hover': { backgroundColor: 'transparent' },
+                    '&:focus': { backgroundColor: 'transparent' }
+                  }}
+                >
+                  {userPost.avatar === undefined ? (
+                    <Skeleton sx={{ width: '40px', height: '40px' }} variant="circular" />
+                  ) : (
+                    <Avatar
+                      onClick={() => navigate(`/home/other/${userPost.id}`)}
+                      src={userPost.avatar}
+                    />
+                  )}
+                  <DotOnline
+                    icon="ci:dot-05-xl"
+                    style={{
+                      color:
+                        usersSocket.find((socket) => socket.userId === userPost.id) === undefined
+                          ? 'gray'
+                          : null
+                    }}
+                  />
+                </Button>
+                <Stack>
+                  <Box sx={{ display: 'flex', alignItems: 'center', textAlign: 'left' }}>
+                    {userPost.username === undefined ? (
+                      <Skeleton variant="text" sx={{ width: '100px', height: '20px' }} />
+                    ) : (
+                      <>
+                        <Username onClick={() => navigate(`/home/other/${userPost.id}`)}>
+                          {userPost.username}
+                        </Username>
+                      </>
+                    )}
+                  </Box>
+                  <Stack sx={{ display: 'flex', alignItems: 'center' }} direction="row">
+                    <DatePost />
+                    <StatusPost />
+                  </Stack>
+                </Stack>
+              </Stack>
+              <IconButton>
+                <Icon icon="bx:bx-dots-horizontal-rounded" />
+              </IconButton>
+            </BoxInfoUserPost>
+          )}
+        </>
+      )}
       <Box sx={{ marginTop: '10px' }}>
         <ShowMore
           lines={2}

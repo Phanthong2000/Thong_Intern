@@ -66,9 +66,11 @@ function Discover({ user }) {
               </Typography>
             </Box>
           </Box>
-          <ButtonJoinGroup onClick={like} startIcon={<Icon icon="fontisto:like" />}>
-            Like
-          </ButtonJoinGroup>
+          <Box sx={{ width: '100%', padding: '10px' }}>
+            <ButtonJoinGroup onClick={like} startIcon={<Icon icon="fontisto:like" />}>
+              Like
+            </ButtonJoinGroup>
+          </Box>
         </Card>
       </Grid>
     );

@@ -10,6 +10,7 @@ import BoxAdmin from './BoxAdmin';
 import BoxOverview from './BoxOverview';
 import BoxMemberRequests from './BoxMemberRequests';
 import { actionGetGroupsYouJoined, actionGetAllGroups } from '../../redux/actions/groupAction';
+import ModalInvite from './ModalInvite';
 
 const heightScreen = window.innerHeight - 1;
 const RootStyle = styled(Box)(({ theme }) => ({
@@ -28,6 +29,7 @@ function Group({ user }) {
   const socketRef = useRef();
   const { id } = useParams();
   const dispatch = useDispatch();
+  const modalInvite = useSelector((state) => state.group.modalInvite);
   const [hidden, setHidden] = useState(false);
   const [option, setOption] = useState('home');
   const [group, setGroup] = useState({});
@@ -83,6 +85,7 @@ function Group({ user }) {
       )}
       {option === 'overview' && <BoxOverview />}
       {option === 'requests' && <BoxMemberRequests user={user} group={group} />}
+      {modalInvite.status && <ModalInvite />}
     </RootStyle>
   );
 }

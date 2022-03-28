@@ -28,66 +28,27 @@ const RootStyle = styled(ListItemButton)(() => ({
   justifyContent: 'space-between',
   width: '100%'
 }));
-ItemSearchUser.prototype = {
+ItemSearchPage.prototype = {
   search: PropTypes.object
 };
-function ItemSearchUser({ search }) {
+function ItemSearchPage({ search }) {
   const [userBySearch, setUserBySearch] = useState({});
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { pathname } = useLocation();
-  const [isFriend, setIsFriend] = useState(false);
-  const contact = useSelector((state) => state.user.contact);
-  const getContact = async (userId, otherId) => {
-    const contact1 = await getDocs(
-      query(
-        collection(db, 'contacts'),
-        where('receiverId', '==', otherId),
-        where('senderId', '==', userId)
-      )
-    );
-    const contact2 = await getDocs(
-      query(
-        collection(db, 'contacts'),
-        where('receiverId', '==', userId),
-        where('senderId', '==', otherId)
-      )
-    );
-    if (contact1.empty && contact2.empty) {
-      return setIsFriend(false);
-    }
-    if (!contact1.empty) {
-      if (contact1.docs.at(0).data().status) {
-        return setIsFriend(true);
-      }
-      return setIsFriend(false);
-    }
-    if (!contact2.empty) {
-      if (contact2.docs.at(0).data().status) {
-        return setIsFriend(true);
-      }
-      return setIsFriend(false);
-    }
-  };
   useEffect(() => {
-    if (search.type === 'user') {
-      getDoc(doc(db, 'users', search.content)).then((snapshot) => {
+    if (search.type === 'page') {
+      getDoc(doc(db, 'pages', search.content)).then((snapshot) => {
         setUserBySearch({
           ...snapshot.data(),
           id: snapshot.id
         });
       });
-      getContact(search.userId, search.content);
     }
     return () => null;
   }, [search]);
   const chooseSearch = () => {
     dispatch(actionGetContact(search.userId, search.content));
-    navigate(`/home/other/${search.content}`);
-    // if (pathname.includes('/home/other/')) {
-    //   navigate('/home/app');
-    //   dispatch(actionTestSearch(search.content));
-    // }
+    navigate(`/home/pages/${search.content}`);
     dispatch(actionUserCloseSearch());
     dispatch(actionUserGetUserSearch([]));
   };
@@ -110,9 +71,9 @@ function ItemSearchUser({ search }) {
           <Avatar sx={{ width: '40px', height: '40px' }} src={userBySearch.avatar} />
           <Stack sx={{ marginLeft: '10px' }}>
             <Typography sx={{ fontWeight: 'bold', fontFamily: 'inherit' }}>
-              {userBySearch.username}
+              {userBySearch.name}
             </Typography>
-            {isFriend ? <Typography sx={{ color: 'gray' }}>Friend</Typography> : null}
+            <Typography sx={{ color: 'gray' }}>Page</Typography>
           </Stack>
         </Box>
         <IconButton>
@@ -123,4 +84,4 @@ function ItemSearchUser({ search }) {
   );
 }
 
-export default ItemSearchUser;
+export default ItemSearchPage;

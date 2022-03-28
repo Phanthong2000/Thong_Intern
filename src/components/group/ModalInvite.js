@@ -18,8 +18,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Scrollbar } from 'smooth-scrollbar-react';
 import { actionUserBackdrop } from '../../redux/actions/userAction';
 import { db } from '../../firebase-config';
-import { actionPageModalInvite } from '../../redux/actions/pageAction';
 import { actionOpenSnackbar } from '../../redux/actions/postAction';
+import { actionGroupModalInvite } from '../../redux/actions/groupAction';
 
 const BoxModal = styled(Card)(({ theme }) => ({
   position: 'absolute',
@@ -57,7 +57,7 @@ const ButtonInvite = styled(Button)(({ theme }) => ({
   }
 }));
 function Friend({ friend, choose, unChoose }) {
-  const modalInvite = useSelector((state) => state.page.modalInvite);
+  const modalInvite = useSelector((state) => state.group.modalInvite);
   const [userFriend, setUserFriend] = useState({});
   const [chosen, setChosen] = useState(false);
   const getUserFriend = () => {
@@ -87,11 +87,7 @@ function Friend({ friend, choose, unChoose }) {
     }
     setChosen(!chosen);
   };
-  if (
-    modalInvite.page.likes.includes(friend.friendId) ||
-    modalInvite.page.likes.includes(friend.friendId)
-  )
-    return null;
+  if (modalInvite.group.members.includes(friend.friendId)) return null;
   return (
     <BoxFriend>
       <Box
@@ -114,13 +110,13 @@ function ModalInvite() {
   const socket = useSelector((state) => state.call.socket);
   const socketRef = useRef();
   const user = useSelector((state) => state.user.user);
-  const modalInvite = useSelector((state) => state.page.modalInvite);
+  const modalInvite = useSelector((state) => state.group.modalInvite);
   const [chooseFriends, setChooseFriends] = useState([]);
   const friends = useSelector((state) => state.user.friends);
   const usersSocket = useSelector((state) => state.user.usersSocket);
   const handleClose = () => {
     dispatch(
-      actionPageModalInvite({
+      actionGroupModalInvite({
         status: false,
         page: {}
       })
@@ -150,51 +146,42 @@ function ModalInvite() {
     );
     let count = 0;
     chooseFriends.forEach((choose) => {
-      addDoc(collection(db, 'invites'), {
-        senderId: user.id,
+      const notification = {
+        senderIds: [user.id],
         receiverId: choose,
-        pageId: modalInvite.page.id,
-        status: false,
-        createdAt: new Date().getTime()
-      }).then((docRef) => {
-        const notification = {
-          senderIds: [user.id],
-          receiverId: choose,
-          content: `invited you to like page ${modalInvite.page.name}`,
-          type: 'invite',
-          pageId: modalInvite.page.id,
-          isRead: false,
-          action: 'like',
-          inviteId: docRef.id,
-          createdAt: new Date().getTime(),
-          updatedAt: new Date().getTime()
-        };
-        addDoc(collection(db, 'notifications'), notification).then(() => {
-          count += 1;
-          if (count === chooseFriends.length) {
-            console.log('ok');
-            if (socketIds.length > 0) {
-              socketRef.current.emit('invite like page', {
-                socketIds,
-                userInvite: user,
-                page: modalInvite.page
-              });
-            }
-            dispatch(
-              actionUserBackdrop({
-                status: false,
-                content: 'Invite friends'
-              })
-            );
-            dispatch(
-              actionOpenSnackbar({
-                status: true,
-                content: 'Invite success',
-                type: 'success'
-              })
-            );
+        content: `invited you to join group ${modalInvite.group.name}`,
+        type: 'invite',
+        groupId: modalInvite.group.id,
+        isRead: false,
+        action: 'like',
+        createdAt: new Date().getTime(),
+        updatedAt: new Date().getTime()
+      };
+      addDoc(collection(db, 'notifications'), notification).then(() => {
+        count += 1;
+        if (count === chooseFriends.length) {
+          console.log('ok');
+          if (socketIds.length > 0) {
+            socketRef.current.emit('invite join group', {
+              socketIds,
+              userInvite: user,
+              group: modalInvite.group
+            });
           }
-        });
+          dispatch(
+            actionUserBackdrop({
+              status: false,
+              content: 'Invite friends'
+            })
+          );
+          dispatch(
+            actionOpenSnackbar({
+              status: true,
+              content: 'Invite success',
+              type: 'success'
+            })
+          );
+        }
       });
     });
   };
@@ -203,7 +190,7 @@ function ModalInvite() {
       <BoxModal>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Typography sx={{ fontSize: '20px', fontWeight: 'bold' }}>
-            Invite to your friends like {modalInvite.page.name}
+            Invite to your friends join group {modalInvite.group.name}
           </Typography>
           <IconButton
             onClick={handleClose}

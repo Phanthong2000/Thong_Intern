@@ -41,7 +41,8 @@ import {
   actionUserBroadcastSocket,
   actionUserDeleteFriendRequest,
   actionGetAllNotifications,
-  actionGetBadgeNotifications
+  actionGetBadgeNotifications,
+  actionGetAllFriendUser
 } from '../redux/actions/userAction';
 import store from '../redux/store';
 import { actionOpenSnackbar } from '../redux/actions/postAction';
@@ -96,12 +97,20 @@ export const connectWithSocket = () => {
     store.dispatch(actionChatSendReaction());
   });
   socket.on('addFriend', (data) => {
-    console.log('add friend socket', data);
     store.dispatch(actionUserAddFriendRequest(data));
+    store.dispatch(actionGetBadgeNotifications(data.receiverId));
+    store.dispatch(actionGetAllNotifications(data.receiverId));
   });
   socket.on('deleteRequestAddFriend', (data) => {
-    console.log('deleteRequestAddFriend', data);
     store.dispatch(actionUserDeleteFriendRequest(data.id));
+    store.dispatch(actionGetAllNotifications(data.receiverId));
+    store.dispatch(actionGetBadgeNotifications(data.receiverId));
+  });
+  socket.on('confirmRequestAddFriend', (data) => {
+    store.dispatch(actionGetAllFriendUser(data.receiverId));
+  });
+  socket.on('unFriend', (data) => {
+    store.dispatch(actionGetAllFriendUser(data.receiverId));
   });
   socket.on('pushNotification', (data) => {
     console.log('push notification', data);
@@ -190,7 +199,6 @@ export const connectWithSocket = () => {
     }
   });
   socket.on('invite like page', (data) => {
-    console.log(data);
     store.dispatch(
       actionOpenSnackbar({
         status: true,
@@ -199,6 +207,12 @@ export const connectWithSocket = () => {
       })
     );
     store.dispatch(actionGetAllInvites(data.userId));
+    store.dispatch(actionGetAllNotifications(data.userId));
+    store.dispatch(actionGetBadgeNotifications(data.userId));
+  });
+  socket.on('invite join group', (data) => {
+    store.dispatch(actionGetAllNotifications(data.userId));
+    store.dispatch(actionGetBadgeNotifications(data.userId));
   });
 };
 export const registerUser = (data) => {
@@ -436,6 +450,12 @@ export const addFriendSocket = (data) => {
 };
 export const deleteRequestAddFriendSocket = (data) => {
   socket.emit('deleteRequestAddFriend', data);
+};
+export const confirmRequestAddFriendSocket = (data) => {
+  socket.emit('confirmRequestAddFriend', data);
+};
+export const unFriendSocket = (data) => {
+  socket.emit('unFriend', data);
 };
 export const pushNotificationSocket = (data) => {
   socket.emit('pushNotification', data);

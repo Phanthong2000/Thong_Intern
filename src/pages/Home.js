@@ -18,6 +18,7 @@ import ModalReceivingVideoCall from '../components/video/ModalReceivingVideoCall
 import ChatBox from '../components/home/main/ChatBox';
 import Snack from '../components/Snack';
 import Chatgroup from '../components/home/main/Chatgroup';
+import BoxYourPage from '../components/home/main/BoxYourPage';
 
 const heightScreen = window.innerHeight - 1;
 const RootStyle = styled(Box)(({ theme }) => ({
@@ -51,13 +52,13 @@ function Home() {
   const remoteStreamGroup = useSelector((state) => state.call.remoteStreamGroup);
   const allPeers = useSelector((state) => state.call.allPeers);
   useEffect(() => {
-    if (testSearch.length > 0) {
-      navigate(`/home/other/${testSearch}`);
-      dispatch(actionTestSearch(''));
-      window.document.title = 'Thong Intern';
-    } else {
-      window.document.title = 'Home';
-    }
+    // if (testSearch.length > 0) {
+    //   navigate(`/home/other/${testSearch}`);
+    //   dispatch(actionTestSearch(''));
+    //   window.document.title = 'Thong Intern';
+    // } else {
+    //   window.document.title = 'Home';
+    // }
     dispatch(
       actionChatGetChatbox({
         id: '',
@@ -92,6 +93,7 @@ function Home() {
       <BoxPost />
       <StackContact>
         <Scrollbar alwaysShowTracks>
+          <BoxYourPage />
           <BoxContact />
           <Box>
             <Typography

@@ -25,7 +25,7 @@ function AllSent({ user }) {
   useEffect(() => {
     if (user.id !== undefined) dispatch(actionSearchAllSent(name, user.id));
     return () => null;
-  }, [user]);
+  }, [user, name]);
   if (searchAllSent.length === 0) return null;
   return (
     <RootStyle>

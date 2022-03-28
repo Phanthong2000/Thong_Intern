@@ -29,6 +29,8 @@ import {
 } from '../../redux/actions/userAction';
 import ItemSearchUser from './ItemSearchUser';
 import ItemSearchText from './ItemSearchText';
+import ItemSearchPage from './ItemSearchPage';
+import ItemSearchGroup from './ItemSearchGroup';
 
 const RootStyle = styled(List)(({ theme }) => ({
   borderWidth: '2px',
@@ -51,6 +53,8 @@ ListSearch.prototype = {
 function ListSearch({ user }) {
   const inputCommentRef = useRef('');
   const [searchAllUser, setSearchAllUser] = useState([]);
+  const [searchAllPages, setSearchAllPages] = useState([]);
+  const [searchAllGroups, setSearchAllGroups] = useState([]);
   const [search, setSearch] = useState([]);
   const [isSearch, setIsSearch] = useState(false);
   const dispatch = useDispatch();
@@ -85,9 +89,37 @@ function ListSearch({ user }) {
       setSearch(users);
     });
   };
+  const getAllPages = async () => {
+    const data = await getDocs(query(collection(db, 'pages'), where('userCreate', '!=', user.id)));
+    if (!data.empty) {
+      const pages = [];
+      data.docs.forEach((page) => {
+        pages.push({
+          ...page.data(),
+          id: page.id
+        });
+      });
+      setSearchAllPages(pages);
+    }
+  };
+  const getAllGroups = async () => {
+    const data = await getDocs(query(collection(db, 'groups'), where('userCreate', '!=', user.id)));
+    if (!data.empty) {
+      const pages = [];
+      data.docs.forEach((page) => {
+        pages.push({
+          ...page.data(),
+          id: page.id
+        });
+      });
+      setSearchAllGroups(pages);
+    }
+  };
   useEffect(() => {
-    getHistorySearch();
+    // getHistorySearch();
     getAllUser();
+    getAllPages();
+    getAllGroups();
     return () => null;
   }, [user]);
   const closeSearch = () => {
@@ -99,10 +131,11 @@ function ListSearch({ user }) {
     // dispatch(actionSearchAllSent(inputCommentRef.current, user.id));
     // dispatch(actionSearchAllFriendRequests(inputCommentRef.current, user.id));
     dispatch(actionUserCloseSearch());
-    if (pathname.includes(`/home/search`)) {
-      navigate(`/home/search/all-people/${inputCommentRef.current}`);
-      window.location.reload();
-    } else navigate(`/home/search/all-people/${inputCommentRef.current}`);
+    // if (pathname.includes(`/home/search`)) {
+    //   navigate(`/home/search/all-people/${inputCommentRef.current}`);
+    //   window.location.reload();
+    // } else
+    navigate(`/home/search/all-people/${inputCommentRef.current}`);
   };
   const inputSearch = (e) => {
     inputCommentRef.current = e.target.value;
@@ -118,11 +151,32 @@ function ListSearch({ user }) {
           });
         }
       });
+      searchAllPages.forEach((userSearch) => {
+        if (userSearch.name.toLowerCase().includes(e.target.value.toLowerCase())) {
+          data.push({
+            userId: user.id,
+            createdAt: new Date().getTime(),
+            content: userSearch.id,
+            type: 'page'
+          });
+        }
+      });
+      searchAllGroups.forEach((userSearch) => {
+        if (userSearch.name.toLowerCase().includes(e.target.value.toLowerCase())) {
+          data.push({
+            userId: user.id,
+            createdAt: new Date().getTime(),
+            content: userSearch.id,
+            type: 'group'
+          });
+        }
+      });
       setSearch(data);
       setIsSearch(true);
     } else {
-      getAllUser();
-      getHistorySearch();
+      setSearch([]);
+      // getAllUser();
+      // getHistorySearch();
       setIsSearch(false);
     }
   };
@@ -148,6 +202,8 @@ function ListSearch({ user }) {
           ) : (
             search.map((item, index) => {
               if (item.type === 'user') return <ItemSearchUser key={index} search={item} />;
+              if (item.type === 'page') return <ItemSearchPage key={index} search={item} />;
+              if (item.type === 'group') return <ItemSearchGroup key={index} search={item} />;
               return null;
             })
           )}

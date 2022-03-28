@@ -27,7 +27,11 @@ import About from './About';
 import Discussion from './Discussion';
 import { actionOpenSnackbar } from '../../redux/actions/postAction';
 import { actionUserBackdrop } from '../../redux/actions/userAction';
-import { actionGetAllGroups, actionGetGroupsYouJoined } from '../../redux/actions/groupAction';
+import {
+  actionGetAllGroups,
+  actionGetGroupsYouJoined,
+  actionGroupModalInvite
+} from '../../redux/actions/groupAction';
 
 const RootStyle = styled(Box)(({ theme }) => ({
   width: 'calc(100% - 355px)',
@@ -550,7 +554,17 @@ function BoxAvatarGroup({ user, hidden, show, getGroup, group }) {
                       )}
                     </Card>
                   </Popper>
-                  <ButtonJoinGroup startIcon={<Icon icon="eva:plus-fill" />}>
+                  <ButtonJoinGroup
+                    onClick={() => {
+                      dispatch(
+                        actionGroupModalInvite({
+                          status: true,
+                          group
+                        })
+                      );
+                    }}
+                    startIcon={<Icon icon="eva:plus-fill" />}
+                  >
                     Invite
                   </ButtonJoinGroup>
                   <Button

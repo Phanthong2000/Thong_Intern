@@ -21,7 +21,7 @@ function AllFriends({ user }) {
   useEffect(() => {
     if (user.id !== undefined) dispatch(actionSearchAllFriends(name, user.id));
     return () => null;
-  }, [user]);
+  }, [user, name]);
   if (searchAllFriends.length === 0) return null;
   return (
     <RootStyle>

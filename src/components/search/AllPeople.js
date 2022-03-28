@@ -22,7 +22,7 @@ function AllPeople({ user }) {
   useEffect(() => {
     if (user.id !== undefined) dispatch(actionSearchAllPeople(name, user.id));
     return () => null;
-  }, [user]);
+  }, [user, name]);
   useEffect(() => {
     setAllPeople(allPeople);
     return () => null;

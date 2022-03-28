@@ -8,28 +8,39 @@ import {
   Grid,
   IconButton,
   InputBase,
+  Popover,
+  Skeleton,
+  Stack,
   styled,
   Typography
 } from '@mui/material';
+import { Icon } from '@iconify/react';
 import PropTypes from 'prop-types';
+import moment from 'moment';
+import { useDispatch, useSelector } from 'react-redux';
 import {
-  addDoc,
-  collection,
   doc,
   getDoc,
   getDocs,
+  collection,
   query,
+  where,
   updateDoc,
-  where
+  addDoc
 } from 'firebase/firestore';
-import moment from 'moment';
-import { Scrollbar } from 'smooth-scrollbar-react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Icon } from '@iconify/react';
+import { useNavigate } from 'react-router-dom';
 import ShowMore from 'react-show-more';
 import { db } from '../../firebase-config';
-import { actionGetAllPostAllFriend, getAllPosts } from '../../redux/actions/postAction';
-import Comment from './Comment';
+import Comment from '../post/Comment';
+import {
+  actionPostOpenConfirmDeletePost,
+  getAllPosts,
+  actionGetAllPostAllFriend,
+  actionPostModalSharePost
+} from '../../redux/actions/postAction';
+import { pushNotificationSocket } from '../../utils/wssConnection';
+import { actionGetContact, actionUserHoverUsername } from '../../redux/actions/userAction';
+import BoxHoverUsernamePost from '../BoxHoverUsernamePost';
 
 const RootStyle = styled(Card)(({ theme }) => ({
   marginTop: '10px',
@@ -37,10 +48,15 @@ const RootStyle = styled(Card)(({ theme }) => ({
   background: '#fff',
   padding: theme.spacing(1, 1, 1)
 }));
-const BoxInfo = styled(Box)(({ theme }) => ({
+const StackPost = styled(Stack)(() => ({
+  width: '100%'
+}));
+const BoxInfoUserPost = styled(Box)(() => ({
   width: '100%',
   display: 'flex',
-  alignItems: 'center'
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  marginBottom: '10px'
 }));
 const DotOnline = styled(Icon)(({ theme }) => ({
   position: 'absolute',
@@ -59,30 +75,35 @@ const Username = styled(Typography)(() => ({
     textDecoration: 'underline'
   }
 }));
-SharePost.prototype = {
-  post: PropTypes.object
+const AvatarGroup = styled(Button)(({ theme }) => ({
+  width: '35px',
+  height: '35px',
+  borderRadius: '5px'
+}));
+Post.prototype = {
+  post: PropTypes.object,
+  pageOk: PropTypes.bool,
+  getAllPosts: PropTypes.func
 };
-function SharePost({ post }) {
+function Post({ post, getAllPosts, pageOk }) {
   const user = useSelector((state) => state.user.user);
-  const [userShare, setUserShare] = useState({});
-  const [userPost, setUserPost] = useState({});
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [anchorElUsername, setAnchorElUsername] = React.useState(null);
+  const open = Boolean(anchorEl);
+  const openUS = Boolean(anchorElUsername);
+  const inputCommentRef = useRef('');
+  const dispatch = useDispatch();
+  const [page, setPage] = useState({});
+  const [isCommenting, setIsCommenting] = useState(false);
   const [commentByPostId, setCommentByPostId] = useState([]);
   const usersSocket = useSelector((state) => state.user.usersSocket);
-  const inputCommentRef = useRef();
-  const [isCommenting, setIsCommenting] = useState(false);
+  const [notificationLovesByPost, setNotificationLovesByPost] = useState({});
+  const [notificationCommentsByPost, setNotificationCommentsByPost] = useState({});
   const [lovesPost, setLovesPost] = useState(post.loves);
-  const dispatch = useDispatch();
-  const getUserPost = () => {
-    getDoc(doc(db, 'users', post.post.userId)).then((post) => {
-      setUserPost({
-        ...post.data(),
-        id: post.id
-      });
-    });
-  };
-  const getUserShare = () => {
-    getDoc(doc(db, 'users', post.userId)).then((post) => {
-      setUserShare({
+  const navigate = useNavigate();
+  const getPage = () => {
+    getDoc(doc(db, 'pages', post.userId)).then((post) => {
+      setPage({
         ...post.data(),
         id: post.id
       });
@@ -105,8 +126,7 @@ function SharePost({ post }) {
     }
   };
   useEffect(() => {
-    getUserPost();
-    getUserShare();
+    getPage();
     getCommentsByPostId();
     return () => null;
   }, []);
@@ -118,14 +138,6 @@ function SharePost({ post }) {
     if (post.status === 'public') return <IconStatus icon="si-glyph:global" />;
     return <IconStatus icon="entypo:lock" />;
   };
-  const StatusPostShare = () => {
-    const IconStatus = styled(Icon)(() => ({
-      marginLeft: '5px',
-      color: 'gray'
-    }));
-    if (post.post.status === 'public') return <IconStatus icon="si-glyph:global" />;
-    return <IconStatus icon="entypo:lock" />;
-  };
   const DatePost = () => {
     const DateTime = styled(Typography)(() => ({
       fontSize: '14px',
@@ -135,180 +147,50 @@ function SharePost({ post }) {
       return <DateTime>{moment(post.createdAt).fromNow()}</DateTime>;
     return <DateTime>{moment(post.createdAt).format('MMMM D, YYYY')}</DateTime>;
   };
-  const DatePostShare = () => {
-    const DateTime = styled(Typography)(() => ({
-      fontSize: '14px',
-      color: 'grey'
-    }));
-    if (new Date().getTime() - post.post.createdAt < 86400000)
-      return <DateTime>{moment(post.post.createdAt).fromNow()}</DateTime>;
-    return <DateTime>{moment(post.post.createdAt).format('MMMM D, YYYY')}</DateTime>;
-  };
-  const BoxPostText = () => {
-    const PostText = styled(Box)(({ theme }) => ({
+  const ContentBackground = () => {
+    const BoxBackground = styled(Box)(({ theme }) => ({
+      backgroundImage: `url(${post.background})`,
       width: '100%',
-      display: 'flex'
-    }));
-    const BoxContent = styled(Box)(({ theme }) => ({
-      width: '100%',
-      border: `1px solid gray`,
-      padding: theme.spacing(2),
-      borderRadius: '5px',
-      background: '#fff'
-    }));
-    const BoxInfo = styled(Box)(({ theme }) => ({
-      width: '100%',
+      height: '400px',
       display: 'flex',
+      justifyContent: 'center',
       alignItems: 'center'
     }));
-    return (
-      <PostText>
-        <BoxContent>
-          <BoxInfo>
-            <IconButton disabled>
-              <Avatar src={userPost.avatar} />
-              <DotOnline
-                icon="ci:dot-05-xl"
-                style={{
-                  color:
-                    usersSocket.find((socket) => socket.userId === userPost.id) === undefined
-                      ? 'gray'
-                      : null
-                }}
-              />
-            </IconButton>
-            <Box>
-              <Typography sx={{ fontWeight: 'bold' }}>{userPost.username}</Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <DatePostShare />
-                <StatusPostShare />
-              </Box>
-            </Box>
-          </BoxInfo>
-          <ShowMore
-            lines={4}
-            more={<Typography sx={{ fontWeight: 'bold', color: '#30ab78' }}>Show more</Typography>}
-            less={<Typography sx={{ fontWeight: 'bold', color: '#30ab78' }}>Show less</Typography>}
-          >
-            <Typography>{post.post.contentText}</Typography>
-          </ShowMore>
-        </BoxContent>
-      </PostText>
-    );
+    const ContentBackground = styled(Typography)(() => ({
+      fontWeight: 'bold',
+      fontSize: '20px',
+      color: post.textColor
+    }));
+    if (post.type === 'background')
+      return (
+        <BoxBackground>
+          <ContentBackground>{post.contentText}</ContentBackground>
+        </BoxBackground>
+      );
+    return null;
   };
-  const BoxPostImage = () => {
-    const PostImage = styled(Box)(({ theme }) => ({
+  const ContentImage = () => {
+    const Image = styled('img')(() => ({
       width: '100%',
-      display: 'flex'
+      marginTop: '5px',
+      cursor: 'pointer'
     }));
-    const Image = styled('img')(({ theme }) => ({
-      width: '100%',
-      outline: `1px solid gray`
-    }));
-    const BoxContent = styled(Box)(({ theme }) => ({
-      width: '100%',
-      border: `1px solid gray`,
-      padding: theme.spacing(2),
-      borderRadius: '5px',
-      background: '#fff'
-    }));
-    const BoxInfo = styled(Box)(({ theme }) => ({
-      width: '100%',
-      display: 'flex',
-      alignItems: 'center'
-    }));
-    return (
-      <PostImage>
-        <BoxContent>
-          <Image src={post.post.contentFile} />
-          <BoxInfo>
-            <IconButton disabled>
-              <Avatar src={userPost.avatar} />
-              <DotOnline
-                icon="ci:dot-05-xl"
-                style={{
-                  color:
-                    usersSocket.find((socket) => socket.userId === userPost.id) === undefined
-                      ? 'gray'
-                      : null
-                }}
-              />
-            </IconButton>
-            <Box>
-              <Typography sx={{ fontWeight: 'bold' }}>{userPost.username}</Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <DatePostShare />
-                <StatusPostShare />
-              </Box>
-            </Box>
-          </BoxInfo>
-          <Typography>{post.post.contentText}</Typography>
-        </BoxContent>
-      </PostImage>
-    );
+    if (post.type === 'image')
+      return <Image onClick={goToPhoto} src={post.contentFile} alt="post" />;
+    return null;
   };
-  const BoxPostBackground = () => {
-    const PostText = styled(Box)(({ theme }) => ({
-      width: '100%',
-      display: 'flex'
-    }));
-    const BoxContent = styled(Box)(({ theme }) => ({
-      width: '100%',
-      border: `1px solid gray`,
-      padding: theme.spacing(2),
-      borderRadius: '5px',
-      background: '#fff'
-    }));
-    const BoxInfo = styled(Box)(({ theme }) => ({
-      width: '100%',
-      display: 'flex',
-      alignItems: 'center'
-    }));
-    return (
-      <PostText>
-        <Scrollbar>
-          <BoxContent>
-            <BoxInfo>
-              <IconButton disabled>
-                <Avatar sx={{ width: '50px', height: '50px' }} src={userPost.avatar} />
-                <DotOnline
-                  icon="ci:dot-05-xl"
-                  style={{
-                    color:
-                      usersSocket.find((socket) => socket.userId === userPost.id) === undefined
-                        ? 'gray'
-                        : null
-                  }}
-                />
-              </IconButton>
-              <Box>
-                <Typography sx={{ fontWeight: 'bold' }}>{userPost.username}</Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <DatePostShare />
-                  <StatusPostShare />
-                </Box>
-              </Box>
-            </BoxInfo>
-            <Box
-              sx={{
-                width: '100%',
-                height: '400px',
-                backgroundImage: `url(${post.post.background})`,
-                backgroundSize: `100% 100%`,
-                backgroundRepeat: 'no-repeat',
-                justifyContent: 'center',
-                display: 'flex',
-                alignItems: 'center'
-              }}
-            >
-              <Typography sx={{ fontWeight: 'bold', fontSize: '20px', color: post.post.textColor }}>
-                {post.post.contentText}
-              </Typography>
-            </Box>
-          </BoxContent>
-        </Scrollbar>
-      </PostText>
-    );
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+  const openOptionsPost = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleCloseUsername = () => {
+    setAnchorElUsername(null);
+  };
+  const deletePost = () => {
+    dispatch(actionPostOpenConfirmDeletePost(post.id));
+    handleClose();
   };
   const InfoContact = () => {
     const BoxInfoContact = styled(Box)(({ theme }) => ({
@@ -353,7 +235,7 @@ function SharePost({ post }) {
           style={{ color: 'red', width: '20px', height: '20px' }}
         />
         <Typography sx={{ marginLeft: '2px', fontFamily: 'inherit', color: 'gray' }}>
-          {lovesPost.find((love) => love.userId === user.id) === undefined
+          {lovesPost.find((love) => love.userId === user.id) === undefined || lovesPost.length === 0
             ? checkQuantityLoveDontHaveUserCurrent()
             : checkQuantityLove()}
         </Typography>
@@ -398,10 +280,13 @@ function SharePost({ post }) {
             }
           ]
         };
+        console.log(postNew);
         updateDoc(doc(db, 'posts', post.id), postNew).then(() => {
+          if (pageOk) {
+            getAllPosts();
+            dispatch(actionGetAllPostAllFriend(user.id));
+          }
           setLovesPost(postNew.loves);
-          // dispatch(getAllPosts(user.id, 'desc'));
-          // dispatch(actionGetAllPostAllFriend(user.id));
         });
       } else {
         const postNew = {
@@ -411,9 +296,11 @@ function SharePost({ post }) {
         updateDoc(doc(db, 'posts', post.id), {
           ...postNew
         }).then(() => {
+          if (pageOk) {
+            getAllPosts();
+            dispatch(actionGetAllPostAllFriend(user.id));
+          }
           setLovesPost(postNew.loves);
-          // dispatch(getAllPosts(user.id, 'desc'));
-          // dispatch(actionGetAllPostAllFriend(user.id));
         });
       }
     };
@@ -421,7 +308,13 @@ function SharePost({ post }) {
       setIsCommenting(true);
     };
     const share = () => {
-      console.log('share');
+      dispatch(
+        actionPostModalSharePost({
+          status: true,
+          post,
+          page
+        })
+      );
     };
     const GridItem = styled(Grid)(({ theme }) => ({
       padding: theme.spacing(1, 1, 1)
@@ -435,7 +328,9 @@ function SharePost({ post }) {
           fontFamily: 'inherit',
           fontSize: '17px',
           color:
-            name === 'Love' && lovesPost.find((love) => love.userId === user.id) !== undefined
+            name === 'Love' &&
+            lovesPost.find((love) => love.userId === user.id) !== undefined &&
+            lovesPost.length !== 0
               ? '#30ab78'
               : 'gray',
           height: '30px',
@@ -448,20 +343,20 @@ function SharePost({ post }) {
         {name}
       </Button>
     );
-    if (post.status === 'public')
-      return (
-        <Grid container>
-          <GridItem item xs={4} sm={4} md={4} lg={4} xl={4}>
-            <ButtonItem name="Love" click={love} icon="ant-design:heart-twotone" />
-          </GridItem>
-          <GridItem item xs={4} sm={4} md={4} lg={4} xl={4}>
-            <ButtonItem name="Comment" click={comment} icon="akar-icons:comment" />
-          </GridItem>
-          <GridItem item xs={4} sm={4} md={4} lg={4} xl={4}>
-            <ButtonItem name="Share" click={share} icon="cil:share" />
-          </GridItem>
-        </Grid>
-      );
+    // if (post.status === 'public' && !post.groupId)
+    //   return (
+    //     <Grid container>
+    //       <GridItem item xs={4} sm={4} md={4} lg={4} xl={4}>
+    //         <ButtonItem name="Love" click={love} icon="ant-design:heart-twotone" />
+    //       </GridItem>
+    //       <GridItem item xs={4} sm={4} md={4} lg={4} xl={4}>
+    //         <ButtonItem name="Comment" click={comment} icon="akar-icons:comment" />
+    //       </GridItem>
+    //       <GridItem item xs={4} sm={4} md={4} lg={4} xl={4}>
+    //         <ButtonItem name="Share" click={share} icon="cil:share" />
+    //       </GridItem>
+    //     </Grid>
+    //   );
     return (
       <Grid container>
         <GridItem item xs={6} sm={6} md={6} lg={6} xl={6}>
@@ -515,15 +410,7 @@ function SharePost({ post }) {
               }}
             >
               <Avatar sx={{ width: '30px', height: '30px' }} src={user.avatar} />
-              <DotOnline
-                icon="ci:dot-05-xl"
-                style={{
-                  color:
-                    usersSocket.find((socket) => socket.userId === userPost.id) === undefined
-                      ? 'gray'
-                      : null
-                }}
-              />
+              <DotOnline icon="ci:dot-05-xl" />
             </Button>
           </Grid>
           <Grid item xs={10} sm={10} md={10} lg={10} xl={10}>
@@ -560,15 +447,7 @@ function SharePost({ post }) {
               }}
             >
               <Avatar sx={{ width: '30px', height: '30px' }} src={user.avatar} />
-              <DotOnline
-                icon="ci:dot-05-xl"
-                style={{
-                  color:
-                    usersSocket.find((socket) => socket.userId === userPost.id) === undefined
-                      ? 'gray'
-                      : null
-                }}
-              />
+              <DotOnline icon="ci:dot-05-xl" />
             </Button>
           </Grid>
           <Grid item xs={10} sm={10} md={10} lg={10} xl={10}>
@@ -601,49 +480,110 @@ function SharePost({ post }) {
       </Box>
     );
   };
+  const goToPhoto = () => {
+    navigate(`/home/photo/${post.id}`);
+  };
+  const goToPage = () => {
+    navigate(`/home/pages/${page.id}`);
+  };
   return (
-    <RootStyle>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <BoxInfo>
-          <IconButton disabled>
-            <Avatar src={userShare.avatar} />
-            <DotOnline
-              icon="ci:dot-05-xl"
-              style={{
-                color:
-                  usersSocket.find((socket) => socket.userId === userShare.id) === undefined
-                    ? 'gray'
-                    : null
-              }}
-            />
+    <RootStyle data-aos="zoom-in">
+      <StackPost>
+        <BoxInfoUserPost>
+          <Stack direction="row" sx={{ alignItems: 'center' }}>
+            {page.avatar === undefined ? (
+              <Skeleton sx={{ width: '40px', height: '40px' }} variant="circular" />
+            ) : (
+              <Avatar onClick={() => navigate(`/home/pages/${page.id}`)} src={page.avatar} />
+            )}
+            <Stack sx={{ marginLeft: '10px' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  textAlign: 'left'
+                }}
+              >
+                {page.name === undefined ? (
+                  <Skeleton variant="text" sx={{ width: '100px', height: '20px' }} />
+                ) : (
+                  <Username onClick={goToPage}>{page.name}</Username>
+                )}
+              </Box>
+              <Stack sx={{ display: 'flex', alignItems: 'center' }} direction="row">
+                <DatePost />
+                <StatusPost />
+                <Icon icon="ci:dot-01-xs" />
+                <Icon icon="fontisto:flag" />
+              </Stack>
+            </Stack>
+          </Stack>
+          <IconButton onClick={openOptionsPost}>
+            <Icon icon="bx:bx-dots-horizontal-rounded" />
           </IconButton>
-          <Box>
-            <Username>{userShare.username}</Username>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <DatePost />
-              <StatusPost />
-            </Box>
-          </Box>
-        </BoxInfo>
-        <IconButton>
-          <Icon icon="bx:bx-dots-horizontal-rounded" />
-        </IconButton>
-      </Box>
-      <ShowMore
-        lines={4}
-        more={<Typography sx={{ fontWeight: 'bold', color: '#30ab78' }}>Show more</Typography>}
-        less={<Typography sx={{ fontWeight: 'bold', color: '#30ab78' }}>Show less</Typography>}
-      >
-        <Typography>{post.contentText}</Typography>
-      </ShowMore>
-      {post.post.type === 'text' && <BoxPostText />}
-      {post.post.type === 'background' && <BoxPostBackground />}
-      {(post.post.type === 'image' || post.post.type === 'avatar') && <BoxPostImage />}
-      <InfoContact />
-      <ButtonContact />
-      {isCommenting && <CommentPost />}
+          <Popover
+            id="basic-menu"
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleClose}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'left'
+            }}
+            transformOrigin={{
+              vertical: 'center',
+              horizontal: 'right'
+            }}
+          >
+            <Stack sx={{ padding: '10px', background: '#fff' }}>
+              <Button
+                sx={{ color: 'gray', textTransform: 'none', justifyContent: 'left' }}
+                startIcon={<Icon style={{ marginLeft: '5px' }} icon="bytesize:edit" />}
+              >
+                Edit post
+              </Button>
+              <Button
+                sx={{ color: 'gray', textTransform: 'none', justifyContent: 'left' }}
+                startIcon={<StatusPost />}
+              >
+                Edit audience
+              </Button>
+              <Divider sx={{ margin: `10px 0px` }} />
+              <Button
+                onClick={deletePost}
+                sx={{ color: 'gray', textTransform: 'none', justifyContent: 'left' }}
+                startIcon={<Icon style={{ marginLeft: '5px' }} icon="ion:trash-outline" />}
+              >
+                Delete post
+              </Button>
+            </Stack>
+          </Popover>
+        </BoxInfoUserPost>
+        {post.type !== 'background' ? (
+          <>
+            <ShowMore
+              lines={4}
+              more={
+                <Typography sx={{ fontWeight: 'bold', color: '#30ab78' }}>Show more</Typography>
+              }
+              less={
+                <Typography sx={{ fontWeight: 'bold', color: '#30ab78' }}>Show less</Typography>
+              }
+            >
+              <Typography sx={{ maxWidth: '100%' }}>{post.contentText}</Typography>
+            </ShowMore>
+            <ContentImage />
+          </>
+        ) : (
+          <ContentBackground />
+        )}
+        <InfoContact />
+        <ButtonContact />
+        <Divider />
+        {isCommenting ? <CommentPost /> : null}
+      </StackPost>
     </RootStyle>
   );
 }
 
-export default SharePost;
+export default Post;

@@ -24,7 +24,8 @@ const BoxLeft = styled(Card)(() => ({
   minHeight: `${heightScreen - 60}px`,
   maxHeight: `${heightScreen - 60}px`,
   padding: '10px',
-  display: 'flex'
+  display: 'flex',
+  position: 'fixed'
 }));
 const BoxTitle = styled(Box)(() => ({
   width: '100%',
@@ -42,7 +43,8 @@ const ButtonCreateGroup = styled(Button)(({ theme }) => ({
   padding: '7px 0px'
 }));
 const BoxRight = styled(Box)(({ theme }) => ({
-  width: `calc(100% - 350px)`
+  width: `calc(100% - 350px)`,
+  marginLeft: '350px'
 }));
 Page.prototype = {
   user: PropTypes.object

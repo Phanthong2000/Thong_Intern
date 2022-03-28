@@ -19,6 +19,7 @@ import ModalReceiveInviteJoinRoom from '../components/video/ModalReceiveInviteJo
 import Snack from '../components/Snack';
 import ModalSharePost from '../components/post/ModalSharePost';
 import Backdrops from '../components/Backdrop';
+import ModalInvite from '../components/page/ModalInvite';
 
 const RootStyle = styled(Box)(({ theme }) => ({
   overflow: 'hidden',
@@ -43,7 +44,7 @@ function HomeLayout() {
   const modalReceivingGroup = useSelector((state) => state.call.modalReceivingGroup);
   const modalReceiveInviteJoinRoom = useSelector((state) => state.call.modalReceiveInviteJoinRoom);
   const modalSharePost = useSelector((state) => state.post.modalSharePost);
-  const backdrop = useSelector((state) => state.user.backdrop);
+  const modalInvite = useSelector((state) => state.page.modalInvite);
   const { pathname } = useLocation();
   const getUser = async (userId) => {
     const data = await getDoc(doc(db, 'users', userId));
@@ -105,6 +106,7 @@ function HomeLayout() {
           <ModalReceiveInviteJoinRoom />
         )}
         {modalSharePost.status && <ModalSharePost user={user} />}
+        {modalInvite.status && <ModalInvite />}
         <Snack />
         <Backdrops />
         <Outlet />

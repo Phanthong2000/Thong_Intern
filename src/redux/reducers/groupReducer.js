@@ -4,7 +4,8 @@ import {
   ACTION_GROUP_MODAL_CREATE_POST,
   ACTION_GROUP_UPDATE,
   ACTION_GROUP_GET_POSTS_ALL_GROUP,
-  ACTION_GROUP_GET_ALL_GROUPS
+  ACTION_GROUP_GET_ALL_GROUPS,
+  ACTION_GROUP_MODAL_INVITE
 } from '../actions/types';
 
 const defaultState = {
@@ -16,7 +17,11 @@ const defaultState = {
   },
   update: 0,
   postsAllGroup: [],
-  allGroups: []
+  allGroups: [],
+  modalInvite: {
+    status: false,
+    group: {}
+  }
 };
 
 const groupReducer = (state = defaultState, action) => {
@@ -50,6 +55,11 @@ const groupReducer = (state = defaultState, action) => {
       return {
         ...state,
         allGroups: action.payload
+      };
+    case ACTION_GROUP_MODAL_INVITE:
+      return {
+        ...state,
+        modalInvite: action.payload
       };
     default:
       return state;

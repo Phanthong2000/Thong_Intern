@@ -45,6 +45,7 @@ import PageUser from './components/page/Page';
 import Invites from './components/page/Invites';
 import LikedPages from './components/page/LikedPages';
 import DiscoverPage from './components/page/Discover';
+import PostNotification from './pages/PostNotification';
 
 function Router() {
   const user = useSelector((state) => state.user.user);
@@ -101,6 +102,7 @@ function Router() {
         { path: 'room/:id', element: <Room user={user} /> },
         { path: 'video-room/:roomId', element: <VideoRoom2 user={user} /> },
         { path: 'photo/:id', element: <Photo user={user} /> },
+        { path: 'post/:id', element: <PostNotification /> },
         {
           path: 'search',
           element: <Search />,

@@ -7,6 +7,7 @@ import UpPost from './UpPost';
 import Post from '../../post/Post';
 import { actionGetFriendsHaveStory } from '../../../redux/actions/userAction';
 import SharePost from '../../post/SharePost';
+import PostPage from '../../page/Post';
 
 const RootStyle = styled(Stack)(({ theme }) => ({
   width: '100%',
@@ -37,7 +38,13 @@ function BoxPost() {
               {item.type === 'share' ? (
                 <SharePost key={index} post={item} />
               ) : (
-                <Post post={item} key={index} user={user} />
+                <>
+                  {item.pageId ? (
+                    <PostPage post={item} pageOk={false} getAllPosts={() => console.log('cc')} />
+                  ) : (
+                    <Post post={item} key={index} user={user} />
+                  )}
+                </>
               )}
             </>
           ))}

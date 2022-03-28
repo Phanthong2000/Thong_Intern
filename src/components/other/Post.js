@@ -342,58 +342,7 @@ function Post({ user, post }) {
         updateDoc(doc(db, 'posts', post.id), postNew).then(() => setLovesPost(lovesPostNew));
       }
       const userSocket = usersSocket.find((user) => user.userId === userPost.id);
-      if (userSocket !== undefined) {
-        if (notificationLovesByPost.id === undefined) {
-          const notification = {
-            senderIds: [user.id],
-            receiverId: userPost.id,
-            content: 'loved your post',
-            type: 'post',
-            action: 'love',
-            postId: post.id,
-            isRead: false,
-            createdAt: new Date().getTime(),
-            updatedAt: new Date().getTime()
-          };
-          addDoc(collection(db, 'notifications'), notification).then((docRef) => {
-            pushNotificationSocket({
-              ...notification,
-              socketId: userSocket.socketId
-            });
-            getNotificationsLovesByPost();
-          });
-        } else if (notificationLovesByPost.senderIds.indexOf(user.id) >= 0) {
-          updateDoc(doc(db, 'notifications', notificationLovesByPost.id), {
-            ...notificationLovesByPost,
-            senderIds: notificationLovesByPost.senderIds.filter(
-              (notification) => notification !== user.id
-            )
-          }).then(() => {
-            pushNotificationSocket({
-              ...notificationCommentsByPost,
-              senderIds: notificationLovesByPost.senderIds.filter(
-                (notification) => notification !== user.id
-              ),
-              socketId: userSocket.socketId
-            });
-            getNotificationsLovesByPost();
-          });
-        } else {
-          updateDoc(doc(db, 'notifications', notificationLovesByPost.id), {
-            ...notificationLovesByPost,
-            isRead: false,
-            updatedAt: new Date().getTime(),
-            senderIds: [...notificationLovesByPost.senderIds, user.id]
-          }).then(() => {
-            pushNotificationSocket({
-              ...notificationCommentsByPost,
-              senderIds: [...notificationLovesByPost.senderIds, user.id],
-              socketId: userSocket.socketId
-            });
-            getNotificationsLovesByPost();
-          });
-        }
-      } else if (notificationLovesByPost.id === undefined) {
+      if (notificationLovesByPost.id === undefined) {
         const notification = {
           senderIds: [user.id],
           receiverId: userPost.id,
@@ -405,25 +354,47 @@ function Post({ user, post }) {
           createdAt: new Date().getTime(),
           updatedAt: new Date().getTime()
         };
+        console.log(notification);
         addDoc(collection(db, 'notifications'), notification).then((docRef) => {
+          if (userSocket !== undefined)
+            pushNotificationSocket({
+              ...notification,
+              socketId: userSocket.socketId
+            });
           getNotificationsLovesByPost();
         });
       } else if (notificationLovesByPost.senderIds.indexOf(user.id) >= 0) {
+        console.log(notificationLovesByPost);
         updateDoc(doc(db, 'notifications', notificationLovesByPost.id), {
           ...notificationLovesByPost,
           senderIds: notificationLovesByPost.senderIds.filter(
             (notification) => notification !== user.id
           )
         }).then(() => {
+          if (userSocket !== undefined)
+            pushNotificationSocket({
+              ...notificationCommentsByPost,
+              senderIds: notificationLovesByPost.senderIds.filter(
+                (notification) => notification !== user.id
+              ),
+              socketId: userSocket.socketId
+            });
           getNotificationsLovesByPost();
         });
       } else {
+        console.log(notificationLovesByPost);
         updateDoc(doc(db, 'notifications', notificationLovesByPost.id), {
           ...notificationLovesByPost,
           isRead: false,
           updatedAt: new Date().getTime(),
           senderIds: [...notificationLovesByPost.senderIds, user.id]
         }).then(() => {
+          if (userSocket !== undefined)
+            pushNotificationSocket({
+              ...notificationCommentsByPost,
+              senderIds: [...notificationLovesByPost.senderIds, user.id],
+              socketId: userSocket.socketId
+            });
           getNotificationsLovesByPost();
         });
       }
@@ -520,36 +491,37 @@ function Post({ user, post }) {
         addDoc(collection(db, 'comments'), comment).then(() => {
           getCommentsByPostId();
           const userSocket = usersSocket.find((user) => user.userId === userPost.id);
-          if (userSocket !== undefined) {
-            const notification = {
-              senderIds: [user.id],
-              receiverId: userPost.id,
-              content: 'commented your post',
-              type: 'post',
-              postId: post.id,
-              isRead: false,
-              action: 'comment',
-              createdAt: new Date().getTime(),
-              updatedAt: new Date().getTime()
-            };
-            if (notificationCommentsByPost.id === undefined) {
-              addDoc(collection(db, 'notifications'), notification).then((docRef) => {
+          const notification = {
+            senderIds: [user.id],
+            receiverId: userPost.id,
+            content: 'commented your post',
+            type: 'post',
+            postId: post.id,
+            isRead: false,
+            action: 'comment',
+            createdAt: new Date().getTime(),
+            updatedAt: new Date().getTime()
+          };
+          if (notificationCommentsByPost.id === undefined) {
+            addDoc(collection(db, 'notifications'), notification).then((docRef) => {
+              if (userSocket !== undefined)
                 pushNotificationSocket({
                   ...notification,
                   id: docRef.id,
                   socketId: userSocket.socketId
                 });
-              });
-            } else {
-              const senderIdsNew = notificationCommentsByPost.senderIds.filter(
-                (notification) => notification !== user.id
-              );
-              updateDoc(doc(db, 'notifications', notificationCommentsByPost.id), {
-                ...notificationCommentsByPost,
-                senderIds: [...senderIdsNew, user.id],
-                isRead: false,
-                updatedAt: new Date().getTime()
-              }).then(() => {
+            });
+          } else {
+            const senderIdsNew = notificationCommentsByPost.senderIds.filter(
+              (notification) => notification !== user.id
+            );
+            updateDoc(doc(db, 'notifications', notificationCommentsByPost.id), {
+              ...notificationCommentsByPost,
+              senderIds: [...senderIdsNew, user.id],
+              isRead: false,
+              updatedAt: new Date().getTime()
+            }).then(() => {
+              if (userSocket !== undefined)
                 pushNotificationSocket({
                   ...notificationCommentsByPost,
                   senderIds: [...senderIdsNew, user.id],
@@ -557,33 +529,7 @@ function Post({ user, post }) {
                   updatedAt: new Date().getTime(),
                   socketId: userSocket.socketId
                 });
-              });
-            }
-          } else {
-            const notification = {
-              senderIds: [user.id],
-              receiverId: userPost.id,
-              content: 'commented your post',
-              type: 'post',
-              postId: post.id,
-              isRead: false,
-              action: 'comment',
-              createdAt: new Date().getTime(),
-              updatedAt: new Date().getTime()
-            };
-            if (notificationCommentsByPost.id === undefined) {
-              addDoc(collection(db, 'notifications'), notification);
-            } else {
-              const senderIdsNew = notificationCommentsByPost.senderIds.filter(
-                (notification) => notification !== user.id
-              );
-              updateDoc(doc(db, 'notifications', notificationCommentsByPost.id), {
-                ...notificationCommentsByPost,
-                senderIds: [...senderIdsNew, user.id],
-                isRead: false,
-                updatedAt: new Date().getTime()
-              });
-            }
+            });
           }
         });
       }

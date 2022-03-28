@@ -1,4 +1,4 @@
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
@@ -17,7 +17,12 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { db } from '../../firebase-config';
 import ModalInvite from './ModalInvite';
-import { actionPageModalInvite } from '../../redux/actions/pageAction';
+import {
+  actionGetAllPages,
+  actionGetLikedPages,
+  actionPageModalInvite
+} from '../../redux/actions/pageAction';
+import BoxPost from './BoxPost';
 
 const heightScreen = window.innerHeight - 1;
 const RootStyle = styled(Box)(({ theme }) => ({
@@ -34,6 +39,7 @@ const BackgroundPage = styled('img')(({ theme }) => ({
   width: '70%',
   marginLeft: '15%',
   borderRadius: '0px 0px 10px 10px',
+  height: '400px',
   [theme.breakpoints.down('md')]: {
     width: '100%',
     marginLeft: '0px'
@@ -90,10 +96,8 @@ function Page({ user }) {
   const [page, setPage] = useState({});
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const modalInvite = useSelector((state) => state.page.modalInvite);
   const getPage = (id) => {
     getDoc(doc(db, 'pages', id)).then((snapshot) => {
-      console.log(snapshot.data().userCreate, user.id);
       if (snapshot.data().userCreate === user.id) navigate(`/home/pages/your-page/${id}`);
       setPage({
         ...snapshot.data(),
@@ -105,6 +109,50 @@ function Page({ user }) {
     if (user.id !== undefined) getPage(id);
     return () => null;
   }, [user]);
+  const like = () => {
+    const pageNew = {
+      ...page,
+      likes: [...page.likes, user.id]
+    };
+    updateDoc(doc(db, 'pages', page.id), pageNew).then(() => {
+      getPage(page.id);
+      dispatch(actionGetAllPages(user.id));
+      dispatch(actionGetLikedPages(user.id));
+    });
+  };
+  const unLike = () => {
+    const pageNew = {
+      ...page,
+      likes: page.likes.filter((like) => like !== user.id)
+    };
+    updateDoc(doc(db, 'pages', page.id), pageNew).then(() => {
+      getPage(page.id);
+      dispatch(actionGetAllPages(user.id));
+      dispatch(actionGetLikedPages(user.id));
+    });
+  };
+  const follow = () => {
+    const pageNew = {
+      ...page,
+      followers: [...page.followers, user.id]
+    };
+    updateDoc(doc(db, 'pages', page.id), pageNew).then(() => {
+      getPage(page.id);
+      dispatch(actionGetAllPages(user.id));
+      dispatch(actionGetLikedPages(user.id));
+    });
+  };
+  const unFollow = () => {
+    const pageNew = {
+      ...page,
+      followers: page.likes.filter((follow) => follow !== user.id)
+    };
+    updateDoc(doc(db, 'pages', page.id), pageNew).then(() => {
+      getPage(page.id);
+      dispatch(actionGetAllPages(user.id));
+      dispatch(actionGetLikedPages(user.id));
+    });
+  };
   const BoxMenu = () => {
     const menu = [
       {
@@ -140,7 +188,9 @@ function Page({ user }) {
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           {page.likes.includes(user.id) ? (
             <>
-              <ButtonManage startIcon={<Icon icon="fontisto:like" />}>Liked</ButtonManage>{' '}
+              <ButtonManage onClick={unLike} startIcon={<Icon icon="fontisto:like" />}>
+                Liked
+              </ButtonManage>{' '}
               <ButtonPromote
                 onClick={() => {
                   dispatch(
@@ -156,7 +206,9 @@ function Page({ user }) {
               </ButtonPromote>
             </>
           ) : (
-            <ButtonManage startIcon={<Icon icon="fontisto:like" />}>Like</ButtonManage>
+            <ButtonManage onClick={like} startIcon={<Icon icon="fontisto:like" />}>
+              Like
+            </ButtonManage>
           )}
         </Box>
       </Box>
@@ -175,11 +227,13 @@ function Page({ user }) {
             disableRipple
           >
             <Avatar sx={{ width: '150px', height: '150px', zIndex: 2 }} src={page.avatar} />
-            <IconButton
-              sx={{ position: 'absolute', right: 10, bottom: 10, zIndex: 3, color: '#000' }}
-            >
-              <Icon icon="entypo:camera" />
-            </IconButton>
+            {page.userCreate === user.id && (
+              <IconButton
+                sx={{ position: 'absolute', right: 10, bottom: 10, zIndex: 3, color: '#000' }}
+              >
+                <Icon icon="entypo:camera" />
+              </IconButton>
+            )}
           </IconButton>
           <Box sx={{ marginLeft: '10px', width: '100%' }}>
             <Typography sx={{ fontWeight: 'bold', fontSize: '25px' }}>{page.name}</Typography>
@@ -194,9 +248,13 @@ function Page({ user }) {
             >
               <Typography sx={{ color: 'gray', fontSize: '20x' }}>{page.category}</Typography>
               {!page.followers.includes(user.id) ? (
-                <ButtonPromote startIcon={<Icon icon="mdi:book-plus" />}>Follow</ButtonPromote>
+                <ButtonPromote onClick={follow} startIcon={<Icon icon="mdi:book-plus" />}>
+                  Follow
+                </ButtonPromote>
               ) : (
-                <ButtonPromote startIcon={<Icon icon="mdi:book-check" />}>Following</ButtonPromote>
+                <ButtonPromote onClick={unFollow} startIcon={<Icon icon="mdi:book-check" />}>
+                  Following
+                </ButtonPromote>
               )}
             </Box>
           </Box>
@@ -204,7 +262,7 @@ function Page({ user }) {
         <Divider sx={{ marginTop: '10px', width: '70%', marginLeft: '15%' }} />
         <BoxMenu />
       </BoxInfo>
-      {modalInvite.status && <ModalInvite />}
+      {tab === 'posts' && <BoxPost page={page} />}
     </RootStyle>
   );
 }

@@ -120,8 +120,8 @@ function Post({ post }) {
     ).then((snapshots) => {
       if (!snapshots.empty) {
         setNotificationLovesByPost({
-          ...snapshots.docs.at(snapshots.size - 1).data(),
-          id: snapshots.docs.at(snapshots.size - 1).id
+          ...snapshots.docs.at(0).data(),
+          id: snapshots.docs.at(0).id
         });
       }
     });
@@ -136,8 +136,8 @@ function Post({ post }) {
     ).then((snapshots) => {
       if (!snapshots.empty) {
         setNotificationCommentsByPost({
-          ...snapshots.docs.at(snapshots.size - 1).data(),
-          id: snapshots.docs.at(snapshots.size - 1).id
+          ...snapshots.docs.at(0).data(),
+          id: snapshots.docs.at(0).id
         });
       }
     });
@@ -171,6 +171,10 @@ function Post({ post }) {
     getCommentsByPostId();
     if (post.groupId) {
       getGroup(post.groupId);
+    }
+    if (post.userId !== user.id) {
+      getNotificationsLovesByPost();
+      getNotificationsCommentsPost();
     }
     return () => null;
   }, []);
@@ -280,7 +284,7 @@ function Post({ post }) {
       display: 'flex',
       justifyContent: 'space-between'
     }));
-    if (post.loves.length === 0 && commentByPostId.length === 0 && post.shares.length === 0)
+    if (lovesPost.length === 0 && commentByPostId.length === 0 && post.shares.length === 0)
       return null;
     return (
       <>
@@ -301,15 +305,15 @@ function Post({ post }) {
       alignItems: 'center'
     }));
     const checkQuantityLove = () => {
-      if (post.loves.length === 1) return `You`;
-      if (post.loves.length === 2) return `You and 1 other`;
-      return `You and ${post.loves.length - 1} others`;
+      if (lovesPost.length === 1) return `You`;
+      if (lovesPost.length === 2) return `You and 1 other`;
+      return `You and ${lovesPost.length - 1} others`;
     };
     const checkQuantityLoveDontHaveUserCurrent = () => {
-      if (post.loves.length < 2) return `${post.loves.length} other`;
-      return `${post.loves.length} others`;
+      if (lovesPost.length < 2) return `${lovesPost.length} other`;
+      return `${lovesPost.length} others`;
     };
-    if (post.loves.length === 0) return <div> </div>;
+    if (lovesPost.length === 0) return <div> </div>;
     return (
       <BoxInfoContactLoves>
         <Icon
@@ -317,7 +321,7 @@ function Post({ post }) {
           style={{ color: 'red', width: '20px', height: '20px' }}
         />
         <Typography sx={{ marginLeft: '2px', fontFamily: 'inherit', color: 'gray' }}>
-          {post.loves.find((love) => love.userId === user.id) === undefined
+          {lovesPost.find((love) => love.userId === user.id) === undefined
             ? checkQuantityLoveDontHaveUserCurrent()
             : checkQuantityLove()}
         </Typography>
@@ -351,46 +355,93 @@ function Post({ post }) {
   };
   const ButtonContact = () => {
     const love = () => {
-      if (post.loves.find((love) => love.userId === user.id) === undefined) {
-        getDoc(doc(db, 'posts', post.id)).then((snapshot) => {
-          const postNew = {
-            ...snapshot.data(),
-            loves: [
-              ...snapshot.data().loves,
-              {
-                userId: user.id,
-                createdAt: new Date().getTime()
-              }
-            ]
-          };
-          updateDoc(doc(db, 'posts', post.id), postNew).then(() => {
-            dispatch(getAllPosts(user.id, 'desc'));
-            dispatch(actionGetAllPostAllFriend(user.id));
-          });
+      if (lovesPost.find((love) => love.userId === user.id) === undefined) {
+        const postNew = {
+          ...post,
+          loves: [
+            ...lovesPost,
+            {
+              userId: user.id,
+              createdAt: new Date().getTime()
+            }
+          ]
+        };
+        updateDoc(doc(db, 'posts', post.id), postNew).then(() => {
+          setLovesPost(postNew.loves);
+          // dispatch(getAllPosts(user.id, 'desc'));
+          dispatch(actionGetAllPostAllFriend(user.id));
         });
       } else {
-        getDoc(doc(db, 'posts', post.id)).then((snapshot) => {
-          const postNew = {
-            ...snapshot.data(),
-            loves: [snapshot.data().loves.find((love) => love.userId !== user.id)]
-          };
-          if (postNew.loves.indexOf(undefined) === 0) {
-            updateDoc(doc(db, 'posts', post.id), {
-              ...postNew,
-              loves: []
-            }).then(() => {
-              dispatch(getAllPosts(user.id, 'desc'));
-              dispatch(actionGetAllPostAllFriend(user.id));
-            });
-          } else {
-            updateDoc(doc(db, 'posts', post.id), {
-              ...postNew
-            }).then(() => {
-              dispatch(getAllPosts(user.id, 'desc'));
-              dispatch(actionGetAllPostAllFriend(user.id));
-            });
-          }
+        const postNew = {
+          ...post,
+          loves: lovesPost.filter((love) => love.userId !== user.id)
+        };
+        updateDoc(doc(db, 'posts', post.id), {
+          ...postNew
+        }).then(() => {
+          setLovesPost(postNew.loves);
+          // dispatch(getAllPosts(user.id, 'desc'));
+          dispatch(actionGetAllPostAllFriend(user.id));
         });
+      }
+      if (post.userId !== user.id) {
+        const userSocket = usersSocket.find((user) => user.userId === userPost.id);
+        if (notificationLovesByPost.id === undefined) {
+          const notification = {
+            senderIds: [user.id],
+            receiverId: userPost.id,
+            content: 'loved your post',
+            type: 'post',
+            action: 'love',
+            postId: post.id,
+            isRead: false,
+            createdAt: new Date().getTime(),
+            updatedAt: new Date().getTime()
+          };
+          console.log(notification);
+          addDoc(collection(db, 'notifications'), notification).then((docRef) => {
+            if (userSocket !== undefined)
+              pushNotificationSocket({
+                ...notification,
+                socketId: userSocket.socketId
+              });
+            getNotificationsLovesByPost();
+          });
+        } else if (notificationLovesByPost.senderIds.indexOf(user.id) >= 0) {
+          console.log(notificationLovesByPost);
+          updateDoc(doc(db, 'notifications', notificationLovesByPost.id), {
+            ...notificationLovesByPost,
+            senderIds: notificationLovesByPost.senderIds.filter(
+              (notification) => notification !== user.id
+            )
+          }).then(() => {
+            if (userSocket !== undefined)
+              pushNotificationSocket({
+                ...notificationCommentsByPost,
+                senderIds: notificationLovesByPost.senderIds.filter(
+                  (notification) => notification !== user.id
+                ),
+                socketId: userSocket.socketId
+              });
+            getNotificationsLovesByPost();
+          });
+        } else {
+          console.log(notificationLovesByPost);
+          updateDoc(doc(db, 'notifications', notificationLovesByPost.id), {
+            ...notificationLovesByPost,
+            isRead: false,
+            updatedAt: new Date().getTime(),
+            senderIds: [...notificationLovesByPost.senderIds, user.id]
+          }).then(() => {
+            if (userSocket !== undefined)
+              pushNotificationSocket({
+                ...notificationCommentsByPost,
+                senderIds: [...notificationLovesByPost.senderIds, user.id],
+                socketId: userSocket.socketId
+              });
+            getNotificationsLovesByPost();
+          });
+        }
       }
     };
     const comment = () => {
@@ -417,7 +468,7 @@ function Post({ post }) {
           fontFamily: 'inherit',
           fontSize: '17px',
           color:
-            name === 'Love' && post.loves.find((love) => love.userId === user.id) !== undefined
+            name === 'Love' && lovesPost.find((love) => love.userId === user.id) !== undefined
               ? '#30ab78'
               : 'gray',
           height: '30px',
@@ -482,7 +533,52 @@ function Post({ post }) {
           type: 'text',
           userId: user.id
         };
-        addDoc(collection(db, 'comments'), comment).then(() => getCommentsByPostId());
+        addDoc(collection(db, 'comments'), comment).then(() => {
+          getCommentsByPostId();
+          if (post.userId !== user.id) {
+            const userSocket = usersSocket.find((user) => user.userId === userPost.id);
+            const notification = {
+              senderIds: [user.id],
+              receiverId: userPost.id,
+              content: 'commented your post',
+              type: 'post',
+              postId: post.id,
+              isRead: false,
+              action: 'comment',
+              createdAt: new Date().getTime(),
+              updatedAt: new Date().getTime()
+            };
+            if (notificationCommentsByPost.id === undefined) {
+              addDoc(collection(db, 'notifications'), notification).then((docRef) => {
+                if (userSocket !== undefined)
+                  pushNotificationSocket({
+                    ...notification,
+                    id: docRef.id,
+                    socketId: userSocket.socketId
+                  });
+              });
+            } else {
+              const senderIdsNew = notificationCommentsByPost.senderIds.filter(
+                (notification) => notification !== user.id
+              );
+              updateDoc(doc(db, 'notifications', notificationCommentsByPost.id), {
+                ...notificationCommentsByPost,
+                senderIds: [...senderIdsNew, user.id],
+                isRead: false,
+                updatedAt: new Date().getTime()
+              }).then(() => {
+                if (userSocket !== undefined)
+                  pushNotificationSocket({
+                    ...notificationCommentsByPost,
+                    senderIds: [...senderIdsNew, user.id],
+                    isRead: false,
+                    updatedAt: new Date().getTime(),
+                    socketId: userSocket.socketId
+                  });
+              });
+            }
+          }
+        });
       }
       inputCommentRef.current = '';
     };
@@ -644,7 +740,9 @@ function Post({ post }) {
                 />
               </AvatarGroup>
               <Box sx={{ marginLeft: '15px' }}>
-                <Username>{group.name}</Username>
+                <Username onClick={() => navigate(`/home/groups/${group.id}`)}>
+                  {group.name}
+                </Username>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <Typography sx={{ fontWeight: 'bold', fontSize: '12px', color: 'gray' }}>
                     {userPost.username}
@@ -693,7 +791,12 @@ function Post({ post }) {
                     <Skeleton variant="text" sx={{ width: '100px', height: '20px' }} />
                   ) : (
                     <>
-                      <Username onMouseOver={openUsername}>{userPost.username}</Username>
+                      <Username
+                        onClick={() => navigate(`/home/other/${userPost.id}`)}
+                        onMouseOver={openUsername}
+                      >
+                        {userPost.username}
+                      </Username>
                       <Popover
                         id="basic-menu"
                         anchorEl={anchorElUsername}

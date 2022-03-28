@@ -26,7 +26,7 @@ function AllRequests({ user }) {
   useEffect(() => {
     if (user.id !== undefined) dispatch(actionSearchAllFriendRequests(name, user.id));
     return () => null;
-  }, [user]);
+  }, [user, name]);
   if (searchAllRequests.length === 0) return null;
   return (
     <RootStyle>
