@@ -14,6 +14,7 @@ import {
   actionGetBadgeNotifications,
   actionGetFriendsHaveStory,
   actionGetStoryUser,
+  actionSearchAll,
   actionSearchAllPeople,
   actionUserBroadcastSocket,
   actionUserGetTokenMessaging
@@ -69,7 +70,6 @@ function UtilRedux() {
       dispatch(actionGetYourPages(user.id));
       dispatch(actionGetAllPages(user.id));
       dispatch(actionGetLikedPages(user.id));
-      dispatch(actionGetAllInvites(user.id));
       // if (tokenMessaging === '') {
       //   Notification.requestPermission().then((permission) => {
       //     if (permission === 'granted') {

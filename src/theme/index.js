@@ -10,7 +10,8 @@ export default function ThemeConfig({ children }) {
       palette: {
         background: '#f5f7f6',
         green: '#30ab78',
-        button: 'linear-gradient(to right, #06beb6 0%, #48b1bf  51%, #06beb6  100%)'
+        button: 'linear-gradient(to right, #06beb6 0%, #48b1bf  51%, #06beb6  100%)',
+        second: '#bcf7df'
       }
     }),
     []

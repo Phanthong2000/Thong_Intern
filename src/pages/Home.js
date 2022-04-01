@@ -1,5 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Avatar, Box, Grid, IconButton, Stack, styled, TextField, Typography } from '@mui/material';
+import {
+  Avatar,
+  Box,
+  Divider,
+  Grid,
+  IconButton,
+  Stack,
+  styled,
+  TextField,
+  Typography
+} from '@mui/material';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -19,6 +29,7 @@ import ChatBox from '../components/home/main/ChatBox';
 import Snack from '../components/Snack';
 import Chatgroup from '../components/home/main/Chatgroup';
 import BoxYourPage from '../components/home/main/BoxYourPage';
+import BoxFriendRequests from '../components/home/main/BoxFriendRequests';
 
 const heightScreen = window.innerHeight - 1;
 const RootStyle = styled(Box)(({ theme }) => ({
@@ -37,27 +48,19 @@ const StackContact = styled(Box)(({ theme }) => ({
 Home.prototype = {
   user: PropTypes.object
 };
-// const socket = io('http://localhost:5000');
 function Home() {
-  const testSearch = useSelector((state) => state.user.testSearch);
-  const navigate = useNavigate();
   const dispatch = useDispatch();
-  const modalReceiving = useSelector((state) => state.call.modalReceiving);
   const chatboxHome = useSelector((state) => state.chat.chatboxHome);
   const usersSocket = useSelector((state) => state.user.usersSocket);
   const newChatbox = useSelector((state) => state.chat.newChatbox);
-  const searchAllPeople = useSelector((state) => state.user.searchAllPeople);
   const chatgroups = useSelector((state) => state.chat.chatgroups);
-  const signalGroup = useSelector((state) => state.call.signalGroup);
-  const remoteStreamGroup = useSelector((state) => state.call.remoteStreamGroup);
-  const allPeers = useSelector((state) => state.call.allPeers);
   useEffect(() => {
     // if (testSearch.length > 0) {
     //   navigate(`/home/other/${testSearch}`);
     //   dispatch(actionTestSearch(''));
     //   window.document.title = 'Thong Intern';
     // } else {
-    //   window.document.title = 'Home';
+    window.document.title = 'Home';
     // }
     dispatch(
       actionChatGetChatbox({
@@ -94,6 +97,7 @@ function Home() {
       <StackContact>
         <Scrollbar alwaysShowTracks>
           <BoxYourPage />
+          <BoxFriendRequests />
           <BoxContact />
           <Box>
             <Typography

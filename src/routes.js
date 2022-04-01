@@ -46,6 +46,9 @@ import Invites from './components/page/Invites';
 import LikedPages from './components/page/LikedPages';
 import DiscoverPage from './components/page/Discover';
 import PostNotification from './pages/PostNotification';
+import All from './components/search/All';
+import Pages from './components/search/Pages';
+import Groups from './components/search/Groups';
 
 function Router() {
   const user = useSelector((state) => state.user.user);
@@ -107,11 +110,11 @@ function Router() {
           path: 'search',
           element: <Search />,
           children: [
-            { path: 'all-people/:name', element: <AllPeople user={user} /> },
-            { path: 'all-friends/:name', element: <AllFriendsSearch user={user} /> },
-            { path: 'all-sent/:name', element: <AllSent user={user} /> },
-            { path: 'all-requests/:name', element: <AllRequests user={user} /> },
-            { element: <Navigate to="/home/search/all-people/:name" /> }
+            { path: 'all/:name', element: <All user={user} /> },
+            { path: 'people/:name', element: <AllPeople user={user} /> },
+            { path: 'pages/:name', element: <Pages user={user} /> },
+            { path: 'groups/:name', element: <Groups user={user} /> },
+            { element: <Navigate to="/home/search/all/:name" /> }
           ]
         },
         {

@@ -14,7 +14,7 @@ const sidebarConfig = [
   {
     title: 'chat',
     path: '/home/chat',
-    icon: 'uil:comment-message',
+    icon: 'bxl:messenger',
     name: 'Chat'
   },
   {

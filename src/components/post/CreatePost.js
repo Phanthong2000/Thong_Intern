@@ -39,6 +39,7 @@ import {
   getAllPosts
 } from '../../redux/actions/postAction';
 import backgrounds from '../../asset/data/backgrounds';
+import EmojiIconMessage from '../chat/EmojiIconMessage';
 
 const BoxModal = styled(Card)(({ theme }) => ({
   position: 'absolute',
@@ -106,11 +107,20 @@ function CreatePost({ user }) {
   const [contentText, setContentText] = useState('');
   const [image, setImage] = useState();
   const tags = useSelector((state) => state.post.tags);
+  const [anchorElEmoji, setAnchorElEmoji] = React.useState(null);
+  const openEmoji = Boolean(anchorElEmoji);
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => {
     setAnchorEl(null);
+  };
+  const handleClickEmoji = (event) => {
+    setAnchorElEmoji(event.currentTarget);
+  };
+
+  const handleCloseEmoji = () => {
+    setAnchorElEmoji(null);
   };
   const chooseText = () => {
     setDisabled('');
@@ -316,6 +326,9 @@ function CreatePost({ user }) {
       </RootStyle>
     );
   };
+  const chooseEmoji = (emoji) => {
+    setContentText(contentText.concat(emoji));
+  };
   return (
     <Modal open={isOpenCreatePost} onClose={() => dispatch(actionPostCloseCreatePost())}>
       <BoxModal>
@@ -444,6 +457,25 @@ function CreatePost({ user }) {
         <BoxOptions sx={{ border: `1px solid #000` }}>
           <Typography>Add to your post</Typography>
           <Box>
+            <IconButton onClick={handleClickEmoji}>
+              <Icon style={{ color: 'red' }} icon="carbon:face-add" />
+            </IconButton>
+            <Popover
+              id="simple-popover"
+              open={openEmoji}
+              anchorEl={anchorElEmoji}
+              onClose={handleCloseEmoji}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'center'
+              }}
+              transformOrigin={{
+                vertical: 'bottom',
+                horizontal: 'center'
+              }}
+            >
+              <EmojiIconMessage choose={chooseEmoji} user={user} />
+            </Popover>
             <IconButton onClick={chooseBackground} disabled={Boolean(disabled === 'background')}>
               <Icon
                 style={{ color: disabled !== 'background' ? '#ebae34' : 'lightgrey' }}

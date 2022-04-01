@@ -44,7 +44,10 @@ import {
   ACTION_USER_GET_TOKEN_MESSAGING,
   ACTION_USER_DELETE_FRIEND_USER,
   ACTION_USER_HOT_TOAST,
-  ACTION_USER_BACKDROP
+  ACTION_USER_BACKDROP,
+  ACTION_USER_SEARCH_GROUPS,
+  ACTION_USER_SEARCH_ALL,
+  ACTION_USER_SEARCH_PAGES
 } from './types';
 
 export const actionUserGetUser = (data) => ({
@@ -149,6 +152,18 @@ export const actionUserSearchAllRequests = (data) => ({
 });
 export const actionUserSearchOthers = (data) => ({
   type: ACTION_USER_SEARCH_OTHERS,
+  payload: data
+});
+export const actionUserSearchAll = (data) => ({
+  type: ACTION_USER_SEARCH_ALL,
+  payload: data
+});
+export const actionUserSearchPages = (data) => ({
+  type: ACTION_USER_SEARCH_PAGES,
+  payload: data
+});
+export const actionUserSearchGroups = (data) => ({
+  type: ACTION_USER_SEARCH_GROUPS,
   payload: data
 });
 export const actionUserGetAllStoryUser = (data) => ({
@@ -303,7 +318,7 @@ export const actionGetAllFriendRequest = (id) => (dispatch) => {
         });
       });
       const requestsSort = requests.sort((a, b) => b.createdAt - a.createdAt);
-      dispatch(actionUserGetAllFriendRequest(requestsSort));
+      dispatch(actionUserGetAllFriendRequest(requests));
       dispatch(actionUserLoadingGetAllRequestFriend());
     }
   });
@@ -367,17 +382,56 @@ export const actionSearchAllPeople = (name, id) => async (dispatch) => {
   const users = [];
   if (!data.empty) {
     data.docs.forEach((user) => {
-      if (user.data().username.toLowerCase().includes(name.toLowerCase())) {
+      if (user.data().username.toLowerCase().includes(name.toLowerCase()) && user.id !== id) {
         users.push({
           ...user.data(),
           id: user.id
         });
       }
     });
-    const userFilter = users.filter((item) => item.id !== id);
-    const usersSort = userFilter.sort((a, b) => b.createdAt - a.createdAt);
+    const usersSort = users.sort((a, b) => b.createdAt - a.createdAt);
     dispatch(actionUserSearchAllPeople(usersSort));
   }
+};
+export const actionSearchAll = (name, id) => async (dispatch) => {
+  const userQuery = await getDocs(collection(db, 'users'));
+  const results = [];
+  if (!userQuery.empty) {
+    userQuery.docs.forEach((user) => {
+      if (user.data().username.toLowerCase().includes(name.toLowerCase()) && user.id !== id) {
+        results.push({
+          ...user.data(),
+          id: user.id,
+          type: 'user'
+        });
+      }
+    });
+  }
+  const pageQuery = await getDocs(query(collection(db, 'pages'), where('userCreate', '!=', id)));
+  if (!pageQuery.empty) {
+    pageQuery.docs.forEach((page) => {
+      if (page.data().name.toLowerCase().includes(name.toLowerCase())) {
+        results.push({
+          ...page.data(),
+          id: page.id,
+          type: 'page'
+        });
+      }
+    });
+  }
+  const groupQuery = await getDocs(query(collection(db, 'groups'), where('userCreate', '!=', id)));
+  if (!groupQuery.empty) {
+    groupQuery.docs.forEach((group) => {
+      if (group.data().name.toLowerCase().includes(name.toLowerCase())) {
+        results.push({
+          ...group.data(),
+          id: group.id,
+          type: 'group'
+        });
+      }
+    });
+  }
+  dispatch(actionUserSearchAll(results.sort((a, b) => b.createdAt - a.createdAt)));
 };
 export const actionSearchAllFriends = (name, id) => async (dispatch) => {
   const data1 = await getDocs(

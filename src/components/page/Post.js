@@ -28,6 +28,7 @@ import {
   updateDoc,
   addDoc
 } from 'firebase/firestore';
+import { keyframes } from '@emotion/react';
 import { useNavigate } from 'react-router-dom';
 import ShowMore from 'react-show-more';
 import { db } from '../../firebase-config';
@@ -42,6 +43,14 @@ import { pushNotificationSocket } from '../../utils/wssConnection';
 import { actionGetContact, actionUserHoverUsername } from '../../redux/actions/userAction';
 import BoxHoverUsernamePost from '../BoxHoverUsernamePost';
 
+const anim = keyframes`
+  from{
+    transform: scale(1);
+  },
+  to{
+    transform: scale(1.5);
+  }
+`;
 const RootStyle = styled(Card)(({ theme }) => ({
   marginTop: '10px',
   width: '100%',
@@ -269,40 +278,47 @@ function Post({ post, getAllPosts, pageOk }) {
   };
   const ButtonContact = () => {
     const love = () => {
-      if (lovesPost.find((love) => love.userId === user.id) === undefined) {
-        const postNew = {
-          ...post,
-          loves: [
-            ...lovesPost,
+      getDoc(doc(db, 'posts', post.id)).then((snapshot) => {
+        if (snapshot.data().loves.find((love) => love.userId === user.id) === undefined) {
+          setLovesPost([
+            ...snapshot.data().loves,
             {
               userId: user.id,
               createdAt: new Date().getTime()
             }
-          ]
-        };
-        console.log(postNew);
-        updateDoc(doc(db, 'posts', post.id), postNew).then(() => {
-          if (pageOk) {
-            getAllPosts();
-            dispatch(actionGetAllPostAllFriend(user.id));
-          }
-          setLovesPost(postNew.loves);
-        });
-      } else {
-        const postNew = {
-          ...post,
-          loves: lovesPost.filter((love) => love.userId !== user.id)
-        };
-        updateDoc(doc(db, 'posts', post.id), {
-          ...postNew
-        }).then(() => {
-          if (pageOk) {
-            getAllPosts();
-            dispatch(actionGetAllPostAllFriend(user.id));
-          }
-          setLovesPost(postNew.loves);
-        });
-      }
+          ]);
+          const postNew = {
+            ...post,
+            loves: [
+              ...snapshot.data().loves,
+              {
+                userId: user.id,
+                createdAt: new Date().getTime()
+              }
+            ]
+          };
+          updateDoc(doc(db, 'posts', post.id), postNew).then(() => {
+            if (pageOk) {
+              getAllPosts();
+              dispatch(actionGetAllPostAllFriend(user.id));
+            }
+          });
+        } else {
+          setLovesPost(snapshot.data().loves.filter((love) => love.userId !== user.id));
+          const postNew = {
+            ...snapshot.data(),
+            loves: snapshot.data().loves.filter((love) => love.userId !== user.id)
+          };
+          updateDoc(doc(db, 'posts', post.id), {
+            ...postNew
+          }).then(() => {
+            if (pageOk) {
+              getAllPosts();
+              dispatch(actionGetAllPostAllFriend(user.id));
+            }
+          });
+        }
+      });
     };
     const comment = () => {
       setIsCommenting(true);
@@ -327,6 +343,10 @@ function Post({ post, getAllPosts, pageOk }) {
           textTransform: 'none',
           fontFamily: 'inherit',
           fontSize: '17px',
+          animation:
+            name === 'Love' &&
+            lovesPost.find((love) => love.userId === user.id) !== undefined &&
+            `${anim} 1s ease alternate`,
           color:
             name === 'Love' &&
             lovesPost.find((love) => love.userId === user.id) !== undefined &&

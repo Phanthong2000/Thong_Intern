@@ -39,6 +39,7 @@ import {
   inputtingSocket,
   deleteInputtingSocket
 } from '../../utils/wssConnection';
+import EmojiIconMessage from './EmojiIconMessage';
 
 const RootStyle = styled(Card)(({ theme }) => ({
   width: '100%',
@@ -98,6 +99,7 @@ function OptionsMessage() {
   const [type, setType] = useState('text');
   const [anchorElGif, setAnchorElGif] = React.useState(null);
   const [anchorElSticker, setAnchorElSticker] = React.useState(null);
+  const [anchorElEmoji, setAnchorElEmoji] = React.useState(null);
   const usersSocket = useSelector((state) => state.user.usersSocket);
   const handleClickGif = (event) => {
     setAnchorElGif(event.currentTarget);
@@ -113,8 +115,16 @@ function OptionsMessage() {
   const handleCloseSticker = () => {
     setAnchorElSticker(null);
   };
+  const handleClickEmoji = (event) => {
+    setAnchorElEmoji(event.currentTarget);
+  };
+
+  const handleCloseEmoji = () => {
+    setAnchorElEmoji(null);
+  };
   const openGif = Boolean(anchorElGif);
   const openGSticker = Boolean(anchorElSticker);
+  const openEmoji = Boolean(anchorElEmoji);
   const dispatch = useDispatch();
   const reply = useSelector((state) => state.chat.reply);
   useEffect(() => {
@@ -435,6 +445,9 @@ function OptionsMessage() {
       });
     }
   };
+  const chooseEmoji = (emoji) => {
+    setMessageText(messageText.concat(emoji));
+  };
   if (chatbox.id === '')
     return (
       <RootStyle>
@@ -505,9 +518,25 @@ function OptionsMessage() {
             placeholder="Aa"
           />
         </Scrollbar>
-        <IconButtonOption>
+        <IconButtonOption onClick={handleClickEmoji}>
           <IconOption icon="carbon:face-satisfied-filled" />
         </IconButtonOption>
+        <Popover
+          id="simple-popover"
+          open={openEmoji}
+          anchorEl={anchorElEmoji}
+          onClose={handleCloseEmoji}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'center'
+          }}
+          transformOrigin={{
+            vertical: 'bottom',
+            horizontal: 'center'
+          }}
+        >
+          <EmojiIconMessage choose={chooseEmoji} user={user} />
+        </Popover>
       </BoxInput>
       {!isChatting && imageMessages.length === 0 ? (
         <IconButtonOption onClick={sendIconLike}>

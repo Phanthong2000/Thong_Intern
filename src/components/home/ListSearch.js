@@ -135,7 +135,7 @@ function ListSearch({ user }) {
     //   navigate(`/home/search/all-people/${inputCommentRef.current}`);
     //   window.location.reload();
     // } else
-    navigate(`/home/search/all-people/${inputCommentRef.current}`);
+    navigate(`/home/search/all/${inputCommentRef.current}`);
   };
   const inputSearch = (e) => {
     inputCommentRef.current = e.target.value;
@@ -201,6 +201,7 @@ function ListSearch({ user }) {
             </ListItem>
           ) : (
             search.map((item, index) => {
+              if (index > 6) return null;
               if (item.type === 'user') return <ItemSearchUser key={index} search={item} />;
               if (item.type === 'page') return <ItemSearchPage key={index} search={item} />;
               if (item.type === 'group') return <ItemSearchGroup key={index} search={item} />;

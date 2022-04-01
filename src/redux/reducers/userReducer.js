@@ -41,7 +41,10 @@ import {
   ACTION_USER_GET_TOKEN_MESSAGING,
   ACTION_USER_DELETE_FRIEND_USER,
   ACTION_USER_HOT_TOAST,
-  ACTION_USER_BACKDROP
+  ACTION_USER_BACKDROP,
+  ACTION_USER_SEARCH_GROUPS,
+  ACTION_USER_SEARCH_ALL,
+  ACTION_USER_SEARCH_PAGES
 } from '../actions/types';
 
 const defaultState = {
@@ -87,7 +90,10 @@ const defaultState = {
   backdrop: {
     status: false,
     content: ''
-  }
+  },
+  searchAll: [],
+  searchPages: [],
+  searchGroups: []
 };
 const userReducer = (state = defaultState, action) => {
   switch (action.type) {
@@ -352,6 +358,21 @@ const userReducer = (state = defaultState, action) => {
       return {
         ...state,
         backdrop: action.payload
+      };
+    case ACTION_USER_SEARCH_ALL:
+      return {
+        ...state,
+        searchAll: action.payload
+      };
+    case ACTION_USER_SEARCH_PAGES:
+      return {
+        ...state,
+        searchPages: action.payload
+      };
+    case ACTION_USER_SEARCH_GROUPS:
+      return {
+        ...state,
+        searchGroups: action.payload
       };
     default:
       return state;

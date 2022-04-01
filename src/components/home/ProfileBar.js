@@ -64,9 +64,9 @@ function ProfileBar({ user }) {
       <IconButton onClick={openMessenger} aria-label="show 4 new mails" color="inherit">
         <Badge badgeContent={badgeMessage >= 1 ? badgeMessage : null} color="error">
           {badgeMessage >= 1 ? (
-            <Icon icon="uim:comment-message" style={{ color: '#30ab78' }} />
+            <Icon icon="bxl:messenger" style={{ color: '#30ab78' }} />
           ) : (
-            <Icon icon="uil:comment-message" style={{ color: '#30ab78' }} />
+            <Icon icon="la:facebook-messenger" style={{ color: '#30ab78' }} />
           )}
         </Badge>
       </IconButton>

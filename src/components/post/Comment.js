@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import { Icon } from '@iconify/react';
 import moment from 'moment';
-import { doc, getDoc, getDocs, collection, query, where } from 'firebase/firestore';
+import { doc, getDoc, getDocs, collection, query, where, updateDoc } from 'firebase/firestore';
 import ShowMore from 'react-show-more';
 import { useSelector } from 'react-redux';
 import { db } from '../../firebase-config';
@@ -54,6 +54,7 @@ Comment.prototype = {
 function Comment({ comment, user }) {
   const [userComment, setUserComment] = useState({});
   const usersSocket = useSelector((state) => state.user.usersSocket);
+  const [lovesComment, setLovesComment] = useState(comment.loves);
   const getUserComment = () => {
     getDoc(doc(db, 'users', comment.userId)).then((snapshot) => {
       setUserComment({
@@ -78,9 +79,26 @@ function Comment({ comment, user }) {
         textDecoration: 'underline'
       }
     }));
-    if (comment.loves.find((love) => love.userId === user.id) === undefined)
-      return <Love sx={{ color: '#000' }}>Love</Love>;
-    return <Love>Love</Love>;
+    const love = () => {
+      getDoc(doc(db, 'comments', comment.id)).then((snapshot) => {
+        if (!snapshot.data().loves.includes(user.id)) {
+          setLovesComment([...snapshot.data().loves, user.id]);
+          updateDoc(doc(db, 'comments', comment.id), {
+            loves: [...snapshot.data().loves, user.id]
+          });
+        } else {
+          setLovesComment(snapshot.data().loves.filter((love) => love !== user.id));
+          updateDoc(doc(db, 'comments', comment.id), {
+            loves: snapshot.data().loves.filter((love) => love !== user.id)
+          });
+        }
+      });
+    };
+    return (
+      <Love onClick={love} sx={{ color: !lovesComment.includes(user.id) && '#000' }}>
+        Love
+      </Love>
+    );
   };
   return (
     <Grid sx={{ marginTop: '5px' }} container>
@@ -126,7 +144,7 @@ function Comment({ comment, user }) {
               <ContentImage src={comment.content} alt="Comment" />
             )}
           </BoxContentComment>
-          {comment.loves.length === 0 ? null : (
+          {lovesComment.length === 0 ? null : (
             <Paper
               elevation={3}
               sx={{
@@ -146,7 +164,7 @@ function Comment({ comment, user }) {
                 style={{ color: 'red', width: '20px', height: '20px' }}
               />
               <Typography sx={{ fontFamily: 'inherit', color: 'gray' }}>
-                {comment.loves.length}
+                {lovesComment.length}
               </Typography>
             </Paper>
           )}

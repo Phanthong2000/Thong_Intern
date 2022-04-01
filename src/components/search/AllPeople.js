@@ -31,7 +31,7 @@ function AllPeople({ user }) {
   return (
     <RootStyle>
       {searchAllPeople.map((item, index) => (
-        <UserSearch key={index} user={user} searchId={item.id} />
+        <UserSearch key={index} userSearch={item} user={user} />
       ))}
     </RootStyle>
   );

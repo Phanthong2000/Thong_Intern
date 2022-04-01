@@ -27,10 +27,19 @@ import { Scrollbar } from 'smooth-scrollbar-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Icon } from '@iconify/react';
 import ShowMore from 'react-show-more';
+import { keyframes } from '@emotion/react';
 import { db } from '../../firebase-config';
 import { actionGetAllPostAllFriend, getAllPosts } from '../../redux/actions/postAction';
 import Comment from './Comment';
 
+const anim = keyframes`
+  from{
+    transform: scale(1);
+  },
+  to{
+    transform: scale(1.5);
+  }
+`;
 const RootStyle = styled(Card)(({ theme }) => ({
   marginTop: '10px',
   width: '100%',
@@ -203,6 +212,7 @@ function SharePost({ post }) {
     }));
     const Image = styled('img')(({ theme }) => ({
       width: '100%',
+      height: '400px',
       outline: `1px solid gray`
     }));
     const BoxContent = styled(Box)(({ theme }) => ({
@@ -387,35 +397,43 @@ function SharePost({ post }) {
   };
   const ButtonContact = () => {
     const love = () => {
-      if (lovesPost.find((love) => love.userId === user.id) === undefined) {
-        const postNew = {
-          ...post,
-          loves: [
-            ...lovesPost,
+      getDoc(doc(db, 'posts', post.id)).then((snapshot) => {
+        if (snapshot.data().loves.find((love) => love.userId === user.id) === undefined) {
+          setLovesPost([
+            ...snapshot.data().loves,
             {
               userId: user.id,
               createdAt: new Date().getTime()
             }
-          ]
-        };
-        updateDoc(doc(db, 'posts', post.id), postNew).then(() => {
-          setLovesPost(postNew.loves);
-          // dispatch(getAllPosts(user.id, 'desc'));
-          // dispatch(actionGetAllPostAllFriend(user.id));
-        });
-      } else {
-        const postNew = {
-          ...post,
-          loves: lovesPost.filter((love) => love.userId !== user.id)
-        };
-        updateDoc(doc(db, 'posts', post.id), {
-          ...postNew
-        }).then(() => {
-          setLovesPost(postNew.loves);
-          // dispatch(getAllPosts(user.id, 'desc'));
-          // dispatch(actionGetAllPostAllFriend(user.id));
-        });
-      }
+          ]);
+          const postNew = {
+            ...snapshot.data(),
+            loves: [
+              ...snapshot.data().loves,
+              {
+                userId: user.id,
+                createdAt: new Date().getTime()
+              }
+            ]
+          };
+          updateDoc(doc(db, 'posts', post.id), postNew).then(() => {
+            // dispatch(getAllPosts(user.id, 'desc'));
+            // dispatch(actionGetAllPostAllFriend(user.id));
+          });
+        } else {
+          setLovesPost(snapshot.data().loves.filter((love) => love.userId !== user.id));
+          const postNew = {
+            ...snapshot.data(),
+            loves: snapshot.data().loves.filter((love) => love.userId !== user.id)
+          };
+          updateDoc(doc(db, 'posts', post.id), {
+            ...postNew
+          }).then(() => {
+            // dispatch(getAllPosts(user.id, 'desc'));
+            // dispatch(actionGetAllPostAllFriend(user.id));
+          });
+        }
+      });
     };
     const comment = () => {
       setIsCommenting(true);
@@ -434,6 +452,10 @@ function SharePost({ post }) {
           textTransform: 'none',
           fontFamily: 'inherit',
           fontSize: '17px',
+          animation:
+            name === 'Love' &&
+            lovesPost.find((love) => love.userId === user.id) !== undefined &&
+            `${anim} 1s ease alternate`,
           color:
             name === 'Love' && lovesPost.find((love) => love.userId === user.id) !== undefined
               ? '#30ab78'

@@ -1,5 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { styled, Card, Avatar, Box, Stack, Typography, Skeleton, IconButton } from '@mui/material';
+import {
+  styled,
+  Card,
+  Avatar,
+  Box,
+  Stack,
+  Typography,
+  Skeleton,
+  IconButton,
+  Tooltip
+} from '@mui/material';
 import { Icon } from '@iconify/react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
@@ -17,25 +27,28 @@ const RootStyle = styled(Card)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center'
 }));
+const WrapperIcon = styled(IconButton)(({ theme }) => ({
+  background: theme.palette.second,
+  color: theme.palette.green
+}));
+const WrapperIconGrey = styled(IconButton)(({ theme }) => ({
+  background: 'lightgrey',
+  color: '#000'
+}));
+const IconStatus = styled(Icon)(({ theme }) => ({
+  width: '25px',
+  height: '25px'
+}));
 UserSearch.prototype = {
   user: PropTypes.object,
-  searchId: PropTypes.string
+  userSearch: PropTypes.string
 };
-function UserSearch({ user, searchId }) {
+function UserSearch({ user, userSearch }) {
   const friendManual = useSelector((state) => state.user.friendManual);
   const searchAllPeople = useSelector((state) => state.user.searchAllPeople);
-  const [userSearch, setUserSearch] = useState({});
   const [quantityMutualFriend, setQuantityMutualFriend] = useState(-1);
   const [status, setStatus] = useState('');
   const navigate = useNavigate();
-  const getUserById = (id) => {
-    getDoc(doc(db, 'users', searchId)).then((snapshot) => {
-      setUserSearch({
-        ...snapshot.data(),
-        id: searchId
-      });
-    });
-  };
   const getContact = async (userId, otherId) => {
     const contact1 = await getDocs(
       query(
@@ -71,14 +84,14 @@ function UserSearch({ user, searchId }) {
     const data1 = await getDocs(
       query(
         collection(db, 'contacts'),
-        where('senderId', '==', searchId),
+        where('senderId', '==', userSearch.id),
         where('status', '==', true)
       )
     );
     const data2 = await getDocs(
       query(
         collection(db, 'contacts'),
-        where('receiverId', '==', searchId),
+        where('receiverId', '==', userSearch.id),
         where('status', '==', true)
       )
     );
@@ -111,8 +124,7 @@ function UserSearch({ user, searchId }) {
   useEffect(() => {
     getAllFriendsSender();
     if (user.id !== undefined) {
-      getContact(user.id, searchId);
-      getUserById(searchId);
+      getContact(user.id, userSearch.id);
     }
     return () => null;
   }, [user, friendManual, searchAllPeople]);
@@ -140,20 +152,6 @@ function UserSearch({ user, searchId }) {
   const chooseUserSearch = () => {
     navigate(`/home/other/${userSearch.id}`);
   };
-  if (status === '')
-    return (
-      <RootStyle>
-        <Box sx={{ display: 'flex' }}>
-          <Skeleton sx={{ width: '70px', height: '70px' }} variant="circular" />
-          <Stack sx={{ marginLeft: '10px' }}>
-            <Skeleton sx={{ width: '150px', height: '22px' }} variant="text" />
-            <Skeleton sx={{ width: '80px', height: '18px' }} variant="text" />
-            <Skeleton sx={{ width: '100px', height: '20px' }} variant="text" />
-          </Stack>
-        </Box>
-        <Skeleton variant="circular" sx={{ width: '50px', height: '50px' }} />
-      </RootStyle>
-    );
   return (
     <RootStyle elevation={3}>
       <Box sx={{ display: 'flex' }}>
@@ -172,26 +170,42 @@ function UserSearch({ user, searchId }) {
           {quantityMutualFriend !== 0 && <BoxMutualFriend />}
         </Stack>
       </Box>
-      {status === 'friend' && (
-        <IconButton sx={{ width: '50px', height: '50px' }}>
-          <Icon style={{ width: '40px', height: '40px' }} icon="uil:comment-message" />
-        </IconButton>
-      )}
-      {status === 'sent' && (
-        <IconButton sx={{ width: '50px', height: '50px' }}>
-          <Icon style={{ width: '40px', height: '40px' }} icon="bx:bxs-user-x" />
-        </IconButton>
-      )}
-      {status === 'received' && (
-        <IconButton sx={{ width: '50px', height: '50px' }}>
-          <Icon style={{ width: '40px', height: '40px' }} icon="bx:bxs-user-check" />
-        </IconButton>
-      )}
-      {status === 'none' && (
-        <IconButton sx={{ width: '50px', height: '50px' }}>
-          <Icon style={{ width: '40px', height: '40px' }} icon="bx:bxs-user-plus" />
-        </IconButton>
-      )}
+      <>
+        {status === '' ? (
+          <Skeleton variant="circular" sx={{ width: '40px', height: '40px' }} />
+        ) : (
+          <>
+            {status === 'friend' && (
+              <Tooltip title="Message">
+                <WrapperIcon>
+                  <IconStatus icon="bxl:messenger" />
+                </WrapperIcon>
+              </Tooltip>
+            )}
+            {status === 'sent' && (
+              <Tooltip title="Cancel friend request">
+                <WrapperIcon>
+                  <IconStatus icon="bx:bxs-user-x" />
+                </WrapperIcon>
+              </Tooltip>
+            )}
+            {status === 'received' && (
+              <Tooltip title="Confirm friend request">
+                <WrapperIcon>
+                  <IconStatus icon="bx:bxs-user-check" />
+                </WrapperIcon>
+              </Tooltip>
+            )}
+            {status === 'none' && (
+              <Tooltip title="Add fried">
+                <WrapperIconGrey>
+                  <IconStatus icon="bx:bxs-user-plus" />
+                </WrapperIconGrey>
+              </Tooltip>
+            )}
+          </>
+        )}
+      </>
     </RootStyle>
   );
 }

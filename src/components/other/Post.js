@@ -30,6 +30,7 @@ import {
 } from 'firebase/firestore';
 import ShowMore from 'react-show-more';
 import { useNavigate } from 'react-router-dom';
+import { keyframes } from '@emotion/react';
 import { db } from '../../firebase-config';
 import {
   actionPostModalSharePost,
@@ -40,6 +41,14 @@ import Comment from '../post/Comment';
 import Tag from '../post/Tag';
 import { pushNotificationSocket } from '../../utils/wssConnection';
 
+const anim = keyframes`
+  from{
+    transform: scale(1);
+  },
+  to{
+    transform: scale(1.5);
+  }
+`;
 const RootStyle = styled(Card)(({ theme }) => ({
   marginTop: '10px',
   width: '100%',
@@ -82,25 +91,8 @@ function Post({ user, post }) {
   const [lovesPost, setLovesPost] = useState(post.loves);
   const usersSocket = useSelector((state) => state.user.usersSocket);
   const [commentByPostId, setCommentByPostId] = useState([]);
-  const [notificationLovesByPost, setNotificationLovesByPost] = useState({});
   const [notificationCommentsByPost, setNotificationCommentsByPost] = useState({});
   const navigate = useNavigate();
-  const getNotificationsLovesByPost = () => {
-    getDocs(
-      query(
-        collection(db, 'notifications'),
-        where('postId', '==', post.id),
-        where('action', '==', 'love')
-      )
-    ).then((snapshots) => {
-      if (!snapshots.empty) {
-        setNotificationLovesByPost({
-          ...snapshots.docs.at(snapshots.size - 1).data(),
-          id: snapshots.docs.at(snapshots.size - 1).id
-        });
-      }
-    });
-  };
   const getNotificationsCommentsPost = () => {
     getDocs(
       query(
@@ -144,7 +136,6 @@ function Post({ user, post }) {
   useEffect(() => {
     getUserPost();
     getCommentsByPostId();
-    getNotificationsLovesByPost();
     getNotificationsCommentsPost();
     return () => null;
   }, []);
@@ -320,84 +311,92 @@ function Post({ user, post }) {
   };
   const ButtonContact = () => {
     const love = () => {
-      if (lovesPost.filter((love) => love.userId === user.id).length === 1) {
-        const lovesPostNew = lovesPost.filter((love) => love.userId !== user.id);
-        const postNew = {
-          ...post,
-          loves: lovesPostNew
-        };
-        updateDoc(doc(db, 'posts', post.id), postNew).then(() => setLovesPost(lovesPostNew));
-      } else {
-        const lovesPostNew = [
-          ...lovesPost,
-          {
-            userId: user.id,
-            createdAt: new Date().getTime()
-          }
-        ];
-        const postNew = {
-          ...post,
-          loves: lovesPostNew
-        };
-        updateDoc(doc(db, 'posts', post.id), postNew).then(() => setLovesPost(lovesPostNew));
-      }
-      const userSocket = usersSocket.find((user) => user.userId === userPost.id);
-      if (notificationLovesByPost.id === undefined) {
-        const notification = {
-          senderIds: [user.id],
-          receiverId: userPost.id,
-          content: 'loved your post',
-          type: 'post',
-          action: 'love',
-          postId: post.id,
-          isRead: false,
-          createdAt: new Date().getTime(),
-          updatedAt: new Date().getTime()
-        };
-        console.log(notification);
-        addDoc(collection(db, 'notifications'), notification).then((docRef) => {
-          if (userSocket !== undefined)
-            pushNotificationSocket({
-              ...notification,
-              socketId: userSocket.socketId
-            });
-          getNotificationsLovesByPost();
-        });
-      } else if (notificationLovesByPost.senderIds.indexOf(user.id) >= 0) {
-        console.log(notificationLovesByPost);
-        updateDoc(doc(db, 'notifications', notificationLovesByPost.id), {
-          ...notificationLovesByPost,
-          senderIds: notificationLovesByPost.senderIds.filter(
-            (notification) => notification !== user.id
-          )
-        }).then(() => {
-          if (userSocket !== undefined)
-            pushNotificationSocket({
-              ...notificationCommentsByPost,
-              senderIds: notificationLovesByPost.senderIds.filter(
-                (notification) => notification !== user.id
-              ),
-              socketId: userSocket.socketId
-            });
-          getNotificationsLovesByPost();
-        });
-      } else {
-        console.log(notificationLovesByPost);
-        updateDoc(doc(db, 'notifications', notificationLovesByPost.id), {
-          ...notificationLovesByPost,
-          isRead: false,
-          updatedAt: new Date().getTime(),
-          senderIds: [...notificationLovesByPost.senderIds, user.id]
-        }).then(() => {
-          if (userSocket !== undefined)
-            pushNotificationSocket({
-              ...notificationCommentsByPost,
-              senderIds: [...notificationLovesByPost.senderIds, user.id],
-              socketId: userSocket.socketId
-            });
-          getNotificationsLovesByPost();
-        });
-      }
+      getDoc(doc(db, 'posts', post.id)).then((snapshot) => {
+        if (snapshot.data().loves.filter((love) => love.userId === user.id).length === 1) {
+          const lovesPostNew = snapshot.data().loves.filter((love) => love.userId !== user.id);
+          setLovesPost(lovesPostNew);
+          const postNew = {
+            ...post,
+            loves: lovesPostNew
+          };
+          updateDoc(doc(db, 'posts', post.id), postNew);
+        } else {
+          const lovesPostNew = [
+            ...snapshot.data().loves,
+            {
+              userId: user.id,
+              createdAt: new Date().getTime()
+            }
+          ];
+          setLovesPost(lovesPostNew);
+          const postNew = {
+            ...post,
+            loves: lovesPostNew
+          };
+          updateDoc(doc(db, 'posts', post.id), postNew).then(() => setLovesPost(lovesPostNew));
+        }
+      });
+      getDocs(
+        query(
+          collection(db, 'notifications'),
+          where('postId', '==', post.id),
+          where('action', '==', 'love')
+        )
+      ).then((snapshots) => {
+        const userSocket = usersSocket.find((user) => user.userId === userPost.id);
+        if (snapshots.empty) {
+          const notification = {
+            senderIds: [user.id],
+            receiverId: userPost.id,
+            content: 'loved your post',
+            type: 'post',
+            action: 'love',
+            postId: post.id,
+            isRead: false,
+            createdAt: new Date().getTime(),
+            updatedAt: new Date().getTime()
+          };
+          addDoc(collection(db, 'notifications'), notification).then((docRef) => {
+            if (userSocket !== undefined)
+              pushNotificationSocket({
+                ...notification,
+                socketId: userSocket.socketId
+              });
+          });
+        } else if (snapshots.docs.at(0).data().senderIds.indexOf(user.id) >= 0) {
+          updateDoc(doc(db, 'notifications', snapshots.docs.at(0).id), {
+            ...snapshots.docs.at(0).data(),
+            senderIds: snapshots.docs
+              .at(0)
+              .data()
+              .senderIds.filter((notification) => notification !== user.id)
+          }).then(() => {
+            if (userSocket !== undefined)
+              pushNotificationSocket({
+                ...snapshots.docs.at(0).data(),
+                senderIds: snapshots.docs
+                  .at(0)
+                  .data()
+                  .senderIds.filter((notification) => notification !== user.id),
+                socketId: userSocket.socketId
+              });
+          });
+        } else {
+          updateDoc(doc(db, 'notifications', snapshots.docs.at(0).id), {
+            ...snapshots.docs.at(0).data(),
+            isRead: false,
+            updatedAt: new Date().getTime(),
+            senderIds: [...snapshots.docs.at(0).data().senderIds, user.id]
+          }).then(() => {
+            if (userSocket !== undefined)
+              pushNotificationSocket({
+                ...snapshots.docs.at(0).data(),
+                senderIds: [...snapshots.docs.at(0).data().senderIds, user.id],
+                socketId: userSocket.socketId
+              });
+          });
+        }
+      });
     };
     const comment = () => {
       setIsCommenting(true);
@@ -422,6 +421,10 @@ function Post({ user, post }) {
           textTransform: 'none',
           fontFamily: 'inherit',
           fontSize: '17px',
+          animation:
+            name === 'Love' &&
+            lovesPost.find((love) => love.userId === user.id) !== undefined &&
+            `${anim} 1s ease alternate`,
           color:
             name === 'Love' && lovesPost.find((love) => love.userId === user.id) !== undefined
               ? '#30ab78'

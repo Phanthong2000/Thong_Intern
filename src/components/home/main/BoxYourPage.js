@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Box, styled, Typography } from '@mui/material';
+import { Box, Divider, styled, Typography } from '@mui/material';
 import PageItem from '../../page/PageItem';
 
 const RootStyle = styled(Box)(({ theme }) => ({
@@ -8,6 +8,7 @@ const RootStyle = styled(Box)(({ theme }) => ({
 }));
 function BoxYourPage() {
   const yourPages = useSelector((state) => state.page.yourPages);
+  if (yourPages.length === 0) return null;
   return (
     <RootStyle>
       <Typography
@@ -25,6 +26,7 @@ function BoxYourPage() {
       {yourPages.map((item, index) => (
         <PageItem key={index} page={item} />
       ))}
+      <Divider />
     </RootStyle>
   );
 }
