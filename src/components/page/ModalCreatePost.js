@@ -177,7 +177,7 @@ function ModalCreatePost({ getAllPosts }) {
     if (type === 'text') {
       const post = {
         contentText,
-        loves: [],
+        reactions: [],
         shares: [],
         userId: modalCreatePostPage.page.id,
         status,
@@ -213,7 +213,7 @@ function ModalCreatePost({ getAllPosts }) {
       const post = {
         contentText,
         background,
-        loves: [],
+        reactions: [],
         shares: [],
         userId: modalCreatePostPage.page.id,
         status,
@@ -279,7 +279,7 @@ function ModalCreatePost({ getAllPosts }) {
             const post = {
               contentFile: downloadURL,
               contentText,
-              loves: [],
+              reactions: [],
               shares: [],
               userId: modalCreatePostPage.page.id,
               status,

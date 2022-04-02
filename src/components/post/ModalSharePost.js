@@ -330,7 +330,7 @@ function ModalSharePost({ user }) {
   const post = () => {
     const post = {
       contentText,
-      loves: [],
+      reactions: [],
       shares: [],
       userId: user.id,
       status,

@@ -51,7 +51,7 @@ import { actionGetAllInvites } from '../redux/actions/pageAction';
 
 let socket;
 export const connectWithSocket = () => {
-  socket = io('https://serverintern.herokuapp.com/', {
+  socket = io('http://localhost:3000/', {
     forceNew: true
   });
   store.dispatch(actionSocket(socket));
