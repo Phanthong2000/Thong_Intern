@@ -73,6 +73,10 @@ function BoxProfile({ user }) {
     dispatch(actionUserCloseProfile());
     navigate(`/home/profile/${user.id}`);
   };
+  const goToSetting = () => {
+    navigate(`/home/setting`);
+    dispatch(actionUserCloseProfile());
+  };
   return (
     <BootStyle sx={{ boxShadow: 3 }}>
       <List>
@@ -90,7 +94,7 @@ function BoxProfile({ user }) {
         </ListItem>
         <Separate />
         <ListItem>
-          <ListItemButton>
+          <ListItemButton onClick={goToSetting}>
             <Settings />
             <NameItem>Settings</NameItem>
           </ListItemButton>

@@ -20,6 +20,7 @@ import { Scrollbar } from 'smooth-scrollbar-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
+  actionGetAllPostAllFriend,
   actionOpenSnackbar,
   actionPostClearTags,
   actionPostCloseCreatePost,
@@ -343,6 +344,7 @@ function ModalSharePost({ user }) {
     dispatch(actionUserOpenLoadingUpdateProfile());
     addDoc(collection(db, 'posts'), post)
       .then(() => {
+        dispatch(actionGetAllPostAllFriend(user.id));
         dispatch(actionPostClearTags());
         dispatch(actionUserCloseLoadingUpdateProfile());
         dispatch(getAllPosts(user.id, 'desc'));
@@ -354,10 +356,6 @@ function ModalSharePost({ user }) {
             type: 'success'
           })
         );
-      })
-      .then(() => {
-        navigate('/home/app');
-        window.location.reload();
       })
       .catch((error) => {
         console.log(error);

@@ -20,7 +20,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Scrollbar } from 'smooth-scrollbar-react';
 import PropTypes from 'prop-types';
 import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
-import { actionOpenSnackbar, actionPostClearTags } from '../../redux/actions/postAction';
+import {
+  actionGetAllPostAllFriend,
+  actionOpenSnackbar,
+  actionPostClearTags
+} from '../../redux/actions/postAction';
 import backgrounds from '../../asset/data/backgrounds';
 import { db, storage } from '../../firebase-config';
 import { actionUserBackdrop } from '../../redux/actions/userAction';
@@ -193,6 +197,7 @@ function ModalCreatePost({ getAllPosts }) {
         })
       );
       addDoc(collection(db, 'posts'), post).then((docRef) => {
+        dispatch(actionGetAllPostAllFriend(user.id));
         dispatch(
           actionOpenSnackbar({
             status: true,
@@ -230,6 +235,7 @@ function ModalCreatePost({ getAllPosts }) {
         })
       );
       addDoc(collection(db, 'posts'), post).then((docRef) => {
+        dispatch(actionGetAllPostAllFriend(user.id));
         dispatch(
           actionOpenSnackbar({
             status: true,
@@ -290,6 +296,7 @@ function ModalCreatePost({ getAllPosts }) {
             };
             addDoc(collection(db, 'posts'), post)
               .then(() => {
+                dispatch(actionGetAllPostAllFriend(user.id));
                 dispatch(
                   actionOpenSnackbar({
                     status: true,

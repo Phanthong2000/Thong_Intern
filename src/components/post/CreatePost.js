@@ -36,7 +36,8 @@ import {
   actionPostCloseCreatePost,
   actionPostOpenTagPeople,
   actionPostClearTags,
-  getAllPosts
+  getAllPosts,
+  actionGetAllPostAllFriend
 } from '../../redux/actions/postAction';
 import backgrounds from '../../asset/data/backgrounds';
 import EmojiIconMessage from '../chat/EmojiIconMessage';
@@ -166,6 +167,7 @@ function CreatePost({ user }) {
     const tagIds = [];
     tags.forEach((tag) => tagIds.push({ userId: tag.id }));
     if (type === 'text') {
+      console.log('text');
       const post = {
         contentText,
         reactions: [],
@@ -180,6 +182,7 @@ function CreatePost({ user }) {
       dispatch(actionUserOpenLoadingUpdateProfile());
       addDoc(collection(db, 'posts'), post)
         .then(() => {
+          dispatch(actionGetAllPostAllFriend(user.id));
           dispatch(actionPostClearTags());
           dispatch(actionUserCloseLoadingUpdateProfile());
           dispatch(getAllPosts(user.id, 'desc'));
@@ -192,14 +195,10 @@ function CreatePost({ user }) {
             })
           );
         })
-        .then(() => {
-          window.location.reload();
-        })
         .catch((error) => {
           console.log(error);
         });
-    }
-    if (type === 'background') {
+    } else if (type === 'background') {
       const post = {
         contentText,
         background,
@@ -216,6 +215,7 @@ function CreatePost({ user }) {
       dispatch(actionUserOpenLoadingUpdateProfile());
       addDoc(collection(db, 'posts'), post)
         .then(() => {
+          dispatch(actionGetAllPostAllFriend(user.id));
           dispatch(actionPostClearTags());
           dispatch(actionUserCloseLoadingUpdateProfile());
           dispatch(getAllPosts(user.id, 'desc'));
@@ -228,13 +228,11 @@ function CreatePost({ user }) {
             })
           );
         })
-        .then(() => {
-          window.location.reload();
-        })
         .catch((error) => {
           console.log(error);
         });
     } else {
+      console.log('image');
       const metadata = {
         contentType: 'image/*'
       };
@@ -272,6 +270,7 @@ function CreatePost({ user }) {
             };
             addDoc(collection(db, 'posts'), post)
               .then(() => {
+                dispatch(actionGetAllPostAllFriend(user.id));
                 dispatch(actionPostClearTags());
                 dispatch(actionUserCloseLoadingUpdateProfile());
                 dispatch(getAllPosts(user.id, 'desc'));
@@ -282,9 +281,6 @@ function CreatePost({ user }) {
                     type: 'success'
                   })
                 );
-              })
-              .then(() => {
-                window.location.reload();
               })
               .catch((error) => {
                 console.log(error);

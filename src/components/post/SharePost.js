@@ -153,6 +153,7 @@ function SharePost({ post }) {
     return () => null;
   }, []);
   const like = () => {
+    handleClickReaction();
     getDoc(doc(db, 'posts', post.id)).then((snapshot) => {
       const oldReactions = snapshot
         .data()
@@ -164,7 +165,6 @@ function SharePost({ post }) {
           reactions: newReactions
         }).then(() => {
           setIconLike(false);
-          handleClickReaction();
         });
       } else if (oldReactions.at(0).react === 'like') {
         const newReactions = snapshot
@@ -173,7 +173,6 @@ function SharePost({ post }) {
         setReactions(newReactions);
         updateDoc(doc(db, 'posts', post.id), { reactions: newReactions }).then(() => {
           setIconLike(false);
-          handleClickReaction();
         });
       } else {
         const newReactions = snapshot
@@ -184,12 +183,12 @@ function SharePost({ post }) {
           reactions: [...newReactions, { react: 'like', userId: user.id }]
         }).then(() => {
           setIconLike(false);
-          handleClickReaction();
         });
       }
     });
   };
   const love = () => {
+    handleClickReaction();
     getDoc(doc(db, 'posts', post.id)).then((snapshot) => {
       const oldReactions = snapshot
         .data()
@@ -201,7 +200,6 @@ function SharePost({ post }) {
           reactions: newReactions
         }).then(() => {
           setIconLove(false);
-          handleClickReaction();
         });
       } else if (oldReactions.at(0).react === 'love') {
         const newReactions = snapshot
@@ -210,7 +208,6 @@ function SharePost({ post }) {
         setReactions(newReactions);
         updateDoc(doc(db, 'posts', post.id), { reactions: newReactions }).then(() => {
           setIconLove(false);
-          handleClickReaction();
         });
       } else {
         const newReactions = snapshot
@@ -220,13 +217,13 @@ function SharePost({ post }) {
         updateDoc(doc(db, 'posts', post.id), {
           reactions: [...newReactions, { react: 'love', userId: user.id }]
         }).then(() => {
-          setIconHaha(false);
-          handleClickReaction();
+          setIconLove(false);
         });
       }
     });
   };
   const haha = () => {
+    handleClickReaction();
     getDoc(doc(db, 'posts', post.id)).then((snapshot) => {
       const oldReactions = snapshot
         .data()
@@ -238,7 +235,6 @@ function SharePost({ post }) {
           reactions: newReactions
         }).then(() => {
           setIconHaha(false);
-          handleClickReaction();
         });
       } else if (oldReactions.at(0).react === 'haha') {
         const newReactions = snapshot
@@ -247,7 +243,6 @@ function SharePost({ post }) {
         setReactions(newReactions);
         updateDoc(doc(db, 'posts', post.id), { reactions: newReactions }).then(() => {
           setIconHaha(false);
-          handleClickReaction();
         });
       } else {
         const newReactions = snapshot
@@ -258,12 +253,12 @@ function SharePost({ post }) {
           reactions: [...newReactions, { react: 'haha', userId: user.id }]
         }).then(() => {
           setIconHaha(false);
-          handleClickReaction();
         });
       }
     });
   };
   const wow = () => {
+    handleClickReaction();
     getDoc(doc(db, 'posts', post.id)).then((snapshot) => {
       const oldReactions = snapshot
         .data()
@@ -275,7 +270,6 @@ function SharePost({ post }) {
           reactions: newReactions
         }).then(() => {
           setIconWow(false);
-          handleClickReaction();
         });
       } else if (oldReactions.at(0).react === 'wow') {
         const newReactions = snapshot
@@ -284,7 +278,6 @@ function SharePost({ post }) {
         setReactions(newReactions);
         updateDoc(doc(db, 'posts', post.id), { reactions: newReactions }).then(() => {
           setIconWow(false);
-          handleClickReaction();
         });
       } else {
         const newReactions = snapshot
@@ -295,12 +288,12 @@ function SharePost({ post }) {
           reactions: [...newReactions, { react: 'wow', userId: user.id }]
         }).then(() => {
           setIconWow(false);
-          handleClickReaction();
         });
       }
     });
   };
   const angry = () => {
+    handleClickReaction();
     getDoc(doc(db, 'posts', post.id)).then((snapshot) => {
       const oldReactions = snapshot
         .data()
@@ -312,7 +305,6 @@ function SharePost({ post }) {
           reactions: newReactions
         }).then(() => {
           setIconAngry(false);
-          handleClickReaction();
         });
       } else if (oldReactions.at(0).react === 'angry') {
         const newReactions = snapshot
@@ -321,7 +313,6 @@ function SharePost({ post }) {
         setReactions(newReactions);
         updateDoc(doc(db, 'posts', post.id), { reactions: newReactions }).then(() => {
           setIconAngry(false);
-          handleClickReaction();
         });
       } else {
         const newReactions = snapshot
@@ -332,12 +323,12 @@ function SharePost({ post }) {
           reactions: [...newReactions, { react: 'angry', userId: user.id }]
         }).then(() => {
           setIconAngry(false);
-          handleClickReaction();
         });
       }
     });
   };
   const cry = () => {
+    handleClickReaction();
     getDoc(doc(db, 'posts', post.id)).then((snapshot) => {
       const oldReactions = snapshot
         .data()
@@ -349,7 +340,6 @@ function SharePost({ post }) {
           reactions: newReactions
         }).then(() => {
           setIconCry(false);
-          handleClickReaction();
         });
       } else if (oldReactions.at(0).react === 'cry') {
         const newReactions = snapshot
@@ -358,7 +348,6 @@ function SharePost({ post }) {
         setReactions(newReactions);
         updateDoc(doc(db, 'posts', post.id), { reactions: newReactions }).then(() => {
           setIconCry(false);
-          handleClickReaction();
         });
       } else {
         const newReactions = snapshot
@@ -369,7 +358,6 @@ function SharePost({ post }) {
           reactions: [...newReactions, { react: 'cry', userId: user.id }]
         }).then(() => {
           setIconCry(false);
-          handleClickReaction();
         });
       }
     });
