@@ -38,7 +38,8 @@ import {
   actionPostOpenConfirmDeletePost,
   getAllPosts,
   actionGetAllPostAllFriend,
-  actionPostModalSharePost
+  actionPostModalSharePost,
+  actionPostModalReactionsPost
 } from '../../redux/actions/postAction';
 import Tag from './Tag';
 import ModalConfirmDeletePost from './ModalConfirmDeletePost';
@@ -144,7 +145,7 @@ function Post({ post }) {
   const usersSocket = useSelector((state) => state.user.usersSocket);
   const [notificationLovesByPost, setNotificationLovesByPost] = useState({});
   const [notificationCommentsByPost, setNotificationCommentsByPost] = useState({});
-  const [lovesPost, setLovesPost] = useState([]);
+  const allPosts = useSelector((state) => state.post.allPosts);
   const navigate = useNavigate();
   const [group, setGroup] = useState({});
   const [iconHaha, setIconHaha] = useState(false);
@@ -615,6 +616,17 @@ function Post({ post }) {
       if (reactions.length < 2) return `${reactions.length} other`;
       return `${reactions.length} others`;
     };
+    const chooseReaction = () => {
+      dispatch(
+        actionPostModalReactionsPost({
+          status: true,
+          post: {
+            ...post,
+            reactions
+          }
+        })
+      );
+    };
     if (reactions.length === 0) return <div> </div>;
     return (
       <BoxInfoContactLoves>
@@ -726,7 +738,16 @@ function Post({ post }) {
             return null;
           })}
 
-        <Typography sx={{ marginLeft: '2px', fontFamily: 'inherit', color: 'gray' }}>
+        <Typography
+          onClick={chooseReaction}
+          sx={{
+            marginLeft: '2px',
+            fontFamily: 'inherit',
+            color: 'gray',
+            cursor: 'pointer',
+            '&:hover': { textDecoration: 'underline' }
+          }}
+        >
           {reactions.find((reaction) => reaction.userId === user.id) === undefined
             ? checkQuantityLoveDontHaveUserCurrent()
             : checkQuantityLove()}
@@ -997,7 +1018,7 @@ function Post({ post }) {
                 icon="ci:dot-05-xl"
                 style={{
                   color:
-                    usersSocket.find((socket) => socket.userId === userPost.id) === undefined
+                    usersSocket.find((socket) => socket.userId === user.id) === undefined
                       ? 'gray'
                       : null
                 }}
@@ -1042,7 +1063,7 @@ function Post({ post }) {
                 icon="ci:dot-05-xl"
                 style={{
                   color:
-                    usersSocket.find((socket) => socket.userId === userPost.id) === undefined
+                    usersSocket.find((socket) => socket.userId === user.id) === undefined
                       ? 'gray'
                       : null
                 }}

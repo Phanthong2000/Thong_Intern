@@ -20,6 +20,7 @@ import Snack from '../components/Snack';
 import ModalSharePost from '../components/post/ModalSharePost';
 import Backdrops from '../components/Backdrop';
 import ModalInvite from '../components/page/ModalInvite';
+import ModalReactionsPost from '../components/post/ModalReactionPost';
 
 const RootStyle = styled(Box)(({ theme }) => ({
   overflow: 'hidden',
@@ -45,6 +46,7 @@ function HomeLayout() {
   const modalReceiveInviteJoinRoom = useSelector((state) => state.call.modalReceiveInviteJoinRoom);
   const modalSharePost = useSelector((state) => state.post.modalSharePost);
   const modalInvite = useSelector((state) => state.page.modalInvite);
+  const modalReactionsPost = useSelector((state) => state.post.modalReactionsPost);
   const { pathname } = useLocation();
   const getUser = async (userId) => {
     const data = await getDoc(doc(db, 'users', userId));
@@ -107,6 +109,7 @@ function HomeLayout() {
         )}
         {modalSharePost.status && <ModalSharePost user={user} />}
         {modalInvite.status && <ModalInvite />}
+        {modalReactionsPost.status && <ModalReactionsPost />}
         <Snack />
         <Backdrops />
         <Outlet />

@@ -34,6 +34,7 @@ import { useNavigate } from 'react-router-dom';
 import { keyframes } from '@emotion/react';
 import { db } from '../../firebase-config';
 import {
+  actionPostModalReactionsPost,
   actionPostModalSharePost,
   actionPostOpenConfirmDeletePost,
   getAllPosts
@@ -546,6 +547,17 @@ function Post({ user, post }) {
       if (reactions.length < 2) return `${reactions.length} other`;
       return `${reactions.length} others`;
     };
+    const chooseReaction = () => {
+      dispatch(
+        actionPostModalReactionsPost({
+          status: true,
+          post: {
+            ...post,
+            reactions
+          }
+        })
+      );
+    };
     if (reactions.length === 0) return <div> </div>;
     return (
       <BoxInfoContactLoves>
@@ -656,7 +668,16 @@ function Post({ user, post }) {
               );
             return null;
           })}
-        <Typography sx={{ marginLeft: '2px', fontFamily: 'inherit', color: 'gray' }}>
+        <Typography
+          onClick={chooseReaction}
+          sx={{
+            marginLeft: '2px',
+            fontFamily: 'inherit',
+            color: 'gray',
+            cursor: 'pointer',
+            '&:hover': { textDecoration: 'underline' }
+          }}
+        >
           {reactions.find((reaction) => reaction.userId === user.id) === undefined
             ? checkQuantityLoveDontHaveUserCurrent()
             : checkQuantityLove()}
@@ -933,7 +954,7 @@ function Post({ user, post }) {
                 icon="ci:dot-05-xl"
                 style={{
                   color:
-                    usersSocket.find((socket) => socket.userId === userPost.id) === undefined
+                    usersSocket.find((socket) => socket.userId === user.id) === undefined
                       ? 'gray'
                       : null
                 }}
@@ -978,7 +999,7 @@ function Post({ user, post }) {
                 icon="ci:dot-05-xl"
                 style={{
                   color:
-                    usersSocket.find((socket) => socket.userId === userPost.id) === undefined
+                    usersSocket.find((socket) => socket.userId === user.id) === undefined
                       ? 'gray'
                       : null
                 }}

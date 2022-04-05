@@ -19,7 +19,8 @@ import {
   ACTION_POST_LOADING_GET_ALL_OTHER,
   ACTION_POST_GET_ALL_POST_ALL_FRIEND,
   ACTION_POST_LOADING_GET_ALL_POST_ALL_FRIEND,
-  ACTION_POST_MODAL_SHARE_POST
+  ACTION_POST_MODAL_SHARE_POST,
+  ACTION_POST_MODAL_REACTIONS_POST
 } from './types';
 
 export const actionPostGetAll = (data) => ({
@@ -85,6 +86,10 @@ export const actionPostLoadingGetAllPostAllFriend = () => ({
 });
 export const actionPostModalSharePost = (data) => ({
   type: ACTION_POST_MODAL_SHARE_POST,
+  payload: data
+});
+export const actionPostModalReactionsPost = (data) => ({
+  type: ACTION_POST_MODAL_REACTIONS_POST,
   payload: data
 });
 export const actionGetAllPostAllFriend = (id) => (dispatch) => {

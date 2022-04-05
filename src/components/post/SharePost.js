@@ -30,7 +30,11 @@ import { Icon } from '@iconify/react';
 import ShowMore from 'react-show-more';
 import { keyframes } from '@emotion/react';
 import { db } from '../../firebase-config';
-import { actionGetAllPostAllFriend, getAllPosts } from '../../redux/actions/postAction';
+import {
+  actionGetAllPostAllFriend,
+  actionPostModalReactionsPost,
+  getAllPosts
+} from '../../redux/actions/postAction';
 import Comment from './Comment';
 
 const anim = keyframes`
@@ -622,6 +626,17 @@ function SharePost({ post }) {
       if (reactions.length < 2) return `${reactions.length} other`;
       return `${reactions.length} others`;
     };
+    const chooseReaction = () => {
+      dispatch(
+        actionPostModalReactionsPost({
+          status: true,
+          post: {
+            ...post,
+            reactions
+          }
+        })
+      );
+    };
     if (reactions.length === 0) return <div> </div>;
     return (
       <BoxInfoContactLoves>
@@ -732,7 +747,16 @@ function SharePost({ post }) {
               );
             return null;
           })}
-        <Typography sx={{ marginLeft: '2px', fontFamily: 'inherit', color: 'gray' }}>
+        <Typography
+          onClick={chooseReaction}
+          sx={{
+            marginLeft: '2px',
+            fontFamily: 'inherit',
+            color: 'gray',
+            cursor: 'pointer',
+            '&:hover': { textDecoration: 'underline' }
+          }}
+        >
           {reactions.find((love) => love.userId === user.id) === undefined
             ? checkQuantityLoveDontHaveUserCurrent()
             : checkQuantityLove()}
@@ -911,7 +935,7 @@ function SharePost({ post }) {
                 icon="ci:dot-05-xl"
                 style={{
                   color:
-                    usersSocket.find((socket) => socket.userId === userPost.id) === undefined
+                    usersSocket.find((socket) => socket.userId === user.id) === undefined
                       ? 'gray'
                       : null
                 }}
@@ -956,7 +980,7 @@ function SharePost({ post }) {
                 icon="ci:dot-05-xl"
                 style={{
                   color:
-                    usersSocket.find((socket) => socket.userId === userPost.id) === undefined
+                    usersSocket.find((socket) => socket.userId === user.id) === undefined
                       ? 'gray'
                       : null
                 }}
