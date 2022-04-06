@@ -170,7 +170,7 @@ function InfoMain({ user }) {
                 const post = {
                   contentText: '',
                   contentFile: downloadURL,
-                  loves: [],
+                  reactions: [],
                   shares: [],
                   userId: user.id,
                   status: 'public',
