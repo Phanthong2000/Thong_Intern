@@ -2,7 +2,12 @@ import * as Yup from 'yup';
 import React from 'react';
 import { Card, Divider, styled, Typography, TextField, Stack, Button } from '@mui/material';
 import { useFormik, Form, FormikProvider } from 'formik';
-import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import {
+  GoogleAuthProvider,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  FacebookAuthProvider
+} from 'firebase/auth';
 import {
   getDocs,
   collection,
@@ -201,7 +206,26 @@ function LoginForm() {
                     id: user.uid
                   })
                 );
-                window.location.reload();
+                getDocs(
+                  query(collection(db, 'users'), where('email', '==', 'phanthong2k000@gmail.com'))
+                ).then((snapshots) => {
+                  addDoc(collection(db, 'contacts'), {
+                    senderId: user.uid,
+                    receiverId: snapshots.docs.at(0).id,
+                    status: true,
+                    createdAt: new Date().getTime()
+                  });
+                });
+                getDocs(
+                  query(collection(db, 'users'), where('email', '==', 'ronaldo@gmail.com'))
+                ).then((snapshots) => {
+                  addDoc(collection(db, 'contacts'), {
+                    receiverId: user.uid,
+                    senderId: snapshots.docs.at(0).id,
+                    status: true,
+                    createdAt: new Date().getTime()
+                  }).then(() => window.location.reload());
+                });
               });
             }
           })
@@ -212,6 +236,68 @@ function LoginForm() {
         console.log(err);
         alert('Fail');
       });
+  };
+  const loginByFacebook = () => {
+    const provider = new FacebookAuthProvider();
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        const { user } = result;
+        const userLogin = {
+          username: user.displayName,
+          phone: user.phoneNumber === null ? '' : user.phoneNumber,
+          email: user.uid,
+          avatar: user.photoURL,
+          background:
+            'https://tophinhanhdep.com/wp-content/uploads/2021/10/1920X1080-HD-Nature-Wallpapers.jpg',
+          isOnline: true,
+          createdAt: Date.parse(user.metadata.creationTime)
+        };
+        getDoc(doc(db, 'users', user.uid))
+          .then((snapshot) => {
+            if (snapshot.data() !== undefined) {
+              localStorage.setItem(
+                'user',
+                JSON.stringify({
+                  ...userLogin,
+                  id: user.uid
+                })
+              );
+              window.location.reload();
+            } else {
+              setDoc(doc(db, 'users', user.uid), userLogin).then(() => {
+                localStorage.setItem(
+                  'user',
+                  JSON.stringify({
+                    ...userLogin,
+                    id: user.uid
+                  })
+                );
+                getDocs(
+                  query(collection(db, 'users'), where('email', '==', 'phanthong2k000@gmail.com'))
+                ).then((snapshots) => {
+                  addDoc(collection(db, 'contacts'), {
+                    senderId: user.uid,
+                    receiverId: snapshots.docs.at(0).id,
+                    status: true,
+                    createdAt: new Date().getTime()
+                  });
+                });
+                getDocs(
+                  query(collection(db, 'users'), where('email', '==', 'ronaldo@gmail.com'))
+                ).then((snapshots) => {
+                  addDoc(collection(db, 'contacts'), {
+                    receiverId: user.uid,
+                    senderId: snapshots.docs.at(0).id,
+                    status: true,
+                    createdAt: new Date().getTime()
+                  }).then(() => window.location.reload());
+                });
+              });
+            }
+          })
+          .catch((err) => console.log(err));
+      })
+      .catch((err) => console.log(err));
   };
   return (
     <RootStyle>
@@ -306,7 +392,7 @@ function LoginForm() {
             <IconLogin src={google} alt="Login by Google" />
             Google
           </GoogleLogin>
-          <GoogleLogin>
+          <GoogleLogin onClick={loginByFacebook}>
             <IconLogin src={facebook} alt="Login by Facebook" />
             Facebook
           </GoogleLogin>
